@@ -30,4 +30,62 @@ flowchart LR
     ZIRCON --> PEE["PEE Data"] & SCT["SCT Data"]
 ```
 
+## Configuration Files
+In railway projects, information concerning the layout of infrastructure and signal aspect sequences is usualy held in drawings, which although ideal for manual workflows, hinders automation. Higher level documentation, such as PEEs and SCTs follow more structured, text based formats.
+For the sake of reliability and simplicity, the input information for ZIRCON must follow a very structured form, exempt of ambiguity, redundancy and irrelevant information.
+The ZIRCON configuration files are human and machine readable, text based encodings of a portion of railway infrastructure.
+Although apparently trivial, these constitute the most critical part of ZIRCON, majorly affecting functionality and reliability.
+
+### Level Zero
+The level zero configuration file encodes layout topography, but excludes dimensions. It is a text file with extension ".ZcfgL0". The file name is free, but it is sugested that it is a three letter code for the station.
+The encoding of L0 data from the DS to the file adheres to the following rules:
+
+**General rules:**
+1. All caps
+2. Every line starts with a standard key (BLK, NDZ, SEC, NDE, PNT, SIG)
+3. Keys follow hierarchy (BLK and SEC and NDZ are independant, NDE and PNT depend
+    on SEC, SIG depends on NDE)
+4. No trailing or leading spaces
+5. No empty paragraphs, except for empty line at end
+6. Tabs denote key hierarchy (no tabs before BLK, SEC and NDZ, one tab before
+    NDE and PNT, two tabs before SIG)
+7. Data points for each key are introduced after the key (same line),
+    separated by white spaces
+        
+**Specific key rules:**
+1. BLK
+Encodes a block (group of sections between stations)
+Syntax: BLK [block name]
+The block name must be 3 letters
+2. NDZ
+Encodes a no detection zone
+Syntax: NDZ [no detection zone name]
+The no detection zone name must be 3 letters
+3. SEC
+Encodes a section (of a station)
+Syntax: SEC [section name]
+The section name must be 3 letters
+Any NDE or PNT keys on paragraphs posterior to a certain SEC key will be subalternate to that SEC key 
+4. NDE
+Encodes a node of a section (terminal point of the section). A section must always have two or more nodes
+This key can only exist asociated with a SEC key
+The node index follows the usual ABCD... nomenclature (clockwise rotation). However, the letter is followed (no whitespace) by a + or - sign. This denotes weather the section, block or no detection zone connected with the corresponding node is at a higher or lower PK. + for higher, - for lower. The + and - signs can be ommited for the first and final nodes, for which + and - signs will be assumed, respectivelly.
+[connected section relevant node index] never requires a sign
+The syntax depends on whether the node represents a connection with another section, or with a block or a no detection zone, or in case there is no connection
+    * Case connection w/ another section: NDE [index] [connected section name] [connected section relevant node index]
+    * Case connection w/ a block or no detection zone: NDE [index] [connected block or no detection zone name]
+    * Case no connection: NDE [index]
+6. PTE
+Encodes a point (switch)
+This key can only exist asociated with a SEC key
+Syntax: PTE [point name] [specific transit 1] [specific transit 2] [...] [specific transit n]
+A specific transit of a point is a transit possible only if that point is set in the reverse (-) position.
+Only one direction of a specific transit must be stated. e.g. AB obviates stating BA
+A derailer is encoded as a point.
+7. SIG
+Encodes a signal on a certain section
+This key can only exist asociated with a NDE key
+Syntax: SIG [signal name]
+A signal is not necessairly dependent on the section where it phisically lies, but instead it is associated with the section for which it filters movements. The corresponding node is the node first intersected by the movements the signal filters
+
 
