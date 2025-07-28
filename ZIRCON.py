@@ -119,7 +119,11 @@ def conMatrix(layout):
 
 def sigTable(layout):
     """Assembles a table of real and virtual signals with relevant info."""
-    sig_table = pd.DataFrame(columns=['signal', 'section', 'direction'])
+    sig_table = pd.DataFrame(columns=['signal',
+                                      'section',
+                                      'direction',
+                                      'virtual',
+                                      'prev_sec'])
 
     for section in layout['sections']:
         for node in section['nodes']:
@@ -128,34 +132,63 @@ def sigTable(layout):
                 signal = node['signal']
                 section_lbl = section['label']
                 direction = 'desc' if node['index'][-1] == '+' else 'asc'
+                prev_sec = node['con_ele']
 
                 sig_table.loc[len(sig_table)] = {'signal': signal,
                                                  'section': section_lbl,
-                                                 'direction': direction}
+                                                 'direction': direction,
+                                                 'virtual': False,
+                                                 'prev_sec': prev_sec}
 
             if (node['con_ele'] in layout['blocks'] or
                     node['con_ele'] in layout['NDZs']):
-                signal = None
+                signal = node['con_ele']
                 section_lbl = node['con_ele']
                 direction = 'desc' if node['index'][-1] == '-' else 'asc'
+                prev_sec = section['label']
 
                 sig_table.loc[len(sig_table)] = {'signal': signal,
                                                  'section': section_lbl,
-                                                 'direction': direction}
+                                                 'direction': direction,
+                                                 'virtual': True,
+                                                 'prev_sec': prev_sec}
+
+            if node['con_ele'] is None and len(section['nodes']) == 2:
+                signal = section['label']
+                section_lbl = section['label']
+                direction = 'desc' if node['index'][-1] == '-' else 'asc'
+                for node2 in section['nodes']:
+                    prev_sec_cand = node2['con_ele']
+                    if prev_sec_cand is not None:
+                        prev_sec = prev_sec_cand
+
+                sig_table.loc[len(sig_table)] = {'signal': signal,
+                                                 'section': section_lbl,
+                                                 'direction': direction,
+                                                 'virtual': True,
+                                                 'prev_sec': prev_sec}
 
     return sig_table
 
 
 def tamponSections(layout):
-    """Identify tampon sections (connected w/ BLK or NDZ)."""
+    """Identify tampon sections (connected w/ BLK or NDZ or terminal)."""
     tamp_secs = []
 
     for section in layout['sections']:
         for node in section['nodes']:
-            if (node['con_ele'] in layout['blocks'] or
-                    node['con_ele'] in layout['NDZs']):
+            if node['con_ele'] is None and len(section['nodes']) == 2:
 
                 label = section['label']
+                place = 'high' if node['index'][-1] == '+' else 'low'
+
+                tamp_secs.append({'label': label,
+                                  'place': place})
+
+            elif (node['con_ele'] in layout['blocks'] or
+                    node['con_ele'] in layout['NDZs']):
+
+                label = node['con_ele']
                 place = 'high' if node['index'][-1] == '+' else 'low'
 
                 tamp_secs.append({'label': label,
@@ -180,15 +213,46 @@ def connectedSections(section_lbl, rel_position, con_mat):
     return nxt_secs
 
 
-def updatePaths(last_section, direction, paths, nxt_secs):
-    """Update the paths list, adding the nxt secs and creating new paths."""
-    new_paths = []
+def transitFinder(section_prior, section_crossed, section_after, layout):
+    """Find thansit through a crossed section."""
+    transit = ''
+
+    for section in layout['sections']:
+        if section['label'] == section_crossed:
+
+            for node in section['nodes']:
+                if node['con_ele'] == section_prior:
+                    transit += node['index'][:-1]
+            for node in section['nodes']:
+                if node['con_ele'] == section_after:
+                    transit += node['index'][:-1]
+
+    return transit
+
+
+def pathFinder(con_mat, tamp_secs, layout):
+    """Find all possble paths departing from the tampon sections."""
+    paths = []
+    corresp = {'asc': 'upstream',
+               'desc': 'downstream'}
+
+    for tamp_sec in tamp_secs:
+        path = {'path_secs': [tamp_sec['label']],
+                'path_transits': [None],
+                'direction': 'asc' if tamp_sec['place'] == 'low' else 'desc'}
+        paths.append(path)
 
     for path in paths:
+        nxt_secs = True
 
-        if (path['path_secs'][-1] == last_section and
-                path['direction'] == direction):
+        while nxt_secs is not None:
+            nxt_secs = connectedSections(path['path_secs'][-1],
+                                         corresp[path['direction']],
+                                         con_mat)
+            if nxt_secs is None:
+                break
 
+            new_paths = []
             for i in range(len(nxt_secs)):
                 if i == 0:
                     path['path_secs'].append(nxt_secs[i])
@@ -197,44 +261,87 @@ def updatePaths(last_section, direction, paths, nxt_secs):
                     new_path['path_secs'].pop(-1)
                     new_path['path_secs'].append(nxt_secs[i])
                     new_paths.append(deepcopy(new_path))
-    if len(new_paths) > 0:
-        paths.append(new_paths)
 
+            if len(new_paths) > 0:
+                for new_path in new_paths:
+                    paths.append(new_path)
 
-def pathFinder(con_mat, tamp_secs):
-    """Find all possble paths departing from the tampon sections."""
-    corresp = {'high': 1,
-               'low': -1}
+        for i in range(len(path['path_secs'])-2):
+            transit = transitFinder(path['path_secs'][i],
+                                    path['path_secs'][i+1],
+                                    path['path_secs'][i+2],
+                                    layout)
 
-    paths = []
-    for tamp_sec in tamp_secs:
+            path['path_transits'].append(transit)
 
-        paths.append([tamp_sec['label']])
-
-        break_while = False
-        while True:
-            for k in range(len(paths)):
-                index = con_mat[1].index(paths[k][-1])
-                connections = con_mat[0][index]
-                nxt_sec_idxs = np.where(connections == corresp[tamp_sec['place']])[0]
-
-                if len(nxt_sec_idxs) == 0:
-                    break_while = True
-
-                nxt_secs = [con_mat[1][i] for i in nxt_sec_idxs]
-
-                for i in range(len(nxt_secs)):
-                    if i == 0:
-                        paths[k].append(nxt_secs[i])
-                    else:
-                        new_path = deepcopy(paths[-1][:-1])
-                        new_path.append(nxt_secs[i])
-                        paths.append(new_path)
-
-            if break_while:
-                break
+        path['path_transits'].append(None)
 
     return paths
+
+
+def initITdict():
+    """Initialize IT info containing dictionary."""
+    return {'lbl': None,
+            'origin': None,
+            'destiny': None,
+            'type': None,
+            'route_secs': None,
+            'possible_OL_path': None}
+
+
+def MainITFinder(paths, sig_table):
+    """Return Main itineraries, route sections and possible OL sections."""
+    it = initITdict()
+    main_its = []
+
+    for path in paths:
+        sections = path['path_secs']
+        direction = path['direction']
+
+        candidates = []
+        route_secs = []
+        prev_sec = None
+        for section in sections:
+            new_candidates = list(sig_table.loc[
+                                 (sig_table.section == section) &
+                                 (sig_table.direction == direction) &
+                                 (sig_table.prev_sec == prev_sec)].signal)
+            prev_sec = section
+            if len(candidates) == 0 and len(new_candidates) != 0:
+                for sig in new_candidates:
+                    candidates.append(sig)
+                route_secs.append(section)
+
+            elif len(candidates) != 0 and len(new_candidates) == 0:
+                route_secs.append(section)
+
+            elif len(candidates) != 0 and len(new_candidates) != 0:
+                for origin_sig in candidates:
+                    for destiny_sig in new_candidates:
+                        new_it = deepcopy(it)
+                        new_it['lbl'] = origin_sig + '-' + destiny_sig
+                        new_it['origin'] = origin_sig
+                        new_it['destiny'] = destiny_sig
+                        new_it['type'] = 'Main'
+                        new_it['route_secs'] = route_secs
+
+                        last_route_sec_idx = sections.index(route_secs[-1])
+                        possible_OL_path = sections[last_route_sec_idx + 1:]
+                        new_it['possible_OL_path'] = possible_OL_path
+
+                        main_its.append(new_it)
+
+                candidates = []
+                for sig in new_candidates:
+                    candidates.append(sig)
+                route_secs = []
+                route_secs.append(section)
+
+    return main_its
+
+
+
+
 
 
 lt = readStationLayout('MAF.ZcfgL0')
@@ -244,7 +351,7 @@ con_mat = conMatrix(lt)
 sig_table = sigTable(lt)
 tamp_secs = tamponSections(lt)
 
-#paths = pathFinder(con_mat, tamp_secs)
+paths = pathFinder(con_mat, tamp_secs, lt)
 
-
+main_its = MainITFinder(paths, sig_table)
 
