@@ -53,36 +53,40 @@ The encoding of L0 data from the DS to the file adheres to the following rules:
     separated by white spaces
         
 **Specific key rules:**
+
 1. BLK
 Encodes a block (group of sections between stations)
 Syntax: BLK [block name]
-The block name must be 3 letters
+
 2. NDZ
 Encodes a no detection zone
 Syntax: NDZ [no detection zone name]
-The no detection zone name must be 3 letters
+
 3. SEC
 Encodes a section (of a station)
 Syntax: SEC [section name]
 The section name must be 3 letters
-Any NDE or PNT keys on paragraphs posterior to a certain SEC key will be subalternate to that SEC key 
+Any NDE or PNT keys on paragraphs posterior to a certain SEC key will be subalternate to that SEC key
+
 4. NDE
 Encodes a node of a section (terminal point of the section). A section must always have two or more nodes
 This key can only exist asociated with a SEC key
-The node index follows the usual ABCD... nomenclature (clockwise rotation). However, the letter is followed (no whitespace) by a + or - sign. This denotes weather the section, block or no detection zone connected with the corresponding node is at a higher or lower PK. + for higher, - for lower. The + and - signs can be ommited for the first and final nodes, for which + and - signs will be assumed, respectivelly.
-[connected section relevant node index] never requires a sign
-The syntax depends on whether the node represents a connection with another section, or with a block or a no detection zone, or in case there is no connection
-    * Case connection w/ another section: NDE [index] [connected section name] [connected section relevant node index]
-    * Case connection w/ a block or no detection zone: NDE [index] [connected block or no detection zone name]
-    * Case no connection: NDE [index]
-6. PTE
+The syntax depends on weather the node represents a connection with another section, or with a block or a no detection zone, or in case there is no connection
+Case connection w/ another section: NDE [index] [connected section name] [connected section relevant node index]
+Case connection w/ a block or no detection zone: NDE [index] [connected block or no detection zone name]
+Case no connection: NDE [index]
+The node index follows the usual ABCD... nomenclature (clockwise rotation). However, the letter is followed (no whitespace) by a + or - sign.
+This denotes weather the section, block or no detection zone connected with the corresponding node is at a higher or lower PK. + for higher, - for lower. The + and - signs can be ommited for the first and final nodes, for which + and - signs will be assumed, respectivelly. [connected section relevant node index] never requires a sign. In case of a terminal section (one node is not connected), the sign attributed to that node shall be the one relevent if another section where to be connected by said node, attending to the layout's topography
+
+5. PTE
 Encodes a point (switch)
 This key can only exist asociated with a SEC key
 Syntax: PTE [point name] [specific transit 1] [specific transit 2] [...] [specific transit n]
 A specific transit of a point is a transit possible only if that point is set in the reverse (-) position.
 Only one direction of a specific transit must be stated. e.g. AB obviates stating BA
 A derailer is encoded as a point.
-7. SIG
+
+6. SIG
 Encodes a signal on a certain section
 This key can only exist asociated with a NDE key
 Syntax: SIG [signal name]
