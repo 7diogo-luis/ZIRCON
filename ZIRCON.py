@@ -1,13 +1,25 @@
-"""ZIRCON prototype."""
+"""ZIRCON PoC v0.2.0."""
 
 import numpy as np
 import pandas as pd
 from copy import deepcopy
 
 
-def readStationLayout(filename):
-    """Read the layout file and load data to main layout dict."""
-    with open(filename, 'r') as file:
+def zltInterpreter(station_label):
+    """Read and interpret .zlt file, which encodes the station's topography.
+
+    Parameters
+    ----------
+    station_label : str
+        Label of the station to be processed (<STATION_LABEL>.zlt).
+
+    Returns
+    -------
+    dict
+        Station topography as encoded in the .zlt file.
+    """
+    file_name = station_label + '.zlt'
+    with open(file_name, 'r') as file:
         lines = file.readlines()
 
     blocks = []
@@ -15,27 +27,22 @@ def readStationLayout(filename):
     sections = []
 
     for line in lines:
-
         if 'BLK' in line:
-
             label = line[4:-1]
             blocks.append(label)
 
         elif 'NDZ' in line:
-
             label = line[4:-1]
             NDZs.append(label)
 
         elif 'SEC' in line:
-
             label = line[4:-1]
             section = {'label': label,
                        'nodes': [],
-                       'points': []}
+                       'switches': []}
             sections.append(section)
 
         elif 'NDE' in line:
-
             data = line[8:-1].split()
             node = {'index': data[0],
                     'con_ele': data[1] if len(data) > 1 else None,
@@ -44,42 +51,222 @@ def readStationLayout(filename):
             sections[-1]['nodes'].append(node)
 
         elif 'SIG' in line:
-
             data = line[12:-1]
-            sections[-1]['nodes'][-1]['signal'] = data
+            signal = {'label': data}
+            sections[-1]['nodes'][-1]['signal'] = signal
 
-        elif 'PNT' in line:
-
+        elif 'SWI' in line:
             data = line[8:-1].split()
-            point = {'label': data[0],
-                     'spec_trs': data[1:]}
-            sections[-1]['points'].append(point)
+            switch = {'label': data[0],
+                      'spec_trs': data[1:]}
+            sections[-1]['switches'].append(switch)
 
         else:
-
             return 'ERROR - LINE WITHOUT KNOWN KEY' + line
 
-    layout = {'blocks': blocks,
-              'NDZs': NDZs,
-              'sections': sections}
+    lt_top_raw = {'blocks': blocks,
+                  'NDZs': NDZs,
+                  'sections': sections}
 
-    return layout
+    return lt_top_raw
 
 
-def addNodeSigns(layout):
-    """Add implicit signs of node indices."""
-    for section in layout['sections']:
+def inferNdeSigns(lt_top_raw):
+    """Infer implicit node signs and add them to lt_top_raw.
+
+    Parameters
+    ----------
+    lt_top_raw : dict
+        Layout's topography with implicit node signs.
+
+    Returns
+    -------
+    dict
+        Layout's topography with explicit node signs.
+    """
+    lt_top = deepcopy(lt_top_raw)
+
+    for section in lt_top['sections']:
         counter = 0
+
         for node in section['nodes']:
             counter += 1
             index = node['index']
 
             if index == 'A':
                 node['index'] = 'A+'
+
             elif counter == len(section['nodes']) and len(index) == 1:
                 node['index'] = index + '-'
 
+    return lt_top
+
+
+def zlgInterpreter(station_label):
+    """Read and interpret .zlg file, which encodes the station's geometry.
+
+    Parameters
+    ----------
+    station_label : str
+        Label of the station to be processed (<STATION_LABEL>.zlg).
+
+    Returns
+    -------
+    dict
+        Station geometry as encoded in the .zlg file.
+    """
+    file_name = station_label + '.zlg'
+    with open(file_name, 'r') as file:
+        lines = file.readlines()
+
+    sections = []
+    switches = []
+    signals = []
+
+    for line in lines:
+        if 'SECS' in line:
+            reading = 'secs'
+            continue
+
+        elif 'SWIS' in line:
+            reading = 'swis'
+            continue
+
+        elif 'SIGS' in line:
+            reading = 'sigs'
+            continue
+
+        split_line = line.split()
+
+        if reading == 'secs':
+            section_lbl = split_line[0]
+            nde_pks_str = split_line[1:]
+            nde_pks = [float(pk_str) for pk_str in nde_pks_str]
+            section = {'label': section_lbl,
+                       'node_pks': nde_pks}
+            sections.append(section)
+
+        elif reading == 'swis':
+            switch_lbl = split_line[0]
+            point_pk = float(split_line[1])
+
+            if len(split_line) == 3:
+                lr_pk = float(split_line[2])
+            else:
+                lr_pk = None
+
+            switch = {'label': switch_lbl,
+                      'point_pk': point_pk,
+                      'lr_pk': lr_pk}
+            switches.append(switch)
+
+        elif reading == 'sigs':
+            signal_lbl = split_line[0]
+            signal_pk = float(split_line[1])
+            signal = {'label': signal_lbl,
+                      'pk': signal_pk}
+            signals.append(signal)
+
+    lt_geo = {'sections': sections,
+              'switches': switches,
+              'signals': signals}
+
+    return lt_geo
+
+
+def layoutAssembler(lt_top, lt_geo):
+    """Unify topographic and geometric data in a single dictionary.
+
+    Parameters
+    ----------
+    lt_top : dict
+        Topographic layout information.
+    lt_geo : dict
+        Geometric layout information.
+
+    Returns
+    -------
+    dict
+        Unified description of the layout.
+    """
+    layout = deepcopy(lt_top)
+
+    for lt_top_section in layout['sections']:
+
+        for lt_geo_section in lt_geo['sections']:
+            if lt_top_section['label'] == lt_geo_section['label']:
+                index = 0
+
+                for node in lt_top_section['nodes']:
+                    node['pk'] = lt_geo_section['node_pks'][index]
+                    index += 1
+
+                    for lt_geo_signal in lt_geo['signals']:
+                        if node['signal'] is not None:
+                            if node['signal']['label'] == lt_geo_signal[
+                                    'label']:
+                                node['signal']['pk'] = lt_geo_signal['pk']
+
+        for lt_geo_switch in lt_geo['switches']:
+
+            for lt_top_switch in lt_top_section['switches']:
+                if lt_top_switch['label'] == lt_geo_switch['label']:
+                    lt_top_switch['point_pk'] = lt_geo_switch['point_pk']
+                    lt_top_switch['lr_pk'] = lt_geo_switch['lr_pk']
+
     return layout
+
+
+def zopInterpreter(label):
+    """Read and interpret .zop file, which encodes the operational parameters.
+
+    Parameters
+    ----------
+    label : str
+        Label of the parameter file to be considered (<LABEL>.zop).
+
+    Returns
+    -------
+    dict
+        Operational parameter variables as encoded in the .zop file.
+    """
+    file_name = label + '.zop'
+    with open(file_name, 'r') as file:
+        lines = file.readlines()
+
+    parameters = {}
+
+    for line in lines:
+        split_line = line.split()
+
+        if split_line[0] == 'MAIN_OL_DISTANCE':
+            parameters['MAIN_OL_DISTANCE'] = float(split_line[1])
+
+        elif split_line[0] == 'DOS_OL_DISTANCE':
+            parameters['DOS_OL_DISTANCE'] = float(split_line[1])
+
+        elif split_line[0] == 'SHUNT_OL_DISTANCE':
+            parameters['SHUNT_OL_DISTANCE'] = float(split_line[1])
+
+        elif split_line[0] == 'HORSE_NECK_POSSIBLE':
+            if split_line[1] == 'TRUE':
+                parameters['HORSE_NECK_POSSIBLE'] = True
+            else:
+                parameters['HORSE_NECK_POSSIBLE'] = False
+
+        elif split_line[0] == 'TO_BLOCK':
+            parameters['TO_BLOCK'] = split_line[1:]
+
+        elif split_line[0] == 'TO_NDZ':
+            parameters['TO_NDZ'] = split_line[1:]
+
+        elif split_line[0] == 'TO_TERMINAL':
+            parameters['TO_TERMINAL'] = split_line[1:]
+
+        elif split_line[0] == 'TO_TERMINAL_SWITCH_BRANCH':
+            parameters['TO_TERMINAL_SWITCH_BRANCH'] = split_line[1:]
+
+    return parameters
 
 
 def conMatrix(layout):
@@ -129,7 +316,7 @@ def sigTable(layout):
         for node in section['nodes']:
 
             if node['signal'] is not None:
-                signal = node['signal']
+                signal = node['signal']['label']
                 section_lbl = section['label']
                 direction = 'desc' if node['index'][-1] == '+' else 'asc'
                 prev_sec = node['con_ele']
@@ -340,18 +527,20 @@ def MainITFinder(paths, sig_table):
     return main_its
 
 
+station_label = 'MAF'
 
+lt_top_raw = zltInterpreter(station_label)
+lt_top = inferNdeSigns(lt_top_raw)
+lt_geo = zlgInterpreter(station_label)
 
+layout = layoutAssembler(lt_top, lt_geo)
 
+parameters = zopInterpreter('GENERAL')
 
-lt = readStationLayout('MAF.ZcfgL0')
-lt = addNodeSigns(lt)
+con_mat = conMatrix(layout)
+sig_table = sigTable(layout)
+tamp_secs = tamponSections(layout)
 
-con_mat = conMatrix(lt)
-sig_table = sigTable(lt)
-tamp_secs = tamponSections(lt)
-
-paths = pathFinder(con_mat, tamp_secs, lt)
+paths = pathFinder(con_mat, tamp_secs, layout)
 
 main_its = MainITFinder(paths, sig_table)
-
