@@ -5,7 +5,7 @@ import pandas as pd
 from copy import deepcopy
 
 
-def zltInterpreter(station_label):
+def zltParser(station_label):
     """Read and interpret .zlt file, which encodes the station's topography.
 
     Parameters
@@ -19,6 +19,7 @@ def zltInterpreter(station_label):
         Station topography as encoded in the .zlt file.
     """
     file_name = station_label + '.zlt'
+
     with open(file_name, 'r') as file:
         lines = file.readlines()
 
@@ -27,6 +28,7 @@ def zltInterpreter(station_label):
     sections = []
 
     for line in lines:
+
         if 'BLK' in line:
             label = line[4:-1]
             blocks.append(label)
@@ -102,7 +104,7 @@ def inferNdeSigns(lt_top_raw):
     return lt_top
 
 
-def zlgInterpreter(station_label):
+def zlgParser(station_label):
     """Read and interpret .zlg file, which encodes the station's geometry.
 
     Parameters
@@ -116,6 +118,7 @@ def zlgInterpreter(station_label):
         Station geometry as encoded in the .zlg file.
     """
     file_name = station_label + '.zlg'
+
     with open(file_name, 'r') as file:
         lines = file.readlines()
 
@@ -124,6 +127,7 @@ def zlgInterpreter(station_label):
     signals = []
 
     for line in lines:
+
         if 'SECS' in line:
             reading = 'secs'
             continue
@@ -152,6 +156,7 @@ def zlgInterpreter(station_label):
 
             if len(split_line) == 3:
                 lr_pk = float(split_line[2])
+
             else:
                 lr_pk = None
 
@@ -194,6 +199,7 @@ def layoutAssembler(lt_top, lt_geo):
     for lt_top_section in layout['sections']:
 
         for lt_geo_section in lt_geo['sections']:
+
             if lt_top_section['label'] == lt_geo_section['label']:
                 index = 0
 
@@ -202,7 +208,9 @@ def layoutAssembler(lt_top, lt_geo):
                     index += 1
 
                     for lt_geo_signal in lt_geo['signals']:
+
                         if node['signal'] is not None:
+
                             if node['signal']['label'] == lt_geo_signal[
                                     'label']:
                                 node['signal']['pk'] = lt_geo_signal['pk']
@@ -210,6 +218,7 @@ def layoutAssembler(lt_top, lt_geo):
         for lt_geo_switch in lt_geo['switches']:
 
             for lt_top_switch in lt_top_section['switches']:
+
                 if lt_top_switch['label'] == lt_geo_switch['label']:
                     lt_top_switch['point_pk'] = lt_geo_switch['point_pk']
                     lt_top_switch['lr_pk'] = lt_geo_switch['lr_pk']
@@ -217,7 +226,7 @@ def layoutAssembler(lt_top, lt_geo):
     return layout
 
 
-def zopInterpreter(label):
+def zopParser(label):
     """Read and interpret .zop file, which encodes the operational parameters.
 
     Parameters
@@ -231,6 +240,7 @@ def zopInterpreter(label):
         Operational parameter variables as encoded in the .zop file.
     """
     file_name = label + '.zop'
+
     with open(file_name, 'r') as file:
         lines = file.readlines()
 
@@ -249,8 +259,10 @@ def zopInterpreter(label):
             parameters['SHUNT_OL_DISTANCE'] = float(split_line[1])
 
         elif split_line[0] == 'HORSE_NECK_POSSIBLE':
+
             if split_line[1] == 'TRUE':
                 parameters['HORSE_NECK_POSSIBLE'] = True
+
             else:
                 parameters['HORSE_NECK_POSSIBLE'] = False
 
@@ -269,43 +281,70 @@ def zopInterpreter(label):
     return parameters
 
 
-def conMatrix(layout):
-    """Build a connection matrix from the station layout."""
+def adjacency(layout):
+    """Assemble the adjacency matrix of the station's layout.
+
+    Parameters
+    ----------
+    layout : dict
+        Description of the station's layout.
+
+    Returns
+    -------
+    dict
+        Dictionary containing the adjacency matrix (as a Numpy Array) and a
+        list of the layout elements, indexed congruently with the adjacency
+        matrix.
+    """
     blocks = layout['blocks']
     NDZs = layout['NDZs']
     sections = [section['label'] for section in layout['sections']]
 
     elements = sections + blocks + NDZs
-
-    con_mat = np.zeros([len(elements), len(elements)])
-
+    matrix = np.zeros([len(elements), len(elements)])
     section_index = -1
+
     for section in layout['sections']:
         section_index += 1
-        for node in section['nodes']:
 
+        for node in section['nodes']:
             con_ele = node['con_ele']
+
             if con_ele is None:
                 continue
 
             con_ele_index = elements.index(con_ele)
 
             if node['index'][-1] == '+':
-                con_mat[section_index, con_ele_index] = 1
+                matrix[section_index, con_ele_index] = 1
+
             elif node['index'][-1] == '-':
-                con_mat[section_index, con_ele_index] = -1
+                matrix[section_index, con_ele_index] = -1
 
     for i in range(len(blocks) + len(NDZs)):
         index = -(i + 1)
-        column = con_mat[:, index]
-        con_mat[index, :] = -column
+        column = matrix[:, index]
+        matrix[index, :] = -column
 
-    return {'matrix': con_mat,
-            'ordered_elements': elements}
+    adjacency_data = {'matrix': matrix,
+                      'index_map': elements}
+
+    return adjacency_data
 
 
 def sigTable(layout):
-    """Assembles a table of real and virtual signals with relevant info."""
+    """Generate a table containing relevant info on real and virtual signals.
+
+    Parameters
+    ----------
+    layout : dict
+        Description of the station's layout.
+
+    Returns
+    -------
+    Pandas DataFrame
+        Signal table.
+    """
     sig_table = pd.DataFrame(columns=['signal',
                                       'section',
                                       'direction',
@@ -313,6 +352,7 @@ def sigTable(layout):
                                       'prev_sec'])
 
     for section in layout['sections']:
+
         for node in section['nodes']:
 
             if node['signal'] is not None:
@@ -344,8 +384,10 @@ def sigTable(layout):
                 signal = section['label']
                 section_lbl = section['label']
                 direction = 'desc' if node['index'][-1] == '-' else 'asc'
+
                 for node2 in section['nodes']:
                     prev_sec_cand = node2['con_ele']
+
                     if prev_sec_cand is not None:
                         prev_sec = prev_sec_cand
 
@@ -358,75 +400,153 @@ def sigTable(layout):
     return sig_table
 
 
-def tamponSections(layout):
-    """Identify tampon sections (connected w/ BLK or NDZ or terminal)."""
-    tamp_secs = []
+def absoluteOrigins(layout):
+    """Identify absolute origins (BLKs, NDZs and terminal sections).
+
+    Parameters
+    ----------
+    layout : dict
+        Description of the station's layout.
+
+    Returns
+    -------
+    list
+        List of dictionaries, one for each absolute origin, containing the
+        respective label and a "low" or "high" "place" key, for weather the
+        absolute origin is of ascending or descending itinieraries.
+    """
+    abs_origins = []
 
     for section in layout['sections']:
-        for node in section['nodes']:
-            if node['con_ele'] is None and len(section['nodes']) == 2:
 
+        for node in section['nodes']:
+
+            if node['con_ele'] is None and len(section['nodes']) == 2:
                 label = section['label']
                 place = 'high' if node['index'][-1] == '+' else 'low'
 
-                tamp_secs.append({'label': label,
-                                  'place': place})
+                abs_origins.append({'label': label,
+                                    'place': place})
 
             elif (node['con_ele'] in layout['blocks'] or
                     node['con_ele'] in layout['NDZs']):
-
                 label = node['con_ele']
                 place = 'high' if node['index'][-1] == '+' else 'low'
 
-                tamp_secs.append({'label': label,
-                                  'place': place})
+                abs_origins.append({'label': label,
+                                    'place': place})
 
-    return tamp_secs
+    return abs_origins
 
 
-def connectedSections(section_lbl, rel_position, con_mat):
-    """Find sections connected w/ a section @ relevant position."""
+def connectedSections(section_lbl, rel_position, adjacency_data):
+    """Identify immediate connections of a sections at a higher or lower PK.
+
+    Parameters
+    ----------
+    section_lbl : str
+        Label of the section to be considered.
+    rel_position : str
+        'upstream' or 'downstream' weather to find a connection at a higher or
+        lower PK, respectivelly.
+    adjacency_data : dict
+        Dictionary containing the adjacency matrix (as a Numpy Array) and a
+        list of the layout elements, indexed congruently with the adjacency
+        matrix.
+
+    Returns
+    -------
+    list
+        List of dictionaries, one for each absolute origin, containing the
+        respective label and a "low" or "high" "place" key, for weather the
+        absolute origin is of ascending or descending itinieraries.
+    """
     corresp = {'upstream': 1,
                'downstream': -1}
 
-    index = con_mat['ordered_elements'].index(section_lbl)
-    connections = con_mat['matrix'][index]
+    index = adjacency_data['index_map'].index(section_lbl)
+    connections = adjacency_data['matrix'][index]
     nxt_sec_idxs = np.where(connections == corresp[rel_position])[0]
 
     if len(nxt_sec_idxs) == 0:
         return None
 
-    nxt_secs = [con_mat['ordered_elements'][i] for i in nxt_sec_idxs]
-    return nxt_secs
+    con_secs = [adjacency_data['index_map'][i] for i in nxt_sec_idxs]
+
+    return con_secs
 
 
 def transitFinder(section_prior, section_crossed, section_after, layout):
-    """Find thansit through a crossed section."""
+    """Identify immediate connections of a section at a higher or lower PK.
+
+    Parameters
+    ----------
+    section_prior : str
+        Label of the section from where the transit originates.
+    section_crossed : str
+        Label of the section through which the transit passes.
+    section_after : str
+        Label of the section to which the transit goes.
+    layout : dict
+        Description of the station's layout.
+
+    Returns
+    -------
+    str
+        Transit (two letters, order sensitive).
+    """
     transit = ''
 
     for section in layout['sections']:
+
         if section['label'] == section_crossed:
 
             for node in section['nodes']:
+
                 if node['con_ele'] == section_prior:
                     transit += node['index'][:-1]
+
             for node in section['nodes']:
+
                 if node['con_ele'] == section_after:
                     transit += node['index'][:-1]
 
     return transit
 
 
-def pathFinder(con_mat, tamp_secs, layout):
-    """Find all possble paths departing from the tampon sections."""
+def pathFinder(adjacency_data, abs_origins, layout):
+    """Find all possible paths (transit sequences) in the station.
+
+    Parameters
+    ----------
+    adjacency_data : dict
+        Dictionary containing the adjacency matrix (as a Numpy Array) and a
+        list of the layout elements, indexed congruently with the adjacency
+        matrix.
+    abs_origins : list
+        List of dictionaries, one for each absolute origin, containing the
+        respective label and a "low" or "high" "place" key, for weather the
+        absolute origin is of ascending or descending itinieraries.
+    layout : dict
+        Description of the station's layout.
+
+    Returns
+    -------
+    list
+        List of dictionaries (each representing a possible path) where key
+        "path_secs" holds a list of ordered sections intercepted by the path
+        and key "path_transits" holds a list of the transits through the path
+        sections (same index).
+    """
     paths = []
     corresp = {'asc': 'upstream',
                'desc': 'downstream'}
 
-    for tamp_sec in tamp_secs:
+    for tamp_sec in abs_origins:
         path = {'path_secs': [tamp_sec['label']],
                 'path_transits': [None],
                 'direction': 'asc' if tamp_sec['place'] == 'low' else 'desc'}
+
         paths.append(path)
 
     for path in paths:
@@ -435,14 +555,18 @@ def pathFinder(con_mat, tamp_secs, layout):
         while nxt_secs is not None:
             nxt_secs = connectedSections(path['path_secs'][-1],
                                          corresp[path['direction']],
-                                         con_mat)
+                                         adjacency_data)
+
             if nxt_secs is None:
                 break
 
             new_paths = []
+
             for i in range(len(nxt_secs)):
+
                 if i == 0:
                     path['path_secs'].append(nxt_secs[i])
+
                 else:
                     new_path = deepcopy(path)
                     new_path['path_secs'].pop(-1)
@@ -450,6 +574,7 @@ def pathFinder(con_mat, tamp_secs, layout):
                     new_paths.append(deepcopy(new_path))
 
             if len(new_paths) > 0:
+
                 for new_path in new_paths:
                     paths.append(new_path)
 
@@ -527,20 +652,20 @@ def MainITFinder(paths, sig_table):
     return main_its
 
 
-station_label = 'MAF'
+station_label = 'CIS'
 
-lt_top_raw = zltInterpreter(station_label)
+lt_top_raw = zltParser(station_label)
 lt_top = inferNdeSigns(lt_top_raw)
-lt_geo = zlgInterpreter(station_label)
+lt_geo = zlgParser(station_label)
 
 layout = layoutAssembler(lt_top, lt_geo)
 
-parameters = zopInterpreter('GENERAL')
+parameters = zopParser('GENERAL')
 
-con_mat = conMatrix(layout)
+adjacency_data = adjacency(layout)
 sig_table = sigTable(layout)
-tamp_secs = tamponSections(layout)
+abs_origins = absoluteOrigins(layout)
 
-paths = pathFinder(con_mat, tamp_secs, layout)
+paths = pathFinder(adjacency_data, abs_origins, layout)
 
 main_its = MainITFinder(paths, sig_table)
