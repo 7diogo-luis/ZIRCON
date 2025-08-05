@@ -42,13 +42,13 @@ The encoding of L0 data from the DS to the file adheres to the following rules:
 
 **General rules:**
 1. All caps
-2. Every line starts with a standard key (BLK, NDZ, SEC, NDE, PNT, SIG)
+2. Every line starts with a standard key (BLK, NDZ, SEC, NDE, PNT, SIG, SWP)
 3. Keys follow hierarchy (BLK and SEC and NDZ are independant, NDE and PNT depend
-    on SEC, SIG depends on NDE)
+    on SEC, SIG and SWP depend on NDE or BLK or NDZ)
 4. No trailing or leading spaces
 5. No empty paragraphs, except for empty line at end
 6. Tabs denote key hierarchy (no tabs before BLK, SEC and NDZ, one tab before
-    NDE and PNT, two tabs before SIG)
+    NDE and PNT, two or three tabs before SIG and SWP)
 7. Data points for each key are introduced after the key (same line),
     separated by white spaces
         
@@ -88,9 +88,20 @@ A derailer is encoded as a switch.
 
 6. SIG
 Encodes a signal on a certain section
-This key can only exist asociated with a NDE key
-Syntax: SIG [signal name]
+This key can only exist asociated with a NDE key or with a NDZ/BLK key
+Syntax: SIG [signal name] [* (if applicable)]
 A signal is not necessairly dependent on the section where it phisically lies, but instead it is associated with the section for which it filters movements. The corresponding node is the node first intersected by the movements the signal filters
+The signal name is interpreted. If it contains "S", the signal is assumed to be a circulation signal. If it contains "M", the signal is assumed to be a shunt signal, unless it also contains "S", in which case it will be considered a combined signal.
+For the cases in which a circulation signal can not be the origin of main itineraries (i.e. the signal only contains red and white aspecs), the signal name shall be followed by a whitespace and a "*". This is not applicable to Shunt signals.
+If this key is used to encode a shunt limit indicator, the signal name shall be "M"
+
+7. SWP
+Encodes a signal/pedal binomial on a certain section
+This key can only exist asociated with a NDE key or with a NDZ/BLK key
+Syntax: SWP [signal name] [* (if applicable)]
+A signal with pedal is not necessairly dependent on the section where it phisically lies, but instead it is associated with the section for which it filters movements. The corresponding node is the node first intersected by the movements the signal filters
+The signal name is interpreted. If it contains "S", the signal is assumed to be a circulation signal. If it contains "M", the signal is assumed to be a shunt signal, unless it also contains "S", in which case it will be considered a combined signal.
+For the cases in which a circulation signal can not be the origin of main itineraries (i.e. the signal only contains red and white aspecs), the signal name shall be followed by a whitespace and a "*". This is not applicable to Shunt signals.
 
 
 ### Level One
@@ -122,9 +133,10 @@ Syntax: SWIS
 3. SIGS
 Pk of signal poles
 Syntax: SIGS
-            [signal_1_label] [pk]
+            [signal_1_label] [pk] [pk_ZAP_origin (if applicable)] [pk_ZAP_origin_safety_factor (if applicable)]
                ...
-            [signal_n_label] [pk]
+            [signal_n_label] [pk] [pk_ZAP_origin (if applicable)] [pk_ZAP_origin_safety_factor (if applicable)]
+If a ZAP origin PK is stated, the ZAP origin safety factor must v«be stated, iven if it is null.
             
 
 ### Operational Parameters

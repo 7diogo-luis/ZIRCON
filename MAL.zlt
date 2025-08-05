@@ -1,8 +1,9 @@
 BLK MAF
 SEC A1
     NDE A A2 B
+        SIG M
     NDE B MAF
-        SIG S1
+        SWP S1
 SEC A2
     NDE A 1 C
     NDE B A1 A
@@ -10,21 +11,22 @@ SEC 1
     NDE A 3 C
     NDE B+ 5 C
     NDE C A2 A
+        SIG M1
     SWI 1 BC
 SEC 3
     NDE A IV
-        SIG S10
+        SWP S10/M10
     NDE B+ I B
-        SIG S4
+        SWP S4/M4
     NDE C 1 A
     SWI 3 AC
     SWI C1 AC
 NDZ IV
 SEC 5
     NDE A II B
-        SIG S6
+        SWP S6/M6
     NDE B+ III B
-        SIG S8
+        SWP S8/M8
     NDE C 1 B
     SWI 5 BC
 SEC I
@@ -38,10 +40,11 @@ SEC III
     NDE B 5 B
 SEC 6
     NDE A D3 B
+        SIG M2
     NDE B- III A
-        SIG S7
+        SWP S7/M7
     NDE C II A
-        SIG S5
+        SWP S5/M5
     SWI 6 AB
 SEC IA
     NDE A 4I C
@@ -51,9 +54,10 @@ SEC D3
     NDE B 6 A
 SEC 4I
     NDE A 2II C
+        SIG M12
     NDE B- 4II A
     NDE C IA A
-        SIG S3
+        SWP S3/M3
     SWI 4I AB
 SEC 4II
     NDE A 4I B
@@ -72,11 +76,13 @@ SEC 2I
     SWI 2I AC
 SEC A3
     NDE A BSP1
-        SIG SC2
+        SWP SC2
     NDE B 2II A
 SEC D1
     NDE A BSP2
-        SIG S2
+        SWP S2
     NDE B 2I A
+        SIG M
 BLK BSP1
+    SIG M
 BLK BSP2

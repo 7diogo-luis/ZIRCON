@@ -6,7 +6,7 @@ from copy import deepcopy
 
 
 def zltParser(station_label):
-    """Read and interpret .zlt file, which encodes the station's topography.
+    """Parse .zlt file, which encodes the station's topography.
 
     Parameters
     ----------
@@ -28,43 +28,66 @@ def zltParser(station_label):
     sections = []
 
     for line in lines:
+        split_line = line.split()
 
-        if 'BLK' in line:
-            label = line[4:-1]
-            blocks.append(label)
+        if split_line[0] == 'BLK':
+            reading = 'block'
+            block = {'label': split_line[1],
+                     'signal': None}
+            blocks.append(block)
 
-        elif 'NDZ' in line:
-            label = line[4:-1]
-            NDZs.append(label)
+        elif split_line[0] == 'NDZ':
+            reading = 'ndz'
+            ndz = {'label': split_line[1],
+                   'signal': None}
+            NDZs.append(ndz)
 
-        elif 'SEC' in line:
-            label = line[4:-1]
-            section = {'label': label,
+        elif split_line[0] == 'SEC':
+            reading = 'section'
+            section = {'label': split_line[1],
                        'nodes': [],
                        'switches': []}
             sections.append(section)
 
-        elif 'NDE' in line:
-            data = line[8:-1].split()
-            node = {'index': data[0],
-                    'con_ele': data[1] if len(data) > 1 else None,
-                    'con_sec_nde': data[2] if len(data) > 2 else None,
+        elif split_line[0] == 'NDE':
+            node = {'index': split_line[1],
+                    'con_ele': split_line[2] if len(split_line) > 2 else None,
+                    'con_sec_nde': split_line[3] if len(split_line) > 3 else None, #remove this, zircon will figure it out
                     'signal': None}
             sections[-1]['nodes'].append(node)
 
-        elif 'SIG' in line:
-            data = line[12:-1]
-            signal = {'label': data}
-            sections[-1]['nodes'][-1]['signal'] = signal
+        elif split_line[0] == 'SIG':
+            signal = {'label': split_line[1],
+                      'pedal': False,
+                      'RW': True if '*' in split_line else False}
 
-        elif 'SWI' in line:
-            data = line[8:-1].split()
-            switch = {'label': data[0],
-                      'spec_trs': data[1:]}
+            if reading == 'section':
+                sections[-1]['nodes'][-1]['signal'] = signal
+
+            elif reading == 'ndz':
+                NDZs[-1]['signal'] = signal
+
+            elif reading == 'block':
+                blocks[-1]['signal'] = signal
+
+        elif split_line[0] == 'SWP':
+            signal = {'label': split_line[1],
+                      'pedal': True,
+                      'RW': True if '*' in split_line else False}
+
+            if reading == 'section':
+                sections[-1]['nodes'][-1]['signal'] = signal
+
+            elif reading == 'ndz':
+                NDZs[-1]['signal'] = signal
+
+            elif reading == 'block':
+                blocks[-1]['signal'] = signal
+
+        elif split_line[0] == 'SWI':
+            switch = {'label': split_line[1],
+                      'spec_trs': split_line[2:]}
             sections[-1]['switches'].append(switch)
-
-        else:
-            return 'ERROR - LINE WITHOUT KNOWN KEY' + line
 
     lt_top_raw = {'blocks': blocks,
                   'NDZs': NDZs,
@@ -105,7 +128,7 @@ def inferNdeSigns(lt_top_raw):
 
 
 def zlgParser(station_label):
-    """Read and interpret .zlg file, which encodes the station's geometry.
+    """Parse .zlg file, which encodes the station's geometry.
 
     Parameters
     ----------
@@ -127,20 +150,19 @@ def zlgParser(station_label):
     signals = []
 
     for line in lines:
+        split_line = line.split()
 
-        if 'SECS' in line:
+        if 'SECS' in split_line:
             reading = 'secs'
             continue
 
-        elif 'SWIS' in line:
+        elif 'SWIS' in split_line:
             reading = 'swis'
             continue
 
-        elif 'SIGS' in line:
+        elif 'SIGS' in split_line:
             reading = 'sigs'
             continue
-
-        split_line = line.split()
 
         if reading == 'secs':
             section_lbl = split_line[0]
@@ -168,8 +190,18 @@ def zlgParser(station_label):
         elif reading == 'sigs':
             signal_lbl = split_line[0]
             signal_pk = float(split_line[1])
+
+            if len(split_line) != 2:
+                zap_origin = split_line[2]
+                zap_origin_sft_fac = split_line[3]
+
+            else:
+                zap_origin = zap_origin_sft_fac = None
+
             signal = {'label': signal_lbl,
-                      'pk': signal_pk}
+                      'pk': signal_pk,
+                      'zap_origin_pk': zap_origin,
+                      'zap_origin_sft_fac': zap_origin_sft_fac}
             signals.append(signal)
 
     lt_geo = {'sections': sections,
@@ -214,6 +246,34 @@ def layoutAssembler(lt_top, lt_geo):
                             if node['signal']['label'] == lt_geo_signal[
                                     'label']:
                                 node['signal']['pk'] = lt_geo_signal['pk']
+                                node['signal']['zap_origin_pk'] = \
+                                    lt_geo_signal['zap_origin_pk']
+                                node['signal']['zap_origin_sft_fac'] = \
+                                    lt_geo_signal['zap_origin_sft_fac']
+
+                        for block in layout['blocks']:
+
+                            if block['signal'] is not None:
+
+                                if block['signal']['label'] == lt_geo_signal[
+                                         'label']:
+                                    block['signal']['pk'] = lt_geo_signal['pk']
+                                    block['signal']['zap_origin_pk'] = \
+                                        lt_geo_signal['zap_origin_pk']
+                                    block['signal']['zap_origin_sft_fac'] = \
+                                        lt_geo_signal['zap_origin_sft_fac']
+
+                        for ndz in layout['NDZs']:
+
+                            if ndz['signal'] is not None:
+
+                                if ndz['signal']['label'] == lt_geo_signal[
+                                       'label']:
+                                    ndz['signal']['pk'] = lt_geo_signal['pk']
+                                    ndz['signal']['zap_origin_pk'] = \
+                                        lt_geo_signal['zap_origin_pk']
+                                    ndz['signal']['zap_origin_sft_fac'] = \
+                                        lt_geo_signal['zap_origin_sft_fac']
 
         for lt_geo_switch in lt_geo['switches']:
 
@@ -296,8 +356,8 @@ def adjacency(layout):
         list of the layout elements, indexed congruently with the adjacency
         matrix.
     """
-    blocks = layout['blocks']
-    NDZs = layout['NDZs']
+    blocks = [block['label'] for block in layout['blocks']]
+    NDZs = [ndz['label'] for ndz in layout['NDZs']]
     sections = [section['label'] for section in layout['sections']]
 
     elements = sections + blocks + NDZs
@@ -345,6 +405,8 @@ def sigTable(layout):
     Pandas DataFrame
         Signal table.
     """
+    blocks = [block['label'] for block in layout['blocks']]
+    NDZs = [ndz['label'] for ndz in layout['NDZs']]
     sig_table = pd.DataFrame(columns=['signal',
                                       'section',
                                       'direction',
@@ -367,8 +429,7 @@ def sigTable(layout):
                                                  'virtual': False,
                                                  'prev_sec': prev_sec}
 
-            if (node['con_ele'] in layout['blocks'] or
-                    node['con_ele'] in layout['NDZs']):
+            if (node['con_ele'] in blocks or node['con_ele'] in NDZs):
                 signal = node['con_ele']
                 section_lbl = node['con_ele']
                 direction = 'desc' if node['index'][-1] == '-' else 'asc'
@@ -397,7 +458,249 @@ def sigTable(layout):
                                                  'virtual': True,
                                                  'prev_sec': prev_sec}
 
+    for block_dict in layout['blocks']:
+
+        if block_dict['signal'] is not None:
+
+            for section in layout['sections']:
+
+                for node in section['nodes']:
+
+                    if node['con_ele'] == block_dict['label']:
+                        signal = block_dict['signal']['label']
+                        section_lbl = block_dict['label']
+                        direction = 'desc' if node['index'][-1] ==\
+                            '-' else 'asc'
+                        prev_sec = section['label']
+
+                        sig_table.loc[len(sig_table)] =\
+                            {'signal': signal,
+                             'section': section_lbl,
+                             'direction': direction,
+                             'virtual': True,
+                             'prev_sec': prev_sec}
+
+    for ndz_dict in layout['NDZs']:
+
+        if ndz_dict['signal'] is not None:
+
+            for section in layout['sections']:
+
+                for node in section['nodes']:
+
+                    if node['con_ele'] == ndz_dict['label']:
+                        signal = block_dict['signal']['label']
+                        section_lbl = block_dict['label']
+                        direction = 'desc' if node['index'][-1] ==\
+                            '-' else 'asc'
+                        prev_sec = section['label']
+
+                        sig_table.loc[len(sig_table)] =\
+                            {'signal': signal,
+                             'section': section_lbl,
+                             'direction': direction,
+                             'virtual': True,
+                             'prev_sec': prev_sec}
+
     return sig_table
+
+
+def sigLogic(circ, shunt, ILM, pedal, RW, block, NDZ, terminal):
+    """Derive signal abilities from flags.
+
+    Parameters
+    ----------
+    circ : bool
+        Circulation signal.
+    shunt : bool
+        Shunt signal.
+    ILM : bool
+        Shunt limit indicator.
+    pedal : bool
+        Signal has an associated pedal.
+    RW : bool
+        Signal has only red and white aspects.
+    block : bool
+        Block (virtual signal).
+    NDZ : bool
+        NDZ (virtual signal).
+    terminal : bool
+        Terminal section (virtual signal).
+
+    Returns
+    -------
+    dict
+        Types of itineraries possible from and to the signal.
+    """
+    M_origin = D_origin = S_origin = True
+    M_destiny = D_destiny = S_destiny = True
+
+    if not circ:
+        M_origin = D_origin = M_destiny = D_destiny = False
+
+    if not shunt:
+        S_origin = False
+
+    if not pedal:
+        D_origin = False
+
+    if RW:
+        M_origin = False
+
+    if block or terminal:
+        M_origin = D_origin = S_origin = S_destiny = False
+        M_destiny = D_destiny = True
+
+    if NDZ:
+        M_origin = D_origin = S_origin = M_destiny = False
+        D_destiny = S_destiny = True
+
+    if ILM:
+        S_origin = False
+        S_destiny = True
+
+    possible_origin = possible_destiny = ''
+
+    if M_origin:
+        possible_origin += ('M')
+
+    if D_origin:
+        possible_origin += ('D')
+
+    if S_origin:
+        possible_origin += ('S')
+
+    if M_destiny:
+        possible_destiny += ('M')
+
+    if D_destiny:
+        possible_destiny += ('D')
+
+    if S_destiny:
+        possible_destiny += ('S')
+
+    signal_abilities = {'possible_origin': possible_origin,
+                        'possible_destiny': possible_destiny}
+
+    return signal_abilities
+
+
+def sigDecoder(sig_table, layout):
+    """Decode signal names and flags.
+
+    Parameters
+    ----------
+    sig_table : Pandas DataFrame
+        Signal table.
+    layout : dict
+        Description of the station's layout.
+
+    Returns
+    -------
+    Pandas DataFrame
+        Signal table containing the possible itinerary types departing from
+        and arriving to each signal.
+    """
+    signals = deepcopy(sig_table)
+    signals['possible_origin'] = signals['possible_destiny'] = None
+
+    blocks = [block['label'] for block in layout['blocks']]
+    NDZs = [ndz['label'] for ndz in layout['NDZs']]
+    secs = [section['label'] for section in layout['sections']]
+
+    for index, row in signals.iterrows():
+
+        for section in layout['sections']:
+
+            for node in section['nodes']:
+
+                if node['signal'] is not None:
+
+                    if node['signal']['label'] == row['signal']:
+
+                        circ = True if 'S' in row['signal'] else False
+                        shunt = True if 'M' in row['signal'] else False
+                        ILM = True if row['signal'] == 'M' else False
+                        pedal = node['signal']['pedal']
+                        RW = node['signal']['RW']
+                        block = True if row['signal'] in blocks else False
+                        NDZ = True if row['signal'] in NDZs else False
+                        terminal = True if row['signal'] in secs else False
+
+                        signal_abilities = sigLogic(circ, shunt, ILM, pedal,
+                                                    RW, block, NDZ, terminal)
+
+                        signals.loc[index, 'possible_origin'] =\
+                            signal_abilities['possible_origin']
+                        signals.loc[index, 'possible_destiny'] =\
+                            signal_abilities['possible_destiny']
+
+        for block_dict in layout['blocks']:
+
+            if block_dict['signal'] is not None:
+
+                if block_dict['signal']['label'] == row['signal']:
+
+                    circ = True if 'S' in row['signal'] else False
+                    shunt = True if 'M' in row['signal'] else False
+                    ILM = True if row['signal'] == 'M' else False
+                    pedal = node['signal']['pedal']
+                    RW = node['signal']['RW']
+                    block = True if row['signal'] in blocks else False
+                    NDZ = True if row['signal'] in NDZs else False
+                    terminal = True if row['signal'] in secs else False
+
+                    signal_abilities = sigLogic(circ, shunt, ILM, pedal,
+                                                RW, block, NDZ, terminal)
+
+                    signals.loc[index, 'possible_origin'] =\
+                        signal_abilities['possible_origin']
+                    signals.loc[index, 'possible_destiny'] =\
+                        signal_abilities['possible_destiny']
+
+        for ndz_dict in layout['NDZs']:
+
+            if ndz_dict['signal'] is not None:
+
+                if ndz_dict['signal']['label'] == row['signal']:
+
+                    circ = True if 'S' in row['signal'] else False
+                    shunt = True if 'M' in row['signal'] else False
+                    ILM = True if row['signal'] == 'M' else False
+                    pedal = node['signal']['pedal']
+                    RW = node['signal']['RW']
+                    block = True if row['signal'] in blocks else False
+                    NDZ = True if row['signal'] in NDZs else False
+                    terminal = True if row['signal'] in secs else False
+
+                    signal_abilities = sigLogic(circ, shunt, ILM, pedal,
+                                                RW, block, NDZ, terminal)
+
+                    signals.loc[index, 'possible_origin'] =\
+                        signal_abilities['possible_origin']
+                    signals.loc[index, 'possible_destiny'] =\
+                        signal_abilities['possible_destiny']
+
+        if (row['signal'] in blocks or row['signal'] in NDZs or
+                row['signal'] in secs):
+            circ = False
+            shunt = False
+            ILM = False
+            pedal = False
+            RW = False
+            block = True if row['signal'] in blocks else False
+            NDZ = True if row['signal'] in NDZs else False
+            terminal = True if row['signal'] in secs else False
+
+            signal_abilities = sigLogic(circ, shunt, ILM, pedal,
+                                        RW, block, NDZ, terminal)
+
+            signals.loc[index, 'possible_origin'] =\
+                signal_abilities['possible_origin']
+            signals.loc[index, 'possible_destiny'] =\
+                signal_abilities['possible_destiny']
+
+    return signals
 
 
 def absoluteOrigins(layout):
@@ -416,6 +719,8 @@ def absoluteOrigins(layout):
         absolute origin is of ascending or descending itinieraries.
     """
     abs_origins = []
+    blocks = [block['label'] for block in layout['blocks']]
+    NDZs = [ndz['label'] for ndz in layout['NDZs']]
 
     for section in layout['sections']:
 
@@ -428,8 +733,7 @@ def absoluteOrigins(layout):
                 abs_origins.append({'label': label,
                                     'place': place})
 
-            elif (node['con_ele'] in layout['blocks'] or
-                    node['con_ele'] in layout['NDZs']):
+            elif (node['con_ele'] in blocks or node['con_ele'] in NDZs):
                 label = node['con_ele']
                 place = 'high' if node['index'][-1] == '+' else 'low'
 
@@ -591,47 +895,51 @@ def pathFinder(adjacency_data, abs_origins, layout):
     return paths
 
 
-def initITdict():
-    """Initialize IT info containing dictionary."""
-    return {'lbl': None,
-            'origin': None,
-            'destiny': None,
-            'type': None,
-            'route_secs': None,
-            'possible_OL_path': None}
-
-
 def MainITFinder(paths, sig_table):
     """Return Main itineraries, route sections and possible OL sections."""
-    it = initITdict()
     main_its = []
+    it = {'lbl': None,
+          'path_index': None,
+          'origin': None,
+          'destiny': None,
+          'type': None,
+          'route_secs': None,
+          'possible_OL_path': None}
 
-    for path in paths:
-        sections = path['path_secs']
-        direction = path['direction']
-
+    for i in range(len(paths)):
+        sections = paths[i]['path_secs']
+        direction = paths[i]['direction']
         candidates = []
         route_secs = []
         prev_sec = None
+
         for section in sections:
             new_candidates = list(sig_table.loc[
                                  (sig_table.section == section) &
                                  (sig_table.direction == direction) &
                                  (sig_table.prev_sec == prev_sec)].signal)
             prev_sec = section
+
             if len(candidates) == 0 and len(new_candidates) != 0:
-                for sig in new_candidates:
-                    candidates.append(sig)
                 route_secs.append(section)
 
+                for sig in new_candidates:
+                    candidates.append(sig)
+
             elif len(candidates) != 0 and len(new_candidates) == 0:
+
                 route_secs.append(section)
 
             elif len(candidates) != 0 and len(new_candidates) != 0:
+
                 for origin_sig in candidates:
+
                     for destiny_sig in new_candidates:
+
                         new_it = deepcopy(it)
+
                         new_it['lbl'] = origin_sig + '-' + destiny_sig
+                        new_it['path_index'] = i
                         new_it['origin'] = origin_sig
                         new_it['destiny'] = destiny_sig
                         new_it['type'] = 'Main'
@@ -644,15 +952,16 @@ def MainITFinder(paths, sig_table):
                         main_its.append(new_it)
 
                 candidates = []
-                for sig in new_candidates:
-                    candidates.append(sig)
                 route_secs = []
                 route_secs.append(section)
+
+                for sig in new_candidates:
+                    candidates.append(sig)
 
     return main_its
 
 
-station_label = 'CIS'
+station_label = 'MAL'
 
 lt_top_raw = zltParser(station_label)
 lt_top = inferNdeSigns(lt_top_raw)

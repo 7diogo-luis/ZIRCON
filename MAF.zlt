@@ -1,11 +1,11 @@
 BLK BPF
 SEC 1
     NDE A I B
-        SIG S6
+        SWP S6
     NDE B+ II B
-        SIG S4
+        SWP S4
     NDE C BPF
-        SIG S1
+        SWP S1
     SWI 1 AC
 SEC I
     NDE A 2 C
@@ -15,10 +15,10 @@ SEC II
     NDE B 1 B
 SEC 2
     NDE A MAL
-        SIG S2
+        SWP S2
     NDE B- II A
-        SIG S3
+        SWP S3
     NDE C I A
-        SIG S5
+        SWP S5
     SWI 2 AC
 BLK MAL
