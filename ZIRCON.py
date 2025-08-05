@@ -1,4 +1,4 @@
-"""ZIRCON PoC v0.3.0."""
+"""ZIRCON PoC v0.4.0."""
 
 import numpy as np
 import pandas as pd
