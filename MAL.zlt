@@ -1,87 +1,87 @@
 BLK MAF
 SEC A1
-    NDE A A2 B
+    NDE A A2
         SIG M
     NDE B MAF
         SWP S1
 SEC A2
-    NDE A 1 C
-    NDE B A1 A
+    NDE A 1
+    NDE B A1
 SEC 1
-    NDE A 3 C
-    NDE B+ 5 C
-    NDE C A2 A
+    NDE A 3
+    NDE B 5
+        SWI 1
+    NDE C A2
         SIG M1
-    SWI 1 BC
 SEC 3
     NDE A IV
         SWP S10/M10
-    NDE B+ I B
+        SWI 3
+        SWI C1
+    NDE B I
         SWP S4/M4
-    NDE C 1 A
-    SWI 3 AC
-    SWI C1 AC
+    NDE C 1
 NDZ IV
 SEC 5
-    NDE A II B
+    NDE A II
         SWP S6/M6
-    NDE B+ III B
+    NDE B III
         SWP S8/M8
-    NDE C 1 B
-    SWI 5 BC
+        SWI 5
+    NDE C 1
 SEC I
-    NDE A IA B
-    NDE B 3 B
+    NDE A IA
+    NDE B 3
 SEC II
-    NDE A 6 C
-    NDE B 5 A
+    NDE A 6
+    NDE B 5
 SEC III
-    NDE A 6 B
-    NDE B 5 B
+    NDE A 6
+    NDE B 5
 SEC 6
-    NDE A D3 B
+    NDE A D3
         SIG M2
-    NDE B- III A
+    NDE B III
         SWP S7/M7
-    NDE C II A
+        SWI 6
+    NDE C II
         SWP S5/M5
-    SWI 6 AB
 SEC IA
-    NDE A 4I C
-    NDE B I A
+    NDE A 4I
+    NDE B I
 SEC D3
-    NDE A 4II C
-    NDE B 6 A
+    NDE A 4II
+    NDE B 6
 SEC 4I
-    NDE A 2II C
+    NDE A 2II
         SIG M12
-    NDE B- 4II A
-    NDE C IA A
+    NDE B 4II
+        SWI 4I
+    NDE C IA
         SWP S3/M3
-    SWI 4I AB
 SEC 4II
-    NDE A 4I B
-    NDE B+ 2I B
-    NDE C D3 A
-    SWI 4II AC
+    NDE A 4I
+        SWI 4II
+    NDE B 2I
+    NDE C D3
 SEC 2II
-    NDE A A3 B
-    NDE B+ 2I C
-    NDE C 4I A
-    SWI 2II BC
+    NDE A A3
+    NDE B 2I
+        SWI 2II
+    NDE C 4I
 SEC 2I
-    NDE A D1 B
-    NDE B- 4II B
-    NDE C 2II B
-    SWI 2I AC
+    NDE A D1
+    NDE B 4II
+    NDE C 2II
+        SWI 2I
 SEC A3
     NDE A BSP1
         SWP SC2
-    NDE B 2II A
+    NDE B 2II
 SEC D1
     NDE A BSP2
         SWP S2
-    NDE B 2I A
+    NDE B 2I
         SIG M
 BLK BSP1
     SIG M

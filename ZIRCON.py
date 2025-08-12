@@ -1,4 +1,4 @@
-"""ZIRCON PoC v0.4.0."""
+"""ZIRCON PoC v0.5.0."""
 
 import numpy as np
 import pandas as pd
@@ -45,15 +45,22 @@ def zltParser(station_label):
         elif split_line[0] == 'SEC':
             reading = 'section'
             section = {'label': split_line[1],
-                       'nodes': [],
-                       'switches': []}
+                       'nodes': []}
             sections.append(section)
 
         elif split_line[0] == 'NDE':
+
+            if len(split_line) > 2 and split_line[2] != '-':
+                con_ele = split_line[2]
+
+            else:
+                con_ele = None
+
             node = {'index': split_line[1],
-                    'con_ele': split_line[2] if len(split_line) > 2 else None,
-                    'con_sec_nde': split_line[3] if len(split_line) > 3 else None, #remove this, zircon will figure it out
-                    'signal': None}
+                    'con_ele': con_ele,
+                    'signal': None,
+                    'switches': [],
+                    'TJS_weak_nde': True if split_line[-1] == '-' else False}
             sections[-1]['nodes'].append(node)
 
         elif split_line[0] == 'SIG':
@@ -85,9 +92,8 @@ def zltParser(station_label):
                 blocks[-1]['signal'] = signal
 
         elif split_line[0] == 'SWI':
-            switch = {'label': split_line[1],
-                      'spec_trs': split_line[2:]}
-            sections[-1]['switches'].append(switch)
+            switch = {'label': split_line[1]}
+            sections[-1]['nodes'][-1]['switches'].append(switch)
 
     lt_top_raw = {'blocks': blocks,
                   'NDZs': NDZs,
@@ -96,35 +102,75 @@ def zltParser(station_label):
     return lt_top_raw
 
 
-def inferNdeSigns(lt_top_raw):
-    """Infer implicit node signs and add them to lt_top_raw.
+def inferNdeSigns(layout_raw):
+    """Infer node signs and add them to lt_top_raw.
 
     Parameters
     ----------
     lt_top_raw : dict
-        Layout's topography with implicit node signs.
+        Layout's topography without node signs.
 
     Returns
     -------
     dict
-        Layout's topography with explicit node signs.
+        Layout with explicit node signs.
     """
-    lt_top = deepcopy(lt_top_raw)
+    layout = deepcopy(layout_raw)
 
-    for section in lt_top['sections']:
+    for section in layout['sections']:
         counter = 0
 
         for node in section['nodes']:
             counter += 1
             index = node['index']
 
-            if index == 'A':
-                node['index'] = 'A+'
+            if len(index) == 1:
 
-            elif counter == len(section['nodes']) and len(index) == 1:
-                node['index'] = index + '-'
+                if index == 'A':
+                    node['index'] = 'A+'
 
-    return lt_top
+                elif counter == len(section['nodes']):
+                    node['index'] = index + '-'
+
+                else:
+
+                    for switch in node['switches']:
+                        if switch['lr_pk'] is not None:
+
+                            if node['pk'] > switch['point_pk']:
+                                node['index'] = index + '+'
+
+                            else:
+                                node['index'] = index + '-'
+
+        for node in section['nodes']:
+            index = node['index']
+
+            if len(index) == 1:
+
+                for node2 in deepcopy(section['nodes']):
+                    index2 = node2['index']
+
+                    if (len(node2['switches']) == 0 and
+                            len(node2['index']) != 1):
+
+                        if index2[-1] == '+':
+                            node['index'] = index + '-'
+
+                        else:
+                            node['index'] = index + '+'
+
+                    elif (len(node2['switches']) == 0 and
+                            node2['index'] > node['index']):
+                        node['index'] = index + '+'
+                        node2['index'] = index2 + '-'
+
+                    elif (len(node2['switches']) == 0 and
+                            node2['index'] < node['index']):
+                        node['index'] = index + '-'
+                        node2['index'] = index2 + '+'
+
+    return layout
 
 
 def zlgParser(station_label):
@@ -211,24 +257,24 @@ def zlgParser(station_label):
     return lt_geo
 
 
-def layoutAssembler(lt_top, lt_geo):
+def layoutAssembler(lt_top_raw, lt_geo):
     """Unify topographic and geometric data in a single dictionary.
 
     Parameters
     ----------
-    lt_top : dict
-        Topographic layout information.
+    lt_top_raw : dict
+        Topographic layout information without node signs.
     lt_geo : dict
         Geometric layout information.
 
     Returns
     -------
     dict
-        Unified description of the layout.
+        Unified description of the layout without node signs.
     """
-    layout = deepcopy(lt_top)
+    layout_raw = deepcopy(lt_top_raw)
 
-    for lt_top_section in layout['sections']:
+    for lt_top_section in layout_raw['sections']:
 
         for lt_geo_section in lt_geo['sections']:
 
@@ -238,6 +284,17 @@ def layoutAssembler(lt_top, lt_geo):
                 for node in lt_top_section['nodes']:
                     node['pk'] = lt_geo_section['node_pks'][index]
                     index += 1
+
+                    for lt_geo_switch in lt_geo['switches']:
+
+                        for lt_top_switch in node['switches']:
+
+                            if lt_top_switch['label'] ==\
+                                    lt_geo_switch['label']:
+                                lt_top_switch['point_pk'] =\
+                                    lt_geo_switch['point_pk']
+                                lt_top_switch['lr_pk'] =\
+                                    lt_geo_switch['lr_pk']
 
                     for lt_geo_signal in lt_geo['signals']:
 
@@ -251,7 +308,7 @@ def layoutAssembler(lt_top, lt_geo):
                                 node['signal']['zap_origin_sft_fac'] = \
                                     lt_geo_signal['zap_origin_sft_fac']
 
-                        for block in layout['blocks']:
+                        for block in layout_raw['blocks']:
 
                             if block['signal'] is not None:
 
@@ -263,7 +320,7 @@ def layoutAssembler(lt_top, lt_geo):
                                     block['signal']['zap_origin_sft_fac'] = \
                                         lt_geo_signal['zap_origin_sft_fac']
 
-                        for ndz in layout['NDZs']:
+                        for ndz in layout_raw['NDZs']:
 
                             if ndz['signal'] is not None:
 
@@ -275,15 +332,7 @@ def layoutAssembler(lt_top, lt_geo):
                                     ndz['signal']['zap_origin_sft_fac'] = \
                                         lt_geo_signal['zap_origin_sft_fac']
 
-        for lt_geo_switch in lt_geo['switches']:
-
-            for lt_top_switch in lt_top_section['switches']:
-
-                if lt_top_switch['label'] == lt_geo_switch['label']:
-                    lt_top_switch['point_pk'] = lt_geo_switch['point_pk']
-                    lt_top_switch['lr_pk'] = lt_geo_switch['lr_pk']
-
-    return layout
+    return layout_raw
 
 
 def zopParser(label):
@@ -644,8 +693,8 @@ def sigDecoder(sig_table, layout):
                     circ = True if 'S' in row['signal'] else False
                     shunt = True if 'M' in row['signal'] else False
                     ILM = True if row['signal'] == 'M' else False
-                    pedal = node['signal']['pedal']
-                    RW = node['signal']['RW']
+                    pedal = block_dict['signal']['pedal']
+                    RW = block_dict['signal']['RW']
                     block = True if row['signal'] in blocks else False
                     NDZ = True if row['signal'] in NDZs else False
                     terminal = True if row['signal'] in secs else False
@@ -667,8 +716,8 @@ def sigDecoder(sig_table, layout):
                     circ = True if 'S' in row['signal'] else False
                     shunt = True if 'M' in row['signal'] else False
                     ILM = True if row['signal'] == 'M' else False
-                    pedal = node['signal']['pedal']
-                    RW = node['signal']['RW']
+                    pedal = block_dict['signal']['pedal']
+                    RW = block_dict['signal']['RW']
                     block = True if row['signal'] in blocks else False
                     NDZ = True if row['signal'] in NDZs else False
                     terminal = True if row['signal'] in secs else False
@@ -761,9 +810,7 @@ def connectedSections(section_lbl, rel_position, adjacency_data):
     Returns
     -------
     list
-        List of dictionaries, one for each absolute origin, containing the
-        respective label and a "low" or "high" "place" key, for weather the
-        absolute origin is of ascending or descending itinieraries.
+        List of all connected sections at the specified relative position.
     """
     corresp = {'upstream': 1,
                'downstream': -1}
@@ -818,7 +865,225 @@ def transitFinder(section_prior, section_crossed, section_after, layout):
     return transit
 
 
-def pathFinder(adjacency_data, abs_origins, layout):
+def impossibleTransits(layout):
+    """Identify transits that are impossible due to TJS and analogue elements.
+
+    Parameters
+    ----------
+    layout : dict
+        Description of the station's layout.
+
+    Returns
+    -------
+    list
+        List of dictionaries, each containing a section where a legal but
+        impossible transit exists, as well as the transit itself.
+    """
+    imp_trans = []
+
+    for section in layout['sections']:
+        last_found = []
+
+        for node in section['nodes']:
+
+            if node['TJS_weak_nde']:
+                weak_node_index = node['index'][0]
+                weak_node_sign = node['index'][-1]
+
+                for node2 in section['nodes']:
+
+                    for switch in node2['switches']:
+
+                        if (switch['lr_pk'] is not None and
+                                node2['index'][-1] != weak_node_sign):
+                            trans1 = node2['index'][0] + weak_node_index
+                            trans2 = trans1[::-1]
+                            last_found.append(trans1)
+                            last_found.append(trans2)
+
+        if last_found:
+            imp_trans.append({'section': section['label'],
+                              'imp_trans': last_found})
+
+    return imp_trans
+
+
+def impTransEnforcer(paths, imp_trans):
+    """Remove impossible transits from paths list.
+
+    Parameters
+    ----------
+    paths : list
+        List of all possible paths in the station.
+    """
+    imp_paths = []
+
+    for imp_trans_inspected in imp_trans:
+
+        for path in paths:
+
+            for i in range(len(path['path_secs'])):
+
+                if imp_trans_inspected['section'] == path['path_secs'][i]:
+
+                    for transit in imp_trans_inspected['imp_trans']:
+
+                        if transit == path['path_transits'][i]:
+                            imp_paths.append(path)
+
+    for imp_path in imp_paths:
+        paths.pop(paths.index(imp_path))
+
+
+def switchPositionFinder(path, layout):
+    """Find required switch positions for a given path.
+
+    Parameters
+    ----------
+    path : dict
+        Dictionary containing the sections crossed by a given path, as well as
+        the respective transits.
+    layout : dict
+        Description of the station's layout.
+
+    Returns
+    -------
+    list
+        List of dictionaries, each relative to a switch that needs to be set.
+        The dictionaries contain the switch's label and the required position
+        (+ for normal or - for reverse).
+    """
+    switch_positions = []
+
+    for i in range(len(path['path_secs'])):
+        section_lbl = path['path_secs'][i]
+        transit_lbl = path['path_transits'][i]
+
+        if transit_lbl is None:
+            continue
+
+        for section in layout['sections']:
+
+            if section['label'] == section_lbl:
+
+                for node in section['nodes']:
+
+                    for switch in node['switches']:
+
+                        if node['index'][0] in transit_lbl:
+                            SWI_pos = '-'
+
+                        else:
+                            SWI_pos = '+'
+
+                        switch_data = {'SWI_lbl': switch['label'],
+                                       'SWI_pos': SWI_pos}
+                        switch_positions.append(switch_data)
+
+    return switch_positions
+
+
+def isContiguous(section1, section2, adjacency_data):
+    """Find if two sections are contiguous.
+
+    Parameters
+    ----------
+    section1 : str
+        Label of the first section to be evaluated.
+    section2 : str
+        Label of the second section to be evaluated.
+    adjacency_data : dict
+        Dictionary containing the adjacency matrix (as a Numpy Array) and a
+        list of the layout elements, indexed congruently with the adjacency
+        matrix.
+
+    Returns
+    -------
+    bool
+        True if the two sections are contiguous, False otherwise.
+    """
+    section1_idx = adjacency_data['index_map'].index(section1)
+    section2_idx = adjacency_data['index_map'].index(section2)
+
+    if adjacency_data['matrix'][section1_idx, section2_idx].item() != 0:
+
+        return True
+
+    return False
+
+
+def crossesSwitchBranch(sec_lbl, transit, layout):
+    """Find if a transit crosses a switch branch.
+
+    Parameters
+    ----------
+    sec_lbl : str
+        Label of the section to be evaluated.
+    transit : str
+        Transit through the section to be evaluated.
+    layout : dict
+        Description of the station's layout.
+
+    Returns
+    -------
+    bool
+        True if a switch branch is crossed, False otherwise.
+    """
+    for section in layout['sections']:
+
+        if sec_lbl == section['label']:
+
+            for node in section['nodes']:
+
+                if node['switches']:
+
+                    if node['index'][0] in transit:
+
+                        return True
+    return False
+
+
+def antiHorseNeck(paths, layout, adjacency_data):
+    """Find if two sections are contiguous.
+
+    Parameters
+    ----------
+    paths : list
+        List of all possible paths in the station.
+    layout : dict
+        Description of the station's layout.
+    adjacency_data : dict
+        Dictionary containing the adjacency matrix (as a Numpy Array) and a
+        list of the layout elements, indexed congruently with the adjacency
+        matrix.
+    """
+    for path in paths:
+        candidate = []
+
+        for i in range(len(path['path_secs'])):
+
+            sec_lbl = path['path_secs'][i]
+            transit = path['path_transits'][i]
+
+            if crossesSwitchBranch(sec_lbl, transit, layout):
+
+                if len(candidate) < 4:
+                    candidate.append(sec_lbl)
+
+                else:
+                    candidate.pop(0)
+                    candidate.append(sec_lbl)
+
+            else:
+                candidate = []
+
+            if len(candidate) == 4:
+
+                if isContiguous(candidate[0], candidate[-1], adjacency_data):
+                    paths.pop(paths.index(path))
+
+
+def pathFinder(adjacency_data, abs_origins, layout, imp_trans):
     """Find all possible paths (transit sequences) in the station.
 
     Parameters
@@ -849,6 +1114,7 @@ def pathFinder(adjacency_data, abs_origins, layout):
     for tamp_sec in abs_origins:
         path = {'path_secs': [tamp_sec['label']],
                 'path_transits': [None],
+                'switch_positions': None,
                 'direction': 'asc' if tamp_sec['place'] == 'low' else 'desc'}
 
         paths.append(path)
@@ -892,89 +1158,167 @@ def pathFinder(adjacency_data, abs_origins, layout):
 
         path['path_transits'].append(None)
 
+        switch_positions = switchPositionFinder(path, layout)
+        path['switch_positions'] = switch_positions
+
+    impTransEnforcer(paths, imp_trans)
+    antiHorseNeck(paths, layout, adjacency_data)
+
     return paths
 
 
-def MainITFinder(paths, sig_table):
-    """Return Main itineraries, route sections and possible OL sections."""
-    main_its = []
+def ITFinder(paths, signals):
+    """Find all possible itineraries in the station.
+
+    Parameters
+    ----------
+    paths : list
+        List of all possible paths in the station.
+    signals : Pandas Dataframe
+        Signal table containing the possible itinerary types departing from
+        and arriving to each signal.
+
+    Returns
+    -------
+    list
+        List of dictionaries, each relative to a possible itinerary.
+    """
+    its = []
     it = {'lbl': None,
           'path_index': None,
+          'direction': None,
           'origin': None,
           'destiny': None,
           'type': None,
           'route_secs': None,
           'possible_OL_path': None}
 
-    for i in range(len(paths)):
-        sections = paths[i]['path_secs']
-        direction = paths[i]['direction']
-        candidates = []
-        route_secs = []
-        prev_sec = None
+    for IT_type in ['Main', 'DOS', 'Shunt']:
 
-        for section in sections:
-            new_candidates = list(sig_table.loc[
-                                 (sig_table.section == section) &
-                                 (sig_table.direction == direction) &
-                                 (sig_table.prev_sec == prev_sec)].signal)
-            prev_sec = section
+        for i in range(len(paths)):
+            sections = paths[i]['path_secs']
+            direction = paths[i]['direction']
+            candidates = []
+            route_secs = []
+            prev_sec = None
 
-            if len(candidates) == 0 and len(new_candidates) != 0:
-                route_secs.append(section)
+            for section in sections:
 
-                for sig in new_candidates:
-                    candidates.append(sig)
+                possible_new_candidates = list(signals.loc[
+                                             (signals.section == section) &
+                                             (signals.direction ==
+                                              direction) &
+                                             (signals.prev_sec ==
+                                              prev_sec)]
+                    .signal)
 
-            elif len(candidates) != 0 and len(new_candidates) == 0:
+                new_candidates = []
 
-                route_secs.append(section)
+                if len(candidates) == 0:
 
-            elif len(candidates) != 0 and len(new_candidates) != 0:
+                    for i in range(len(possible_new_candidates)):
+                        possible_origin =\
+                            signals.loc[signals.signal ==
+                                        possible_new_candidates[i]].\
+                            possible_origin.iloc[0]
 
-                for origin_sig in candidates:
+                        if IT_type[0] in possible_origin:
+                            new_candidates.append(possible_new_candidates[i])
 
-                    for destiny_sig in new_candidates:
+                else:
 
-                        new_it = deepcopy(it)
+                    for i in range(len(possible_new_candidates)):
+                        possible_destiny =\
+                            signals.loc[signals.signal ==
+                                        possible_new_candidates[i]].\
+                            possible_destiny.iloc[0]
 
-                        new_it['lbl'] = origin_sig + '-' + destiny_sig
-                        new_it['path_index'] = i
-                        new_it['origin'] = origin_sig
-                        new_it['destiny'] = destiny_sig
-                        new_it['type'] = 'Main'
-                        new_it['route_secs'] = route_secs
+                        if IT_type[0] in possible_destiny:
+                            new_candidates.append(possible_new_candidates[i])
 
-                        last_route_sec_idx = sections.index(route_secs[-1])
-                        possible_OL_path = sections[last_route_sec_idx + 1:]
-                        new_it['possible_OL_path'] = possible_OL_path
+                prev_sec = section
 
-                        main_its.append(new_it)
+                if len(candidates) == 0 and len(new_candidates) != 0:
 
-                candidates = []
-                route_secs = []
-                route_secs.append(section)
+                    route_secs.append(section)
 
-                for sig in new_candidates:
-                    candidates.append(sig)
+                    for sig in new_candidates:
+                        candidates.append(sig)
 
-    return main_its
+                elif len(candidates) != 0 and len(new_candidates) == 0:
+
+                    route_secs.append(section)
+
+                elif len(candidates) != 0 and len(new_candidates) != 0:
+
+                    for origin_sig in candidates:
+
+                        for destiny_sig in new_candidates:
+
+                            new_it = deepcopy(it)
+
+                            new_it['lbl'] = origin_sig + '-' + destiny_sig
+                            new_it['path_index'] = i
+                            new_it['direction'] = direction
+                            new_it['origin'] = origin_sig
+                            new_it['destiny'] = destiny_sig
+                            new_it['type'] = IT_type
+                            new_it['route_secs'] = route_secs
+
+                            last_route_sec_idx = sections.index(route_secs[-1])
+                            possible_OL_path =\
+                                sections[last_route_sec_idx + 1:]
+                            new_it['possible_OL_path'] = possible_OL_path
+
+                            its.append(new_it)
+
+                    candidates = []
+                    route_secs = []
+                    route_secs.append(section)
+
+                    for sig in new_candidates:
+                        candidates.append(sig)
+
+    return its
 
 
-station_label = 'MAL'
+station_label = 'CIS'
 
 lt_top_raw = zltParser(station_label)
-lt_top = inferNdeSigns(lt_top_raw)
 lt_geo = zlgParser(station_label)
 
-layout = layoutAssembler(lt_top, lt_geo)
+layout_raw = layoutAssembler(lt_top_raw, lt_geo)
+
+layout = inferNdeSigns(layout_raw)
 
 parameters = zopParser('GENERAL')
 
 adjacency_data = adjacency(layout)
 sig_table = sigTable(layout)
+signals = sigDecoder(sig_table, layout)
 abs_origins = absoluteOrigins(layout)
 
-paths = pathFinder(adjacency_data, abs_origins, layout)
+imp_trans = impossibleTransits(layout)
+paths = pathFinder(adjacency_data, abs_origins, layout, imp_trans)
 
-main_its = MainITFinder(paths, sig_table)
+its = ITFinder(paths, signals)
+
+m = []
+d = []
+s = []
+for it in its:
+    if it['direction'] == 'asc':
+        if it['type'] == 'Main':
+            m.append(it['lbl'])
+        elif it['type'] == 'DOS':
+            d.append(it['lbl'])
+        elif it['type'] == 'Shunt':
+            s.append(it['lbl'])
+for it in its:
+    if it['direction'] == 'desc':
+        if it['type'] == 'Main':
+            m.append(it['lbl'])
+        elif it['type'] == 'DOS':
+            d.append(it['lbl'])
+        elif it['type'] == 'Shunt':
+            s.append(it['lbl'])
