@@ -1,0 +1,76 @@
+Description of the layout (.Zlt) encoding file:
+
+The file encodes relevant information related to a railway infrastructure
+layout in human readable text.
+Several stations can be encoded in the same file.
+
+General rules:
+    1) There shall exist no leading or trailing white spaces
+    2) There shall exist no empty paragraphs
+    3) When several statements are inserted on the same line, they are separated
+        by white spaces. This includes standard keys
+    4) Station names are 3 uppercase characters long (no white spaces)
+    5) Block names are 8 or 9 uppercase characters long (no white spaces)
+
+Each line of the file starts with a standard key. Rules will be explained in
+the description of each key:
+
+1) BLOCK
+    Description:
+        States the existance of a block entity.
+        There is no encoding of block sub elements, it serves only to make possible
+        operations involving exits of stations.
+    Rules:
+        After the BLOCK key, insert the block name.
+        The block name is as follows:
+            Block with normal direction:
+                CE"Station_1""Station_2""Direction"
+                e.g. CESAOMELD
+                Station_1 and Station_2 depend on the block's normal direction.
+                Station_1 is the departure station.
+                Direction is the letter "A" or "D", for ascending or descending.
+            Block without normal direction:
+                CE"Station_1""Station_2"
+                e.g. CEBPFMAF
+                Station_1 and Station_2 assume an ascending direction.
+                Station_1 is the departure station.
+                
+2) STATION
+    Description:
+        States the existance of a station entity. All other keys except for BLOCK
+        are dependent on a STATION key. This hierarchical relationship is described 
+        by the key position throughout lines. Every key under a STATION key is 
+        attributed to the above station, until another STATION key is stated, or a
+        BLOCK key is stated.
+    Rules:
+        After the STATION key, insert the 3 character station name
+            
+3) SECTION
+    Description:
+        Describes a track section. It can only exist under a STATION key. All other
+        keys except for BLOCK and STATION are dependent on a SECTION key.
+        This hierarchical relationship is described by the key position throughout
+        lines. Every key under a SECTION key is attributed to the above section,
+        until another SECTION key is stated, or a BLOCK/STATION key is stated.
+        
+4) NODE
+    Description:
+        Describes a node of a track section. A section must have at least one node,
+            without any predefined limit of its number of nodes.
+            For ordinary sections (equiped qith train detection systems), a node is
+            a point where a section ends, and potentially interfaces with another section.
+            For sections without detection, or groups of sections without detection, the 
+            node is the point of interface with sections containing detection equipment.
+            
+            The syntax required by the NODE key is dependent on the type of node it encodes.
+            
+                1) Ordinary node (between detectes, fully connected sections):
+                    NODE [node_letter] [node PK] [connected section] [connected section node letter]
+                    
+                2) Terminal node: 
+                    NODE [node_letter] [node PK]
+                    
+                Note: sections without detection shall have only the interface node encoded
+                    (these sections will have only one node encoded, irrespective of them
+                    being terminal or groups of no detection sections)
+        

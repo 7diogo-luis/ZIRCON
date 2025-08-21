@@ -1,0 +1,24 @@
+BLK BPF
+SEC 1
+    NDE A I
+        SWP S6
+        SWI 1
+    NDE B II
+        SWP S4
+    NDE C BPF
+        SWP S1
+SEC I
+    NDE A 2
+    NDE B 1
+SEC II
+    NDE A 2
+    NDE B 1
+SEC 2
+    NDE A MAL
+        SWP S2
+    NDE B II
+        SWP S3
+    NDE C I
+        SWP S5
+        SWI 2
+BLK MAL
