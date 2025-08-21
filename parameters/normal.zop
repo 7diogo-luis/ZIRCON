@@ -1,0 +1,11 @@
+regimes_to_block Main DOS
+regimes_to_NDZ DOS Shunt
+regimes_to_terminal Main DOS Shunt
+terminal_branches_are_destinations False
+overlap_to_terminal_branch True
+main_ol_distance 150
+dos_ol_distance 50
+shunt_ol_distance 50
+horse_neck_possible False
+logic_ol_possible_regimes Shunt
+ol_considers_switch_point True
