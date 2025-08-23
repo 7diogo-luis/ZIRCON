@@ -5,7 +5,7 @@ from copy import deepcopy
 
 
 def spatialEngine(layout, allow_terminal_branches, HN_possible):
-    """Assemble the adjacency matrix of the station's layout.
+    """Abstract station's layout, returning all possible paths and aux info.
 
     Parameters
     ----------

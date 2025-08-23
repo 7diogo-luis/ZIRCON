@@ -36,7 +36,8 @@ def router(paths, signals, layout, m_OL, d_OL, s_OL, viable_logic_OL,
 
     unlbld_its = logicOL(no_logic_OL_its, layout, viable_logic_OL,
                          consider_swi_pnt_pk_logic_OL, m_OL, d_OL, s_OL)
-    its = ITLabeler(unlbld_its, layout)
+    unconsolidated_its = ITLabeler(unlbld_its, layout)
+    its = ITConsolidator(unconsolidated_its)
 
     return its
 
@@ -836,6 +837,42 @@ def logicOL(no_logic_OL_its, layout, viable_logic_OL,
     return unlbld_its
 
 
+def aggregatedLabel(unlbld_its):
+    """Include special IT info on each IT.
+
+    Parameters
+    ----------
+    unlbld_its : list
+        List of dictionaries, each relative to a possible itinerary
+        (unlabeled).
+    """
+    for it in unlbld_its:
+
+        if it['destiny_alias'] is None:
+            destiny_lbl = it['destiny']
+
+        else:
+            destiny_lbl = it['destiny_alias']
+
+        route_lbl = it['origin'] + '-' + destiny_lbl
+        alt_route_lbl = 'ALT' if it['alt_route'] else ''
+        alt_OL_lbl = it['alt_OL'] if it['alt_OL'] is not None else ''
+        type_lbl = it['type']
+        special_lbl = 'IE' if it['special'] else ''
+
+        labels = [alt_route_lbl, alt_OL_lbl, type_lbl, special_lbl]
+        aggregated_label = route_lbl + ' '
+
+        for label in labels:
+
+            if aggregated_label[-1] != ' ' and label != '':
+                aggregated_label += ' '
+
+            aggregated_label += label
+
+        it['label'] = aggregated_label
+
+
 def ITLabeler(unlbld_its, layout):
     """Add labels to itinerary dictionaries.
 
@@ -849,11 +886,57 @@ def ITLabeler(unlbld_its, layout):
     -------
     list
         List of dictionaries, each relative to a possible itinerary.
+        Unconsolidated structure.
     """
-    its = deepcopy(unlbld_its)
+    unconsolidated_its = deepcopy(unlbld_its)
 
-    altOLlabeler(its)
-    altRouteLabeler(its)
-    specialITLabeler(its, layout)
+    altOLlabeler(unconsolidated_its)
+    altRouteLabeler(unconsolidated_its)
+    specialITLabeler(unconsolidated_its, layout)
+    aggregatedLabel(unconsolidated_its)
+
+    return unconsolidated_its
+
+
+def ITConsolidator(unconsolidated_its):
+    """Add labels to itinerary dictionaries.
+
+    Parameters
+    ----------
+    unconsolidated_its : list
+        List of dictionaries, each relative to a possible itinerary.
+        Unconsolidated structure.
+
+    Returns
+    -------
+    list
+        List of dictionaries, each relative to a possible itinerary.
+    """
+    its = []
+
+    for it in unconsolidated_its:
+        it_dict = {}
+        it_dict['label'] = it['label']
+        it_dict['origin'] = it['origin']
+        it_dict['destiny'] = {'literal': it['destiny'],
+                              'alias': it['destiny_alias']}
+        it_dict['type'] = it['type']
+        it_dict['direction'] = it['direction']
+        it_dict['logic_overlap'] = it['logic_OL']
+        it_dict['sections'] = {'route': it['route_secs'],
+                               'overlap': it['OL_secs']}
+        it_dict['transits'] = {'route': it['route_transits'],
+                               'overlap': it['OL_transits']}
+        it_dict['switches'] = {'route': it['route_switches'],
+                               'overlap': it['OL_switches']}
+        it_dict['aux'] = {'path_index': it['path_index'],
+                          'possible_OL_path': it['possible_OL_path'],
+                          'possible_OL_transits': it['possible_OL_transits'],
+                          'possible_OL_switches': it['possible_OL_switches'],
+                          'alt_OL': it['alt_OL'],
+                          'alt_route': it['alt_route'],
+                          'special': it['special']}
+
+        its.append(deepcopy(it_dict))
 
     return its
