@@ -260,8 +260,13 @@ def zopParser(parameters_label):
         elif split_line[0] == 'logic_ol_possible_regimes':
             parameters['logic_ol_possible_regimes'] = split_line[1:]
 
-        elif split_line[0] == 'ol_considers_switch_point':
-            parameters['ol_considers_switch_point'] = str2bool(split_line[-1])
+        elif split_line[0] == 'logic_ol_switch_point_dependant':
+            parameters['logic_ol_switch_point_dependant'] =\
+                str2bool(split_line[-1])
+
+        elif split_line[0] == 'allow_distant_switch_OL_lock':
+            parameters['allow_distant_switch_OL_lock'] =\
+                str2bool(split_line[-1])
 
     return parameters
 

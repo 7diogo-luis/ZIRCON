@@ -33,9 +33,9 @@ def core(layout, parameters, debug_mode):
     its = router(paths, signals, layout, parameters['main_ol_distance'],
                  parameters['dos_ol_distance'],
                  parameters['shunt_ol_distance'],
-                 True, parameters['logic_ol_possible_regimes'],
-                 parameters['ol_considers_switch_point'],
-                 point_pk_threshold=50)
+                 parameters['logic_ol_possible_regimes'],
+                 parameters['logic_ol_switch_point_dependant'],
+                 parameters['allow_distant_switch_OL_lock'])
 
     if debug_mode:
         return {'signals': signals,

@@ -126,7 +126,7 @@ def sigTable(layout, allow_terminal_branches):
                             {'signal': signal,
                              'section': section_lbl,
                              'direction': direction,
-                             'virtual': True,
+                             'virtual': False,
                              'prev_sec': prev_sec}
 
     for ndz_dict in layout['NDZs']:
@@ -148,7 +148,7 @@ def sigTable(layout, allow_terminal_branches):
                             {'signal': signal,
                              'section': section_lbl,
                              'direction': direction,
-                             'virtual': True,
+                             'virtual': False,
                              'prev_sec': prev_sec}
 
     return sig_table

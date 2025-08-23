@@ -40,7 +40,8 @@ def spatialEngine(layout, allow_terminal_branches, HN_possible):
     else:
         raw_paths = raw_paths_w_HN
 
-    paths = addVirtualTransits(raw_paths, layout)
+    paths_wo_swi_pos = addVirtualTransits(raw_paths, layout)
+    paths = switchPositionFinder(paths_wo_swi_pos, layout)
 
     return paths
 
@@ -311,7 +312,7 @@ def impTransEnforcer(raw_paths_w_imp_trans_HN, imp_trans):
     return raw_paths_w_HN
 
 
-def switchPositionFinder(path, layout):
+def switchPositionFinder(paths_wo_swi_pos, layout):
     """Find required switch positions for a given path.
 
     Parameters
@@ -329,35 +330,40 @@ def switchPositionFinder(path, layout):
         The dictionaries contain the switch's label and the required position
         (+ for normal or - for reverse).
     """
-    switch_positions = []
+    paths = deepcopy(paths_wo_swi_pos)
 
-    for i in range(len(path['path_secs'])):
-        section_lbl = path['path_secs'][i]
-        transit_lbl = path['path_transits'][i]
+    for path in paths:
+        switch_positions = []
 
-        if transit_lbl is None:
-            continue
+        for i in range(len(path['path_secs'])):
+            section_lbl = path['path_secs'][i]
+            transit_lbl = path['path_transits'][i]
 
-        for section in layout['sections']:
+            if transit_lbl is None:
+                continue
 
-            if section['label'] == section_lbl:
+            for section in layout['sections']:
 
-                for node in section['nodes']:
+                if section['label'] == section_lbl:
 
-                    for switch in node['switches']:
+                    for node in section['nodes']:
 
-                        if node['index'][0] in transit_lbl:
-                            SWI_pos = '-'
+                        for switch in node['switches']:
 
-                        else:
-                            SWI_pos = '+'
+                            if node['index'][0] in transit_lbl:
+                                SWI_pos = '-'
 
-                        switch_data = {'SWI_lbl': switch['label'],
-                                       'SWI_pos': SWI_pos,
-                                       'sec_lbl': section_lbl}
-                        switch_positions.append(switch_data)
+                            else:
+                                SWI_pos = '+'
 
-    return switch_positions
+                            switch_data = {'SWI_lbl': switch['label'],
+                                           'SWI_pos': SWI_pos,
+                                           'sec_lbl': section_lbl}
+                            switch_positions.append(switch_data)
+
+        path['switch_positions'] = switch_positions
+
+    return paths
 
 
 def isContiguous(section1, section2, adjacency_data):
@@ -560,7 +566,6 @@ def pathFinder(adjacency_data, abs_origins, layout, imp_trans):
     for tamp_sec in abs_origins:
         path = {'path_secs': [tamp_sec['label']],
                 'path_transits': [None],
-                'switch_positions': None,
                 'direction': 'asc' if tamp_sec['place'] == 'low' else 'desc'}
 
         raw_paths_w_imp_trans_HN.append(path)
@@ -614,9 +619,6 @@ def pathFinder(adjacency_data, abs_origins, layout, imp_trans):
 
         path['path_transits'].append(None)
 
-        switch_positions = switchPositionFinder(path, layout)
-        path['switch_positions'] = switch_positions
-
     return raw_paths_w_imp_trans_HN
 
 
@@ -647,9 +649,9 @@ def addVirtualTransits(raw_paths, layout):
         Finally, "direction" is the path's direction.
     """
     sections = [section['label'] for section in layout['sections']]
-    paths = deepcopy(raw_paths)
+    paths_wo_swi_pos = deepcopy(raw_paths)
 
-    for path in paths:
+    for path in paths_wo_swi_pos:
 
         if path['path_secs'][-1] in sections:
 
@@ -668,4 +670,4 @@ def addVirtualTransits(raw_paths, layout):
             last_transit = entry_node_index + terminal_node_index
             path['path_transits'][-1] = last_transit
 
-    return paths
+    return paths_wo_swi_pos

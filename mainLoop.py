@@ -7,7 +7,15 @@ debug_mode = False
 while True:
     output = controller(debug_mode)
 
-    if output == 'exit' or type(output) is dict:
+    if output == 'exit':
+        break
+
+    elif type(output) is dict:
+        layout = output['inputLayer']['layout']
+        parameters = output['inputLayer']['parameters']
+        signals = output['core']['signals']
+        paths = output['core']['paths']
+        its = output['core']['its']
         break
 
     elif output == 'debug':
