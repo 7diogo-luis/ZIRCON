@@ -238,6 +238,9 @@ def zopParser(parameters_label):
         elif split_line[0] == 'regimes_to_terminal':
             parameters['regimes_to_terminal'] = split_line[1:]
 
+        elif split_line[0] == 'allow_shunt_to_circ_sig':
+            parameters['allow_shunt_to_circ_sig'] = str2bool(split_line[-1])
+
         elif split_line[0] == 'terminal_branches_are_destinations':
             parameters['terminal_branches_are_destinations'] =\
                 str2bool(split_line[-1])

@@ -5,7 +5,7 @@ from copy import deepcopy
 
 
 def signalProcessor(layout, allow_terminal_branches, reg_to_block, reg_to_ndz,
-                    reg_to_terminal):
+                    reg_to_terminal, allow_shunt_to_circ_sig):
     """Generate a table containing relevant info on real and virtual signals.
 
     Parameters
@@ -32,7 +32,7 @@ def signalProcessor(layout, allow_terminal_branches, reg_to_block, reg_to_ndz,
     """
     sig_table = sigTable(layout, allow_terminal_branches)
     signals = sigDecoder(sig_table, layout, reg_to_block, reg_to_ndz,
-                         reg_to_terminal)
+                         reg_to_terminal, allow_shunt_to_circ_sig)
 
     return signals
 
@@ -155,7 +155,7 @@ def sigTable(layout, allow_terminal_branches):
 
 
 def sigLogic(circ, shunt, ILM, pedal, RW, block, NDZ, terminal, reg_to_block,
-             reg_to_ndz, reg_to_terminal):
+             reg_to_ndz, reg_to_terminal, allow_shunt_to_circ_sig):
     """AUX. Derive signal abilities from flags.
 
     Parameters
@@ -185,6 +185,9 @@ def sigLogic(circ, shunt, ILM, pedal, RW, block, NDZ, terminal, reg_to_block,
     reg_to_terminal : list
         List of strings, each corresponding to a regime that is possible with a
         terminal section as destination.
+    allow_shunt_to_circ_sig : bool
+        True if shunting movements with circulation signals (no shunt lights)
+        as destinations are to be allowed. False otherwise.
 
     Returns
     -------
@@ -199,6 +202,9 @@ def sigLogic(circ, shunt, ILM, pedal, RW, block, NDZ, terminal, reg_to_block,
 
     if not shunt:
         S_origin = False
+
+        if not allow_shunt_to_circ_sig:
+            S_destiny = False
 
     if not pedal:
         D_origin = False
@@ -275,7 +281,8 @@ def sigLogic(circ, shunt, ILM, pedal, RW, block, NDZ, terminal, reg_to_block,
     return signal_abilities
 
 
-def sigDecoder(sig_table, layout, reg_to_block, reg_to_ndz, reg_to_terminal):
+def sigDecoder(sig_table, layout, reg_to_block, reg_to_ndz, reg_to_terminal,
+               allow_shunt_to_circ_sig):
     """Decode signal names and flags.
 
     Parameters
@@ -329,7 +336,8 @@ def sigDecoder(sig_table, layout, reg_to_block, reg_to_ndz, reg_to_terminal):
                         signal_abilities = sigLogic(circ, shunt, ILM, pedal,
                                                     RW, block, NDZ, terminal,
                                                     reg_to_block, reg_to_ndz,
-                                                    reg_to_terminal)
+                                                    reg_to_terminal,
+                                                    allow_shunt_to_circ_sig)
 
                         signals.loc[index, 'possible_origin'] =\
                             signal_abilities['possible_origin']
@@ -354,7 +362,8 @@ def sigDecoder(sig_table, layout, reg_to_block, reg_to_ndz, reg_to_terminal):
                     signal_abilities = sigLogic(circ, shunt, ILM, pedal,
                                                 RW, block, NDZ, terminal,
                                                 reg_to_block, reg_to_ndz,
-                                                reg_to_terminal)
+                                                reg_to_terminal,
+                                                allow_shunt_to_circ_sig)
 
                     signals.loc[index, 'possible_origin'] =\
                         signal_abilities['possible_origin']
@@ -379,7 +388,8 @@ def sigDecoder(sig_table, layout, reg_to_block, reg_to_ndz, reg_to_terminal):
                     signal_abilities = sigLogic(circ, shunt, ILM, pedal,
                                                 RW, block, NDZ, terminal,
                                                 reg_to_block, reg_to_ndz,
-                                                reg_to_terminal)
+                                                reg_to_terminal,
+                                                allow_shunt_to_circ_sig)
 
                     signals.loc[index, 'possible_origin'] =\
                         signal_abilities['possible_origin']
@@ -400,7 +410,8 @@ def sigDecoder(sig_table, layout, reg_to_block, reg_to_ndz, reg_to_terminal):
             signal_abilities = sigLogic(circ, shunt, ILM, pedal,
                                         RW, block, NDZ, terminal,
                                         reg_to_block, reg_to_ndz,
-                                        reg_to_terminal)
+                                        reg_to_terminal,
+                                        allow_shunt_to_circ_sig)
 
             signals.loc[index, 'possible_origin'] =\
                 signal_abilities['possible_origin']

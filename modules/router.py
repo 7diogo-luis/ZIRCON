@@ -617,6 +617,8 @@ def altOLlabeler(unlbld_its):
                 if (unlbld_its[i]['origin'] == unlbld_its[j]['origin'] and
                         unlbld_its[i]['destiny'] == unlbld_its[j]['destiny']
                         and unlbld_its[i]['type'] == unlbld_its[j]['type'] and
+                        unlbld_its[i]['route_secs'] ==
+                        unlbld_its[j]['route_secs'] and
                         unlbld_its[i]['OL_switches'] != unlbld_its[j]
                         ['OL_switches']):
 

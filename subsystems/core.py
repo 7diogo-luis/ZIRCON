@@ -27,7 +27,8 @@ def core(layout, parameters, debug_mode):
                               parameters['terminal_branches_are_destinations'],
                               parameters['regimes_to_block'],
                               parameters['regimes_to_NDZ'],
-                              parameters['regimes_to_terminal'])
+                              parameters['regimes_to_terminal'],
+                              parameters['allow_shunt_to_circ_sig'])
     paths = spatialEngine(layout, parameters['overlap_to_terminal_branch'],
                           parameters['horse_neck_possible'])
     its = router(paths, signals, layout, parameters['main_ol_distance'],
