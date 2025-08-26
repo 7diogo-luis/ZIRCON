@@ -65,7 +65,8 @@ def zltParser(station_label):
         elif split_line[0] == 'SEC':
             reading = 'section'
             section = {'label': split_line[1],
-                       'nodes': []}
+                       'nodes': [],
+                       'NDZ': True if 'NDZ' in split_line else False}
             sections.append(section)
 
         elif split_line[0] == 'NDE':

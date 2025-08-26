@@ -217,8 +217,8 @@ def transitFinder(section_prior, section_crossed, section_after, layout):
     return transit
 
 
-def impossibleTransits(layout):
-    """Identify transits that are impossible due to TJS and analogue elements.
+def TJS(layout):
+    """Identify transits that are impossible due to TJS.
 
     Parameters
     ----------
@@ -228,8 +228,8 @@ def impossibleTransits(layout):
     Returns
     -------
     list
-        List of dictionaries, each containing a section where a legal but
-        impossible transit exists, as well as the transit itself.
+        List of dictionaries, each containing a section where an impossible
+        transit due to TJS exists, as well as the transit itself.
     """
     imp_trans = []
 
@@ -260,6 +260,68 @@ def impossibleTransits(layout):
     return imp_trans
 
 
+def cross(layout):
+    """Identify transits that are impossible due to cross section.
+
+    Parameters
+    ----------
+    layout : dict
+        Description of the station's layout.
+
+    Returns
+    -------
+    list
+        List of dictionaries, each containing a section where an impossible
+        transit due to a cross section exists, as well as the transit itself.
+    """
+    imp_trans = []
+
+    for section in layout['sections']:
+        node_count = len(section['nodes'])
+
+        if node_count > 2:
+            is_cross = True
+
+            for node in section['nodes']:
+
+                for switch in node['switches']:
+
+                    if switch['lr_pk'] is not None:
+                        is_cross = False
+                        break
+
+        else:
+            is_cross = False
+
+        if is_cross:
+            imp_trans.append({'section': section['label'],
+                              'imp_trans': ['DA', 'AD', 'CB', 'BC']})
+
+    return imp_trans
+
+
+def impossibleTransits(layout):
+    """Identify all impossible transits.
+
+    Parameters
+    ----------
+    layout : dict
+        Description of the station's layout.
+
+    Returns
+    -------
+    list
+        List of dictionaries, each containing a section where an impossible
+        transit exists, as well as the transit itself.
+    """
+    imp_trans_TJS = TJS(layout)
+    imp_trans_cross = cross(layout)
+
+    imp_trans = imp_trans_TJS + imp_trans_cross
+
+    return imp_trans
+
+
 def impTransEnforcer(raw_paths_w_imp_trans_HN, imp_trans):
     """Remove impossible transits from paths list.
 
@@ -275,8 +337,8 @@ def impTransEnforcer(raw_paths_w_imp_trans_HN, imp_trans):
        sections don't have a virtual transit associated with the last section.
        Impossible transits at TJS and horse neck paths are included.
     imp_trans : list
-        List of dictionaries, each containing a section where a legal but
-        impossible transit exists, as well as the transit itself.
+        List of dictionaries, each containing a section where an impossible
+        transit exists, as well as the transit itself.
 
     Returns
     -------
