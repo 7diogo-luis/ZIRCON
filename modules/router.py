@@ -139,7 +139,9 @@ def ITFinder(paths, signals, layout):
                             new_it['origin'] = origin_sig
                             new_it['destiny'] = destiny_sig
 
-                            if 'M_' in destiny_sig:
+                            if ('M_' in destiny_sig or
+                                (IT_type == 'Shunt' and 'M'
+                                 not in destiny_sig)):
                                 new_it['destiny_alias'] =\
                                     signals.loc[signals.signal == destiny_sig]\
                                     .prev_sec.iloc[0]
@@ -590,14 +592,16 @@ def effectiveSwitches(transit, section_lbl, layout):
     return effective_switches
 
 
-def altOLlabeler(unlbld_its):
-    """Include alternative OL info on each IT.
+def altOLlabeler(unlbld_its, layout):
+    """Include alternative OL info in each IT.
 
     Parameters
     ----------
     unlbld_its : list
         List of dictionaries, each relative to a possible itinerary
         (unlabeled).
+    layout : dict
+        Description of the station's layout.
     """
     alt_OL_its = []
     captured = []
@@ -642,11 +646,25 @@ def altOLlabeler(unlbld_its):
 
             for switch in it['OL_switches']:
 
-                if len(alt_OL_lbl) > 0:
-                    alt_OL_lbl += '/'
+                swi_sec = switch['sec_lbl']
+                OL_sec_index = it['OL_secs'].index(swi_sec)
+                OL_transit = it['OL_transits'][OL_sec_index]
 
-                alt_OL_lbl += switch['SWI_lbl']
-                alt_OL_lbl += switch['SWI_pos']
+                effective_switches = effectiveSwitches(OL_transit,
+                                                       swi_sec,
+                                                       layout)
+                effective_switches_labels = []
+
+                for effective_switch in effective_switches:
+                    effective_switches_labels.append(effective_switch['label'])
+
+                if switch['SWI_lbl'] in effective_switches_labels:
+
+                    if len(alt_OL_lbl) > 0:
+                        alt_OL_lbl += '/'
+
+                    alt_OL_lbl += switch['SWI_lbl']
+                    alt_OL_lbl += switch['SWI_pos']
 
             unlbld_its[index]['alt_OL'] = alt_OL_lbl
 
@@ -654,77 +672,97 @@ def altOLlabeler(unlbld_its):
             unlbld_its[index]['alt_OL'] = None
 
 
-def altRouteLabeler(unlbld_its):
-    """Include alternative route info on each IT.
+def altRouteLabeler(unlbld_its, layout):
+    """Include alternative route info in each IT.
 
     Parameters
     ----------
     unlbld_its : list
         List of dictionaries, each relative to a possible itinerary
         (unlabeled).
+    layout : dict
+        Description of the station's layout.
     """
-    alt_route_its = []
-    captured = []
-    group_indices = []
-    not_alt = []
+    for it in unlbld_its:
+        it['alt_route'] = None
 
     for i in range(len(unlbld_its)):
 
-        if i in captured:
-            continue
-
         for j in range(len(unlbld_its)):
 
-            if j in captured:
-                continue
+            if (unlbld_its[i]['origin'] == unlbld_its[j]['origin'] and
+                    unlbld_its[i]['destiny'] == unlbld_its[j]['destiny']
+                    and unlbld_its[i]['type'] == unlbld_its[j]['type'] and
+                    unlbld_its[i]['route_switches'] != unlbld_its[j]
+                    ['route_switches']):
 
-            if i != j:
+                switches_at_diff_pos =\
+                    switchDifferences(unlbld_its[j]['route_switches'],
+                                      unlbld_its[i]['route_switches'])
 
-                if (unlbld_its[i]['origin'] == unlbld_its[j]['origin'] and
-                        unlbld_its[i]['destiny'] == unlbld_its[j]['destiny']
-                        and unlbld_its[i]['type'] == unlbld_its[j]['type'] and
-                        unlbld_its[i]['route_switches'] != unlbld_its[j]
-                        ['route_switches']):
-
-                    if unlbld_its[i] not in alt_route_its:
-                        alt_route_its.append(unlbld_its[i])
-                        group_indices.append([i])
-
-                    if unlbld_its[j] not in alt_route_its:
-                        alt_route_its.append(unlbld_its[j])
-                        group_indices[-1].append(j)
-
-                    if i not in captured:
-                        captured.append(i)
-
-                    if j not in captured:
-                        captured.append(j)
-
-    for group in group_indices:
-        rev_swi_counts = []
-
-        for index in group:
-            it = unlbld_its[index]
-            count = 0
-
-            for route_switch in it['route_switches']:
-
-                if route_switch['SWI_pos'] == '-':
-                    count += 1
-
-            rev_swi_counts.append(count)
-
-        not_alt.append(group[rev_swi_counts.index(max(rev_swi_counts))])
+                unlbld_its[j]['alt_route'] = switches_at_diff_pos
 
     for it in unlbld_its:
-        index = unlbld_its.index(it)
 
-        if it in alt_route_its and index not in not_alt:
+        if it['alt_route'] is not None:
 
-            unlbld_its[index]['alt_route'] = True
+            for diff_swi in it['alt_route']:
 
-        else:
-            unlbld_its[index]['alt_route'] = False
+                for route_switch in it['route_switches']:
+
+                    if route_switch['SWI_lbl'] == diff_swi['SWI_lbl']:
+                        section = route_switch['sec_lbl']
+
+                transit = it['route_transits'][it['route_secs'].index(section)]
+                effective_switches = effectiveSwitches(transit,
+                                                       section,
+                                                       layout)
+                eff_swi_lbls = [swi['label'] for swi in effective_switches]
+
+                if diff_swi['SWI_lbl'] not in eff_swi_lbls:
+                    it['alt_route'].remove(diff_swi)
+
+            alt_route_lbl = ''
+
+            for diff_swi in it['alt_route']:
+
+                if len(alt_route_lbl) > 0:
+                    alt_route_lbl += '/'
+
+                alt_route_lbl += diff_swi['SWI_lbl']
+                alt_route_lbl += diff_swi['SWI_pos']
+
+            it['alt_route'] = alt_route_lbl
+
+
+def switchDifferences(swi_group_1, swi_group_2):
+    """Return required switches common to both groups (at different positions).
+
+    Parameters
+    ----------
+    swi_group_1 : list
+        List of dictionaries, each relative to a required switch.
+    swi_group_2 : list
+        List of dictionaries, each relative to a required switch.
+
+    Returns
+    -------
+    list
+        List of dictionaries, each relative to a required switch that is common
+        to both groups, but required at different positions in both groups.
+    """
+    switches_at_diff_pos = []
+
+    for switch_1 in swi_group_1:
+
+        for switch_2 in swi_group_2:
+
+            if (switch_1['SWI_lbl'] == switch_2['SWI_lbl'] and
+                    switch_1['SWI_pos'] != switch_2['SWI_pos']):
+
+                switches_at_diff_pos.append(switch_1)
+
+    return switches_at_diff_pos
 
 
 def specialITLabeler(unlbld_its, layout):
@@ -840,7 +878,7 @@ def logicOL(no_logic_OL_its, layout, viable_logic_OL,
 
 
 def aggregatedLabel(unlbld_its):
-    """Include special IT info on each IT.
+    """Generate aggregated label for easy IT identification.
 
     Parameters
     ----------
@@ -857,12 +895,14 @@ def aggregatedLabel(unlbld_its):
             destiny_lbl = it['destiny_alias']
 
         route_lbl = it['origin'] + '-' + destiny_lbl
-        alt_route_lbl = 'ALT' if it['alt_route'] else ''
-        alt_OL_lbl = it['alt_OL'] if it['alt_OL'] is not None else ''
+        alt_route_lbl = '(Alt_Rt: ' + it['alt_route'] + ')'\
+            if it['alt_route'] is not None else ''
+        alt_OL_lbl = '(Alt_OL: ' + it['alt_OL'] + ')'\
+            if it['alt_OL'] is not None else ''
         type_lbl = it['type']
         special_lbl = 'IE' if it['special'] else ''
 
-        labels = [alt_route_lbl, alt_OL_lbl, type_lbl, special_lbl]
+        labels = [type_lbl, special_lbl, alt_route_lbl, alt_OL_lbl]
         aggregated_label = route_lbl + ' '
 
         for label in labels:
@@ -892,8 +932,8 @@ def ITLabeler(unlbld_its, layout):
     """
     unconsolidated_its = deepcopy(unlbld_its)
 
-    altOLlabeler(unconsolidated_its)
-    altRouteLabeler(unconsolidated_its)
+    altOLlabeler(unconsolidated_its, layout)
+    altRouteLabeler(unconsolidated_its, layout)
     specialITLabeler(unconsolidated_its, layout)
     aggregatedLabel(unconsolidated_its)
 

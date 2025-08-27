@@ -1,7 +1,7 @@
 regimes_to_block Main DOS
 regimes_to_NDZ DOS Shunt
 regimes_to_terminal Main DOS Shunt
-allow_shunt_to_circ_sig False
+allow_shunt_to_circ_sig True
 terminal_branches_are_destinations False
 overlap_to_terminal_branch True
 main_ol_distance 150
