@@ -300,6 +300,74 @@ def cross(layout):
     return imp_trans
 
 
+def mutuallyDisconnectedBranches(layout):
+    """Identify transits that are impossible due to fake TJD section.
+
+    Parameters
+    ----------
+    layout : dict
+        Description of the station's layout.
+
+    Returns
+    -------
+    list
+        List of dictionaries, each containing a section where an impossible
+        transit due to a fake TJD section exists, as well as the transit
+        itself.
+    """
+    imp_trans = []
+
+    for section in layout['sections']:
+
+        if (section['special_type'] == 'TJD' or
+                section['special_type'] == 'TJS' or
+                section['special_type'] == 'nested'):
+            continue
+
+        positive_branch_nodes = []
+        negative_branch_nodes = []
+
+        for node in section['nodes']:
+
+            for switch in node['switches']:
+
+                if switch['lr_pk'] is not None:
+
+                    if node['index'][-1] == '+':
+                        positive_branch_nodes.append({'index': node
+                                                      ['index'][0],
+                                                      'swi_pnt_pk': switch
+                                                      ['point_pk']})
+
+                    else:
+                        negative_branch_nodes.append({'index': node
+                                                      ['index'][0],
+                                                      'swi_pnt_pk': switch
+                                                      ['point_pk']})
+
+                    break
+
+        sec_imp_trans = []
+
+        for positive_branch_node in positive_branch_nodes:
+
+            for negative_branch_node in negative_branch_nodes:
+
+                if (positive_branch_node['swi_pnt_pk'] <
+                        negative_branch_node['swi_pnt_pk']):
+
+                    imp_trans_lbl = (positive_branch_node['index'] +
+                                     negative_branch_node['index'])
+                    sec_imp_trans.append(imp_trans_lbl)
+                    sec_imp_trans.append(imp_trans_lbl[::-1])
+
+        if sec_imp_trans:
+            imp_trans.append({'section': section['label'],
+                              'imp_trans': sec_imp_trans})
+
+    return imp_trans
+
+
 def impossibleTransits(layout):
     """Identify all impossible transits.
 
@@ -316,8 +384,9 @@ def impossibleTransits(layout):
     """
     imp_trans_TJS = TJS(layout)
     imp_trans_cross = cross(layout)
+    imp_trans_fake_TJD = mutuallyDisconnectedBranches(layout)
 
-    imp_trans = imp_trans_TJS + imp_trans_cross
+    imp_trans = imp_trans_TJS + imp_trans_cross + imp_trans_fake_TJD
 
     return imp_trans
 

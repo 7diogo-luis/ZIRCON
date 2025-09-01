@@ -20,7 +20,8 @@ def preProcessor(lt_top_raw, lt_geo):
     """
     lt_top_canonical = ILMLabelProc(lt_top_raw)
     layout_canonical = layoutAssembler(lt_top_canonical, lt_geo)
-    layout = inferNdeSigns(layout_canonical)
+    layout_implicit_TJS = inferNdeSigns(layout_canonical)
+    layout = flagTJS(layout_implicit_TJS)
 
     return layout
 
@@ -36,7 +37,7 @@ def inferNdeSigns(layout_canonical):
     Returns
     -------
     dict
-        Station's layout with explicit node signs.
+        Station's layout with explicit node signs and implicit TJS flag.
     """
     layout = deepcopy(layout_canonical)
 
@@ -213,3 +214,29 @@ def layoutAssembler(lt_top_canonical, lt_geo):
                                         lt_geo_signal['zap_origin_sft_fac']
 
     return layout_canonical
+
+
+def flagTJS(layout_implicit_TJS):
+    """Explicitlly flag TJS sections.
+
+    Parameters
+    ----------
+    layout_implicit_TJS : list
+        Station's layout with explicit node signs and implicit TJS flag.
+
+    Returns
+    -------
+    dict
+        Station's layout with explicit node signs.
+    """
+    layout = deepcopy(layout_implicit_TJS)
+
+    for section in layout['sections']:
+
+        for node in section['nodes']:
+
+            if node['TJS_weak_nde']:
+                section['special_type'] = 'TJS'
+                break
+
+    return layout
