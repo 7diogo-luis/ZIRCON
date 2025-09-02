@@ -71,6 +71,8 @@ def ITFinder(paths, signals, layout):
           'route_secs': None,
           'possible_OL_path': None}
     section_labels = [section['label'] for section in layout['sections']]
+    block_labels = [block['label'] for block in layout['blocks']]
+    NDZ_labels = [ndz['label'] for ndz in layout['NDZs']]
 
     for IT_type in ['Main', 'DOS', 'Shunt']:
 
@@ -143,7 +145,9 @@ def ITFinder(paths, signals, layout):
                             if ('M_' in destiny_sig or
                                 (IT_type == 'Shunt' and 'M'
                                  not in destiny_sig and destiny_sig not in
-                                 section_labels)):
+                                 section_labels and destiny_sig not in
+                                 block_labels and destiny_sig not in
+                                 NDZ_labels)):
                                 new_it['destiny_alias'] =\
                                     signals.loc[signals.signal == destiny_sig]\
                                     .prev_sec.iloc[0]

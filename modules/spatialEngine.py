@@ -473,6 +473,10 @@ def switchPositionFinder(paths_wo_swi_pos, layout):
             if transit_lbl is None:
                 continue
 
+            required_switches = requiredSwitches(layout,
+                                                 section_lbl,
+                                                 transit_lbl)
+
             for section in layout['sections']:
 
                 if section['label'] == section_lbl:
@@ -481,20 +485,330 @@ def switchPositionFinder(paths_wo_swi_pos, layout):
 
                         for switch in node['switches']:
 
-                            if node['index'][0] in transit_lbl:
-                                SWI_pos = '-'
+                            if switch in required_switches:
 
-                            else:
-                                SWI_pos = '+'
+                                if node['index'][0] in transit_lbl:
+                                    SWI_pos = '-'
 
-                            switch_data = {'SWI_lbl': switch['label'],
-                                           'SWI_pos': SWI_pos,
-                                           'sec_lbl': section_lbl}
-                            switch_positions.append(switch_data)
+                                else:
+                                    SWI_pos = '+'
+
+                                switch_data = {'SWI_lbl': switch['label'],
+                                               'SWI_pos': SWI_pos,
+                                               'sec_lbl': section_lbl}
+                                switch_positions.append(switch_data)
 
         path['switch_positions'] = switch_positions
 
     return paths
+
+
+def sectionSwitches(sec_lbl, layout):
+    """Provide all switches (inc. derailers) in a section.
+
+    Parameters
+    ----------
+    sec_lbl : str
+        Label of the section to be evaluated.
+    layout : dict
+        Description of the station's layout.
+
+    Returns
+    -------
+    list
+        List of dictionaries, each relative to a switch that belongs to the
+        evaluated section.
+    """
+    section_switches = []
+
+    for section in layout['sections']:
+
+        if section['label'] == sec_lbl:
+
+            for node in section['nodes']:
+
+                for switch in node['switches']:
+
+                    if switch not in section_switches:
+                        section_switches.append(switch)
+
+    return section_switches
+
+
+def requiredSwitches(layout, sec_lbl, transit):
+    """Get required switches for a given transit/section.
+
+    Parameters
+    ----------
+    layout : dict
+        Description of the station's layout.
+    sec_lbl : str
+        Label of the section to be evaluated.
+    transit : str
+        Transit through the section to be evaluated.
+
+    Returns
+    -------
+    list
+        List of dictionaries, each relative to a switch that is required by the
+        specified transit, at the specified section.
+    """
+    for section in layout['sections']:
+
+        if section['label'] == sec_lbl:
+            special_type = section['special_type']
+            break
+
+    if special_type == 'TJS' or special_type == 'TJD' or special_type is None:
+        required_switches = requiredSwitchesTJD_TJS_ordinary(layout,
+                                                             sec_lbl,
+                                                             transit)
+
+    elif special_type == 'nested':
+        required_switches = requiredSwitchesNested(layout,
+                                                   sec_lbl,
+                                                   transit)
+
+    elif special_type == 'multi_switch':
+        required_switches = requiredSwitchesMultiSwitch(layout,
+                                                        sec_lbl,
+                                                        transit)
+
+    return required_switches
+
+
+def requiredSwitchesTJD_TJS_ordinary(layout, sec_lbl, transit):
+    """Get required switches for a transit/section on ordinary/TJD/TJS section.
+
+    Parameters
+    ----------
+    layout : dict
+        Description of the station's layout.
+    sec_lbl : str
+        Label of the section to be evaluated.
+    transit : str
+        Transit through the section to be evaluated.
+
+    Returns
+    -------
+    list
+        List of dictionaries, each relative to a switch that is required by the
+        specified transit, at the specified section.
+    """
+    crossed_nodes = []
+
+    for section in layout['sections']:
+
+        if section['label'] == sec_lbl:
+
+            for node in section['nodes']:
+
+                if node['index'][0] in transit:
+                    crossed_nodes.append(node)
+
+            break
+
+    section_switches = sectionSwitches(sec_lbl, layout)
+    required_switches = []
+
+    for sec_swi in section_switches:
+
+        if sec_swi['lr_pk'] is not None:
+            required_switches.append(sec_swi)
+
+        else:
+
+            for node in crossed_nodes:
+
+                if sec_swi in node['switches']:
+                    required_switches.append(sec_swi)
+
+    return required_switches
+
+
+def requiredSwitchesNested(layout, sec_lbl, transit):
+    """Get required switches for a transit/section with nested switches.
+
+    Parameters
+    ----------
+    layout : dict
+        Description of the station's layout.
+    sec_lbl : str
+        Label of the section to be evaluated.
+    transit : str
+        Transit through the section to be evaluated.
+
+    Returns
+    -------
+    list
+        List of dictionaries, each relative to a switch that is required by the
+        specified transit, at the specified section.
+    """
+    transit_order = 0
+    crossed_nodes = []
+
+    for section in layout['sections']:
+
+        if section['label'] == sec_lbl:
+
+            for node in section['nodes']:
+
+                if node['index'][0] in transit:
+                    crossed_nodes.append(node)
+
+                    for switch in node['switches']:
+
+                        if switch['lr_pk'] is not None:
+                            transit_order += 1
+
+            break
+
+    section_switches = sectionSwitches(sec_lbl, layout)
+    switch_orders = []
+
+    for sec_swi in section_switches:
+
+        if sec_swi['lr_pk'] is not None:
+            switch_order = 0
+
+            for node in section['nodes']:
+
+                for switch in node['switches']:
+
+                    if switch['label'] == sec_swi['label']:
+                        switch_order += 1
+
+            sec_swi['switch_order'] = switch_order
+            switch_orders.append(switch_order)
+
+    switch_orders.sort(reverse=True)
+    required_switch_orders = switch_orders[: transit_order + 1]
+    required_switches = []
+
+    for sec_swi in section_switches:
+
+        if sec_swi['lr_pk'] is not None:
+
+            if sec_swi['switch_order'] in required_switch_orders:
+                sec_swi.pop('switch_order')
+                required_switches.append(sec_swi)
+
+        else:
+
+            for node in crossed_nodes:
+
+                if sec_swi in node['switches']:
+
+                    try:
+                        sec_swi.pop('switch_order')
+
+                    except KeyError:
+                        pass
+
+                    required_switches.append(sec_swi)
+
+    return required_switches
+
+
+def requiredSwitchesMultiSwitch(layout, sec_lbl, transit):
+    """Provide the required switches for a path on a multi_switch section.
+
+    Parameters
+    ----------
+    layout : dict
+        Description of the station's layout.
+    sec_lbl : str
+        Label of the section to be evaluated.
+    transit : str
+        Transit through the section to be evaluated.
+
+    Returns
+    -------
+    list
+        List of dictionaries, each relative to a switch that is required by the
+        specified transit, at the specified section.
+    """
+    section_switches = sectionSwitches(sec_lbl, layout)
+
+    for section in layout['sections']:
+
+        if section['label'] == sec_lbl:
+
+            for node in section['nodes']:
+
+                if node['index'][0] == transit[0]:
+                    entry_node = node
+                elif node['index'][0] == transit[1]:
+                    exit_node = node
+
+            break
+
+    enters_through_branch = False
+    exits_through_branch = False
+
+    for switch in entry_node['switches']:
+
+        if switch['lr_pk'] is not None:
+            enters_through_branch = True
+            break
+
+    for switch in exit_node['switches']:
+
+        if switch['lr_pk'] is not None:
+            exits_through_branch = True
+            break
+
+    if enters_through_branch and not exits_through_branch:
+
+        for switch in entry_node['switches']:
+
+            if switch['lr_pk'] is not None:
+                anchor_1 = switch['point_pk']
+                anchor_2 = exit_node['pk']
+
+    elif exits_through_branch and not enters_through_branch:
+
+        for switch in exit_node['switches']:
+
+            if switch['lr_pk'] is not None:
+                anchor_1 = entry_node['pk']
+                anchor_2 = switch['point_pk']
+
+    elif exits_through_branch and enters_through_branch:
+
+        for switch in entry_node['switches']:
+
+            if switch['lr_pk'] is not None:
+                anchor_1 = switch['point_pk']
+
+        for switch in exit_node['switches']:
+
+            if switch['lr_pk'] is not None:
+                anchor_2 = switch['point_pk']
+
+    else:
+        anchor_1 = entry_node['pk']
+        anchor_2 = exit_node['pk']
+
+    proper_interval = [anchor_1, anchor_2]
+    proper_interval.sort()
+    required_switches = []
+
+    for sec_swi in section_switches:
+
+        if sec_swi['lr_pk'] is not None:
+
+            if (sec_swi['point_pk'] >= proper_interval[0] and
+                    sec_swi['point_pk'] <= proper_interval[1]):
+                required_switches.append(sec_swi)
+
+        else:
+
+            if (sec_swi in entry_node['switches'] or
+                    sec_swi in exit_node['switches']):
+                required_switches.append(sec_swi)
+
+    return required_switches
 
 
 def isContiguous(section1, section2, adjacency_data):

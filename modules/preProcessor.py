@@ -20,8 +20,8 @@ def preProcessor(lt_top_raw, lt_geo):
     """
     lt_top_canonical = ILMLabelProc(lt_top_raw)
     layout_canonical = layoutAssembler(lt_top_canonical, lt_geo)
-    layout_implicit_TJS = inferNdeSigns(layout_canonical)
-    layout = flagTJS(layout_implicit_TJS)
+    layout_wo_special_sec_flags = inferNdeSigns(layout_canonical)
+    layout = specialSectionFlags(layout_wo_special_sec_flags)
 
     return layout
 
@@ -36,8 +36,9 @@ def inferNdeSigns(layout_canonical):
 
     Returns
     -------
-    dict
-        Station's layout with explicit node signs and implicit TJS flag.
+    list
+        Station's layout without flags for special sections, except for TJD,
+        which is directly read from the zlt file. Node signs are explicit.
     """
     layout = deepcopy(layout_canonical)
 
@@ -216,21 +217,19 @@ def layoutAssembler(lt_top_canonical, lt_geo):
     return layout_canonical
 
 
-def flagTJS(layout_implicit_TJS):
+def flagTJS(layout):
     """Explicitlly flag TJS sections.
 
     Parameters
     ----------
-    layout_implicit_TJS : list
+    layout : list
         Station's layout with explicit node signs and implicit TJS flag.
 
     Returns
     -------
     dict
-        Station's layout with explicit node signs.
+        Station's layout with explicit TJS flags.
     """
-    layout = deepcopy(layout_implicit_TJS)
-
     for section in layout['sections']:
 
         for node in section['nodes']:
@@ -238,5 +237,65 @@ def flagTJS(layout_implicit_TJS):
             if node['TJS_weak_nde']:
                 section['special_type'] = 'TJS'
                 break
+
+
+def flagMultiSwitch(layout):
+    """Flag sections with more than one switch. Requires TJD/TJS flags.
+
+    Parameters
+    ----------
+    layout : list
+        Station's layout with explicit node signs and no flags related to
+        sections with multiple switches.
+
+    Returns
+    -------
+    dict
+        Station's layout with explicit flags for sections with multiple
+        switches (if there are nested switch branches, the flag is "nested",
+        if there are no nested branches, the flag is "multi_switch").
+    """
+    for section in layout['sections']:
+        num_switches_at_section_nodes = []
+
+        if (section['special_type'] == 'TJS' or
+                section['special_type'] == 'TJD'):
+            continue
+
+        for node in section['nodes']:
+
+            switches_at_node = 0
+
+            for switch in node['switches']:
+
+                if switch['lr_pk'] is not None:
+                    switches_at_node += 1
+
+            num_switches_at_section_nodes.append(switches_at_node)
+
+        if sum(num_switches_at_section_nodes) > 1:
+            section['special_type'] = 'multi_switch'
+
+        if max(num_switches_at_section_nodes) > 1:
+            section['special_type'] = 'nested'
+
+
+def specialSectionFlags(layout_wo_special_sec_flags):
+    """Add flags for special sections.
+
+    Parameters
+    ----------
+    layout_wo_special_sec_flags : list
+        Station's layout without flags for special sections, except for TJD,
+        which is directly read from the zlt file. Node signs are explicit.
+
+    Returns
+    -------
+    dict
+        Station's layout with special section flags.
+    """
+    layout = deepcopy(layout_wo_special_sec_flags)
+    flagTJS(layout)
+    flagMultiSwitch(layout)
 
     return layout
