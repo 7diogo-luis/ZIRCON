@@ -465,6 +465,7 @@ def switchPositionFinder(paths_wo_swi_pos, layout):
 
     for path in paths:
         switch_positions = []
+        lkd_swi_lbls = []
 
         for i in range(len(path['path_secs'])):
             section_lbl = path['path_secs'][i]
@@ -489,14 +490,36 @@ def switchPositionFinder(paths_wo_swi_pos, layout):
 
                                 if node['index'][0] in transit_lbl:
                                     SWI_pos = '-'
+                                    switch_data = {'SWI_lbl': switch['label'],
+                                                   'SWI_pos': SWI_pos,
+                                                   'sec_lbl': section_lbl}
+
+                                    if switch['label'] in lkd_swi_lbls:
+
+                                        for swi_pos in switch_positions:
+
+                                            if swi_pos['SWI_lbl'] ==\
+                                                    switch['label']:
+                                                swi_pos['SWI_pos'] = SWI_pos
+
+                                    else:
+                                        switch_positions.append(switch_data)
+                                        lkd_swi_lbls.append(switch
+                                                            ['label'])
 
                                 else:
                                     SWI_pos = '+'
+                                    switch_data = {'SWI_lbl': switch['label'],
+                                                   'SWI_pos': SWI_pos,
+                                                   'sec_lbl': section_lbl}
 
-                                switch_data = {'SWI_lbl': switch['label'],
-                                               'SWI_pos': SWI_pos,
-                                               'sec_lbl': section_lbl}
-                                switch_positions.append(switch_data)
+                                    if switch['label'] not in lkd_swi_lbls:
+
+                                        switch_positions.append(switch_data)
+                                        lkd_swi_lbls.append(switch
+                                                            ['label'])
+
+                    break
 
         path['switch_positions'] = switch_positions
 
