@@ -4,7 +4,8 @@ from copy import deepcopy
 
 
 def router(paths, signals, layout, m_OL, d_OL, s_OL, viable_logic_OL,
-           consider_swi_pnt_pk_logic_OL, allow_distant_switch_OL_lock):
+           consider_swi_pnt_pk_logic_OL, allow_distant_switch_OL_lock,
+           derailer_alt_OL_allowed_types, derailer_margin):
     """Compute possible itineraries and basic info regarding each.
 
     Parameters
@@ -34,12 +35,16 @@ def router(paths, signals, layout, m_OL, d_OL, s_OL, viable_logic_OL,
     else:
         no_logic_OL_its = inc_OL_its
 
-    unlbld_its = logicOL(no_logic_OL_its, layout, viable_logic_OL,
-                         consider_swi_pnt_pk_logic_OL, m_OL, d_OL, s_OL)
-    unconsolidated_its = ITLabeler(unlbld_its, layout)
-    its = ITConsolidator(unconsolidated_its)
+    unlbld_its_no_der_alt_OL = logicOL(no_logic_OL_its, layout,
+                                       viable_logic_OL,
+                                       consider_swi_pnt_pk_logic_OL,
+                                       m_OL, d_OL, s_OL)
+    unlbld_its = derailerAltOL(layout, unlbld_its_no_der_alt_OL,
+                               derailer_alt_OL_allowed_types, derailer_margin)
+    unconsolidated_its = ITLabeler(unlbld_its, layout, signals)
+    movements = ITConsolidator(unconsolidated_its)
 
-    return its
+    return movements
 
 
 def ITFinder(paths, signals, layout):
@@ -66,6 +71,7 @@ def ITFinder(paths, signals, layout):
           'direction': None,
           'origin': None,
           'destiny': None,
+          'origin_alias': None,
           'destiny_alias': None,
           'type': None,
           'route_secs': None,
@@ -309,6 +315,98 @@ def overlapTrimmer(raw_its, layout, m_OL, d_OL, s_OL):
     return raw_its_OL_secs_OK
 
 
+def derailerAltOL(layout, unlbld_its_no_der_alt_OL,
+                  derailer_alt_OL_allowed_types, derailer_margin):
+    """Compute real overlap.
+
+    Parameters
+    ----------
+    layout : dict
+        Description of the station's layout.
+    unlbld_its_no_der_alt_OL : list
+        List of dictionaries, each relative to a possible itinerary
+        (unlabeled and without itineraries witch have derailers set to normal
+         in the overlap).
+    derailer_alt_OL_allowed_types : list
+        List containing strings, each corresponding to a itinerary type for
+        which alternative ovelaps with normally set derailers are allowed.
+    derailer_margin : float
+        Limit distance (of section with derailer) that can be anterior to the
+        derailer point, while still considering the derailer excludes the
+        section from overlap.
+
+    Returns
+    -------
+    list
+        List of dictionaries, each relative to a possible itinerary
+        (unlabeled).
+    """
+    unlbld_its = deepcopy(unlbld_its_no_der_alt_OL)
+
+    for it in unlbld_its_no_der_alt_OL:
+
+        if it['type'] not in derailer_alt_OL_allowed_types:
+            continue
+
+        OL_derailers = []
+
+        for switch in it['OL_switches']:
+            swi_data = deepcopy(getSwitchData(layout, switch['SWI_lbl']))
+
+            if swi_data['lr_pk'] is None:
+                swi_data['excluded_secs'] = []
+                OL_derailers.append(swi_data)
+
+        for OL_derailer in OL_derailers:
+
+            for OL_sec in it['OL_secs']:
+
+                OL_sec_idx = it['OL_secs'].index(OL_sec)
+                entry_node = it['OL_transits'][OL_sec_idx][0]
+                critical_point = getNodePk(entry_node, OL_sec, layout)
+
+                if it['direction'] == 'asc':
+
+                    if (OL_derailer['point_pk'] <=
+                            critical_point + derailer_margin):
+                        OL_derailer['excluded_secs'].append(OL_sec)
+
+                else:
+
+                    if (OL_derailer['point_pk'] >=
+                            critical_point - derailer_margin):
+                        OL_derailer['excluded_secs'].append(OL_sec)
+
+        for OL_derailer in OL_derailers:
+
+            if OL_derailer['excluded_secs']:
+                new_it = deepcopy(it)
+
+                for excluded_sec in OL_derailer['excluded_secs']:
+
+                    exc_sec_idx = new_it['OL_secs'].index(excluded_sec)
+                    new_it['OL_transits'].pop(exc_sec_idx)
+                    new_it['OL_secs'].remove(excluded_sec)
+
+                    OL_swis_to_remove = []
+
+                    for OL_swi in new_it['OL_switches']:
+
+                        if OL_swi['SWI_lbl'] == OL_derailer['label']:
+                            OL_swi['SWI_pos'] = '+'
+
+                        elif OL_swi['sec_lbl'] == excluded_sec:
+                            OL_swis_to_remove.append(OL_swi)
+
+                    for OL_swi_to_remove in OL_swis_to_remove:
+                        new_it['OL_switches'].remove(OL_swi_to_remove)
+
+                it_idx = unlbld_its.index(it)
+                unlbld_its.insert(it_idx, new_it)
+
+    return unlbld_its
+
+
 def antiITClones(raw_its_OL_secs_OK):
     """Remove cloned ITs (due to different path sections downstream of OL).
 
@@ -343,6 +441,8 @@ def antiITClones(raw_its_OL_secs_OK):
                             ['route_secs'] and
                             inc_OL_its[i]['OL_secs'] ==
                             inc_OL_its[j]['OL_secs'] and
+                            inc_OL_its[i]['route_transits'] ==
+                            inc_OL_its[j]['route_transits'] and
                             inc_OL_its[i]['OL_transits'] ==
                             inc_OL_its[j]['OL_transits'] and
                             inc_OL_its[i]['OL_switches'] ==
@@ -430,7 +530,7 @@ def antiDistantSwitchOL(inc_OL_its, signals, layout, m_OL, d_OL, s_OL):
 
 
 def distToSwiPoint(anchor, switch_lbl, layout):
-    """Retrieve data referring to a specific signal.
+    """Get the distance from an anchor pointo to a switch's point.
 
     Parameters
     ----------
@@ -443,8 +543,9 @@ def distToSwiPoint(anchor, switch_lbl, layout):
 
     Returns
     -------
-    dict
-        Dictionary containing the signal's data.
+    float
+        Distance from the specified anchor point to the specified switch's
+        point.
     """
     for section in layout['sections']:
 
@@ -458,6 +559,32 @@ def distToSwiPoint(anchor, switch_lbl, layout):
     distance = abs(anchor - point_pk)
 
     return distance
+
+
+def getSwitchData(layout, switch_lbl):
+    """Retrieve data referring to a specific switch.
+
+    Parameters
+    ----------
+    switch_lbl : str
+        Label of the switch.
+    layout : dict
+        Description of the station's layout.
+
+    Returns
+    -------
+    dict
+        Dictionary containing the switch's data.
+    """
+    for section in layout['sections']:
+
+        for node in section['nodes']:
+
+            for switch in node['switches']:
+
+                if switch['label'] == switch_lbl:
+
+                    return switch
 
 
 def getSignalData(sig_lbl, layout):
@@ -500,6 +627,34 @@ def getSignalData(sig_lbl, layout):
                 if node['signal']['label'] == sig_lbl:
 
                     return node['signal']
+
+
+def getNodePk(node_idx, section_lbl, layout):
+    """Get PK of the specified node of a specified section.
+
+    Parameters
+    ----------
+    node_idx : str
+        Index of the node to be evaluated.
+    section_lbl : str
+        Label of the section to be evaluated.
+    layout : dict
+        Description of the station's layout.
+
+    Returns
+    -------
+    float
+        PK of the specified node of a specified section.
+    """
+    for section in layout['sections']:
+
+        if section['label'] == section_lbl:
+
+            for node in section['nodes']:
+
+                if node['index'][0] == node_idx:
+
+                    return node['pk']
 
 
 def getMediatorNodePk(element1, element2, layout):
@@ -582,7 +737,9 @@ def effectiveSwitches(transit, section_lbl, layout):
                 if node['index'][-1] != sign and node['switches']:
 
                     for switch in node['switches']:
-                        effective_switches_candidates.append(switch)
+
+                        if switch not in effective_switches_candidates:
+                            effective_switches_candidates.append(switch)
 
         if found_sec:
             break
@@ -591,8 +748,9 @@ def effectiveSwitches(transit, section_lbl, layout):
 
     for effective_switches_candidate in effective_switches_candidates:
 
-        if (entry_pk < effective_switches_candidate['point_pk'] < exit_pk or
-                exit_pk < effective_switches_candidate['point_pk'] < entry_pk):
+        if (entry_pk <= effective_switches_candidate['point_pk'] <= exit_pk or
+                exit_pk <= effective_switches_candidate['point_pk'] <=
+                entry_pk or effective_switches_candidate['lr_pk'] is None):
             effective_switches.append(effective_switches_candidate)
 
     return effective_switches
@@ -651,6 +809,17 @@ def altOLlabeler(unlbld_its, layout):
             alt_OL_lbl = ''
 
             for switch in it['OL_switches']:
+                swi_dta = getSwitchData(layout, switch['SWI_lbl'])
+
+                if swi_dta['lr_pk'] is None and switch['SWI_pos'] == '+':
+
+                    if len(alt_OL_lbl) > 0:
+                        alt_OL_lbl += '/'
+
+                    alt_OL_lbl += switch['SWI_lbl']
+                    alt_OL_lbl += switch['SWI_pos']
+
+                    continue
 
                 swi_sec = switch['sec_lbl']
                 OL_sec_index = it['OL_secs'].index(swi_sec)
@@ -705,7 +874,6 @@ def altRouteLabeler(unlbld_its, layout):
                 switches_at_diff_pos =\
                     switchDifferences(unlbld_its[j]['route_switches'],
                                       unlbld_its[i]['route_switches'])
-
                 unlbld_its[j]['alt_route'] = switches_at_diff_pos
 
     for it in unlbld_its:
@@ -727,18 +895,6 @@ def altRouteLabeler(unlbld_its, layout):
 
                 if diff_swi['SWI_lbl'] not in eff_swi_lbls:
                     it['alt_route'].remove(diff_swi)
-
-            alt_route_lbl = ''
-
-            for diff_swi in it['alt_route']:
-
-                if len(alt_route_lbl) > 0:
-                    alt_route_lbl += '/'
-
-                alt_route_lbl += diff_swi['SWI_lbl']
-                alt_route_lbl += diff_swi['SWI_pos']
-
-            it['alt_route'] = alt_route_lbl
 
 
 def switchDifferences(swi_group_1, swi_group_2):
@@ -834,7 +990,8 @@ def logicOL(no_logic_OL_its, layout, viable_logic_OL,
     -------
     list
         List of dictionaries, each relative to a possible itinerary
-        (unlabeled).
+        (unlabeled and without itineraries witch have derailers set to normal
+         in the overlap).
     """
     OL_corresp = {'Main': m_OL,
                   'DOS': d_OL,
@@ -842,9 +999,9 @@ def logicOL(no_logic_OL_its, layout, viable_logic_OL,
     blocks = [block['label'] for block in layout['blocks']]
     NDZs = [ndz['label'] for ndz in layout['NDZs']]
     sections = [section['label'] for section in layout['sections']]
-    unlbld_its = deepcopy(no_logic_OL_its)
+    unlbld_its_no_der_alt_OL = deepcopy(no_logic_OL_its)
 
-    for it in unlbld_its:
+    for it in unlbld_its_no_der_alt_OL:
         it['logic_OL'] = False
         OL_distance = OL_corresp[it['type']]
 
@@ -880,7 +1037,7 @@ def logicOL(no_logic_OL_its, layout, viable_logic_OL,
                 if logic_OL_possible:
                     it['logic_OL'] = True
 
-    return unlbld_its
+    return unlbld_its_no_der_alt_OL
 
 
 def aggregatedLabel(unlbld_its):
@@ -894,15 +1051,36 @@ def aggregatedLabel(unlbld_its):
     """
     for it in unlbld_its:
 
+        if it['alt_route'] is None or it['alt_route'] == []:
+            alt_route_lbl_raw = None
+
+        else:
+
+            alt_route_lbl_raw = ''
+
+            for diff_swi in it['alt_route']:
+
+                if len(alt_route_lbl_raw) > 0:
+                    alt_route_lbl_raw += '/'
+
+                alt_route_lbl_raw += diff_swi['SWI_lbl']
+                alt_route_lbl_raw += diff_swi['SWI_pos']
+
         if it['destiny_alias'] is None:
             destiny_lbl = it['destiny']
 
         else:
             destiny_lbl = it['destiny_alias']
 
-        route_lbl = it['origin'] + '-' + destiny_lbl
-        alt_route_lbl = '(Alt_Rt: ' + it['alt_route'] + ')'\
-            if it['alt_route'] is not None else ''
+        if it['origin_alias'] is None:
+            origin_lbl = it['origin']
+
+        else:
+            origin_lbl = it['origin_alias']
+
+        route_lbl = origin_lbl + '-' + destiny_lbl
+        alt_route_lbl = '(Alt_Rt: ' + alt_route_lbl_raw + ')'\
+            if alt_route_lbl_raw is not None else ''
         alt_OL_lbl = '(Alt_OL: ' + it['alt_OL'] + ')'\
             if it['alt_OL'] is not None else ''
         type_lbl = it['type']
@@ -921,7 +1099,7 @@ def aggregatedLabel(unlbld_its):
         it['label'] = aggregated_label
 
 
-def ITLabeler(unlbld_its, layout):
+def ITLabeler(unlbld_its, layout, signals):
     """Add labels to itinerary dictionaries.
 
     Parameters
@@ -929,6 +1107,11 @@ def ITLabeler(unlbld_its, layout):
     unlbld_its : list
         List of dictionaries, each relative to a possible itinerary
         (unlabeled).
+    layout : dict
+        Description of the station's layout.
+    signals : Pandas Dataframe
+        Signal table containing the possible itinerary types departing from
+        and arriving to each signal.
 
     Returns
     -------
@@ -937,37 +1120,41 @@ def ITLabeler(unlbld_its, layout):
         Unconsolidated structure.
     """
     unconsolidated_its = deepcopy(unlbld_its)
-
     altOLlabeler(unconsolidated_its, layout)
     altRouteLabeler(unconsolidated_its, layout)
     specialITLabeler(unconsolidated_its, layout)
+    altOrigOrDest(signals, unconsolidated_its, layout)
     aggregatedLabel(unconsolidated_its)
 
     return unconsolidated_its
 
 
-def ITConsolidator(unconsolidated_its):
-    """Add labels to itinerary dictionaries.
+def ITConsolidator(unconsolidated_its, keep_aux_data=False):
+    """Rearange the IT dictionaries, prioritizing the most relevant info.
 
     Parameters
     ----------
     unconsolidated_its : list
         List of dictionaries, each relative to a possible itinerary.
         Unconsolidated structure.
+    keep_aux_data : bool
+        True if auxiliary data is to be kepk on the movements dictionary,
+        else False.
 
     Returns
     -------
     list
         List of dictionaries, each relative to a possible itinerary.
     """
-    its = []
+    movements = []
 
     for it in unconsolidated_its:
         it_dict = {}
         it_dict['label'] = it['label']
-        it_dict['origin'] = it['origin']
-        it_dict['destiny'] = {'literal': it['destiny'],
-                              'alias': it['destiny_alias']}
+        it_dict['origin'] = {'literal': it['origin'],
+                             'alias': it['origin_alias']}
+        it_dict['destination'] = {'literal': it['destiny'],
+                                  'alias': it['destiny_alias']}
         it_dict['type'] = it['type']
         it_dict['direction'] = it['direction']
         it_dict['logic_overlap'] = it['logic_OL']
@@ -977,14 +1164,142 @@ def ITConsolidator(unconsolidated_its):
                                'overlap': it['OL_transits']}
         it_dict['switches'] = {'route': it['route_switches'],
                                'overlap': it['OL_switches']}
-        it_dict['aux'] = {'path_index': it['path_index'],
-                          'possible_OL_path': it['possible_OL_path'],
-                          'possible_OL_transits': it['possible_OL_transits'],
-                          'possible_OL_switches': it['possible_OL_switches'],
-                          'alt_OL': it['alt_OL'],
-                          'alt_route': it['alt_route'],
-                          'special': it['special']}
 
-        its.append(deepcopy(it_dict))
+        if keep_aux_data:
+            it_dict['aux'] = {'path_index': it['path_index'],
+                              'possible_OL_path': it['possible_OL_path'],
+                              'possible_OL_transits':
+                                  it['possible_OL_transits'],
+                              'possible_OL_switches':
+                                  it['possible_OL_switches'],
+                              'alt_OL': it['alt_OL'],
+                              'alt_route':
+                                  it['alt_route'] if it['alt_route']
+                                  != [] else None,
+                              'special': it['special']}
 
-    return its
+        movements.append(deepcopy(it_dict))
+
+    return movements
+
+
+def getConnectedSection(section_lbl, node_idx, layout):
+    """Return element connected to section by a certain node.
+
+    Parameters
+    ----------
+    section_lbl : str
+        Label of the section to be evaluated.
+    node_idx : str
+        Index of the node to be evaluated.
+    layout : dict
+        Description of the station's layout.
+
+    Returns
+    -------
+    str
+        Label of the element connected to the specified section at the
+        specified node.
+    """
+    for section in layout['sections']:
+
+        if section['label'] == section_lbl:
+
+            for node in section['nodes']:
+
+                if node['index'][0] == node_idx:
+
+                    return node['con_ele']
+
+
+def secHasSwis(sec_lbl, layout):
+    """Know if a section has at least one switch (inc. derailer).
+
+    Parameters
+    ----------
+    sec_lbl : str
+        Label of the section to be evaluated.
+    layout : dict
+        Description of the station's layout.
+
+    Returns
+    -------
+    bool
+        True if the section has at least one switch, False otherwise.
+    """
+    for section in layout['sections']:
+
+        if section['label'] == sec_lbl:
+
+            for node in section['nodes']:
+
+                if node['switches']:
+
+                    return True
+
+            return False
+
+
+def altOrigOrDest(signals, unconsolidated_its, layout):
+    """Process its departing from or arriving to signals with origin indicator.
+
+    Parameters
+    ----------
+    unlbld_its : list
+        List of dictionaries, each relative to a possible itinerary
+        (unlabeled).
+    layout : dict
+        Description of the station's layout.
+    signals : Pandas Dataframe
+        Signal table containing the possible itinerary types departing from
+        and arriving to each signal.
+    """
+    for it in unconsolidated_its:
+
+        alt_orig_or_dest = False
+        dest_sig = it['destiny']
+        final_park_sec = it['route_secs'][-1]
+        dest_sig_data = signals.loc[signals.signal == dest_sig]\
+            .loc[signals.prev_sec == final_park_sec]
+
+        if bool(dest_sig_data.alt_origin.iloc[0]):
+            alt_orig_or_dest = True
+            dest_alias = dest_sig + '(' + final_park_sec + ')'
+            it['destiny_alias'] = dest_alias
+
+        orig_sig = it['origin']
+        init_park_sec = getConnectedSection(it['route_secs'][0],
+                                            it['route_transits'][0][0],
+                                            layout)
+        orig_sig_data = signals.loc[signals.signal == orig_sig]\
+            .loc[signals.prev_sec == init_park_sec]
+
+        if bool(orig_sig_data.alt_origin.iloc[0]):
+            alt_orig_or_dest = True
+            orig_alias = orig_sig + '(' + init_park_sec + ')'
+            it['origin_alias'] = orig_alias
+
+        if alt_orig_or_dest:
+            rt_secs_w_swi = deepcopy(it['route_secs'])
+            to_remove = []
+
+            for rt_sec_w_swi in rt_secs_w_swi:
+
+                if not secHasSwis(rt_sec_w_swi, layout):
+                    to_remove.append(rt_sec_w_swi)
+
+            for sec_to_remove in to_remove:
+                rt_secs_w_swi.remove(sec_to_remove)
+
+            alt_rt_swis_to_remove = []
+
+            for alt_rt_swi in it['alt_route']:
+
+                if (alt_rt_swi['SWI_lbl'] != rt_secs_w_swi[0] and
+                        alt_rt_swi['SWI_lbl'] != rt_secs_w_swi[-1]):
+                    alt_rt_swis_to_remove.append(alt_rt_swi)
+
+            for alt_rt_swi in it['alt_route']:
+
+                if alt_rt_swi in alt_rt_swis_to_remove:
+                    it['alt_route'].remove(alt_rt_swi)

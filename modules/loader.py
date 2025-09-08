@@ -273,6 +273,12 @@ def zopParser(parameters_label):
             parameters['allow_distant_switch_OL_lock'] =\
                 str2bool(split_line[-1])
 
+        elif split_line[0] == 'derailer_alt_OL_allowed_types':
+            parameters['derailer_alt_OL_allowed_types'] = split_line[1:]
+
+        elif split_line[0] == 'derailer_margin':
+            parameters['derailer_margin'] = float(split_line[-1])
+
     return parameters
 
 

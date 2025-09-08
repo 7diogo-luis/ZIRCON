@@ -31,14 +31,16 @@ def core(layout, parameters, debug_mode):
                               parameters['allow_shunt_to_circ_sig'])
     paths = spatialEngine(layout, parameters['overlap_to_terminal_branch'],
                           parameters['horse_neck_possible'])
-    its = router(paths, signals, layout, parameters['main_ol_distance'],
-                 parameters['dos_ol_distance'],
-                 parameters['shunt_ol_distance'],
-                 parameters['logic_ol_possible_regimes'],
-                 parameters['logic_ol_switch_point_dependant'],
-                 parameters['allow_distant_switch_OL_lock'])
+    movements = router(paths, signals, layout, parameters['main_ol_distance'],
+                       parameters['dos_ol_distance'],
+                       parameters['shunt_ol_distance'],
+                       parameters['logic_ol_possible_regimes'],
+                       parameters['logic_ol_switch_point_dependant'],
+                       parameters['allow_distant_switch_OL_lock'],
+                       parameters['derailer_alt_OL_allowed_types'],
+                       parameters['derailer_margin'])
 
     if debug_mode:
         return {'signals': signals,
                 'paths': paths,
-                'its': its}
+                'movements': movements}

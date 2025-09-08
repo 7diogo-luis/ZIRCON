@@ -15,7 +15,7 @@ while True:
         parameters = output['inputLayer']['parameters']
         signals = output['core']['signals']
         paths = output['core']['paths']
-        its = output['core']['its']
+        movements = output['core']['movements']
         break
 
     elif output == 'debug':

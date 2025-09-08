@@ -56,6 +56,7 @@ def sigTable(layout, allow_terminal_branches):
                                       'section',
                                       'direction',
                                       'virtual',
+                                      'alt_origin',
                                       'prev_sec'])
 
     for section in layout['sections']:
@@ -72,6 +73,7 @@ def sigTable(layout, allow_terminal_branches):
                                                  'section': section_lbl,
                                                  'direction': direction,
                                                  'virtual': False,
+                                                 'alt_origin': False,
                                                  'prev_sec': prev_sec}
 
             if (node['con_ele'] in blocks or node['con_ele'] in NDZs):
@@ -84,6 +86,7 @@ def sigTable(layout, allow_terminal_branches):
                                                  'section': section_lbl,
                                                  'direction': direction,
                                                  'virtual': True,
+                                                 'alt_origin': False,
                                                  'prev_sec': prev_sec}
 
             if node['con_ele'] is None and (len(section['nodes']) == 2
@@ -105,6 +108,7 @@ def sigTable(layout, allow_terminal_branches):
                                                  'section': section_lbl,
                                                  'direction': direction,
                                                  'virtual': True,
+                                                 'alt_origin': False,
                                                  'prev_sec': prev_sec}
 
     for block_dict in layout['blocks']:
@@ -127,6 +131,7 @@ def sigTable(layout, allow_terminal_branches):
                              'section': section_lbl,
                              'direction': direction,
                              'virtual': False,
+                             'alt_origin': False,
                              'prev_sec': prev_sec}
 
     for ndz_dict in layout['NDZs']:
@@ -149,6 +154,7 @@ def sigTable(layout, allow_terminal_branches):
                              'section': section_lbl,
                              'direction': direction,
                              'virtual': False,
+                             'alt_origin': False,
                              'prev_sec': prev_sec}
 
     return sig_table
@@ -418,4 +424,22 @@ def sigDecoder(sig_table, layout, reg_to_block, reg_to_ndz, reg_to_terminal,
             signals.loc[index, 'possible_destiny'] =\
                 signal_abilities['possible_destiny']
 
+    altOrigin(signals)
+
     return signals
+
+
+def altOrigin(signals):
+    """Flag repeated (alternative origin) signals.
+
+    Parameters
+    ----------
+    sig_table : Pandas DataFrame
+        Signal table containing the possible itinerary types departing from
+        and arriving to each signal.
+    """
+    mask = signals.signal.duplicated(keep=False)
+    alt_origin_indices = signals.index[mask].tolist()
+
+    for alt_origin_index in alt_origin_indices:
+        signals.at[alt_origin_index, "alt_origin"] = True
