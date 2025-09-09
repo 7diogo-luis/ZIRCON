@@ -21,7 +21,7 @@ def preProcessor(lt_top_raw, lt_geo):
     lt_top_canonical = ILMLabelProc(lt_top_raw)
     layout_canonical = layoutAssembler(lt_top_canonical, lt_geo)
     layout_wo_special_sec_flags = inferNdeSigns(layout_canonical)
-    layout = specialSectionFlags(layout_wo_special_sec_flags)
+    layout = specialSectionFlagsAndSwitchDir(layout_wo_special_sec_flags)
 
     return layout
 
@@ -224,11 +224,6 @@ def flagTJS(layout):
     ----------
     layout : list
         Station's layout with explicit node signs and implicit TJS flag.
-
-    Returns
-    -------
-    dict
-        Station's layout with explicit TJS flags.
     """
     for section in layout['sections']:
 
@@ -247,13 +242,6 @@ def flagMultiSwitch(layout):
     layout : list
         Station's layout with explicit node signs and no flags related to
         sections with multiple switches.
-
-    Returns
-    -------
-    dict
-        Station's layout with explicit flags for sections with multiple
-        switches (if there are nested switch branches, the flag is "nested",
-        if there are no nested branches, the flag is "multi_switch").
     """
     for section in layout['sections']:
         num_switches_at_section_nodes = []
@@ -280,7 +268,7 @@ def flagMultiSwitch(layout):
             section['special_type'] = 'nested'
 
 
-def specialSectionFlags(layout_wo_special_sec_flags):
+def specialSectionFlagsAndSwitchDir(layout_wo_special_sec_flags):
     """Add flags for special sections.
 
     Parameters
@@ -297,5 +285,32 @@ def specialSectionFlags(layout_wo_special_sec_flags):
     layout = deepcopy(layout_wo_special_sec_flags)
     flagTJS(layout)
     flagMultiSwitch(layout)
+    switchDirections(layout)
 
     return layout
+
+
+def switchDirections(layout):
+    """Add switch effective directions to switch dictionaries.
+
+    Parameters
+    ----------
+    layout : list
+        Station's layout with explicit node signs and no flags related to
+        sections with multiple switches.
+    """
+    for section in layout['sections']:
+
+        for node in section['nodes']:
+            node_sign = node['index'][-1]
+
+            for switch in node['switches']:
+
+                if switch['lr_pk'] is None:
+                    switch['effective_direction'] = 'bidirectional'
+
+                elif node_sign == '+':
+                    switch['effective_direction'] = 'asc'
+
+                else:
+                    switch['effective_direction'] = 'desc'

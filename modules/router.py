@@ -1,6 +1,7 @@
 """ZIRCON Router."""
 
 from copy import deepcopy
+from modules.spatialEngine import requiredSwitches
 
 
 def router(paths, signals, layout, m_OL, d_OL, s_OL, viable_logic_OL,
@@ -702,56 +703,33 @@ def effectiveSwitches(transit, section_lbl, layout):
     list
         List of effective switches for the specified transit and section.
     """
-    effective_switches_candidates = []
-    found_sec = False
-    oposite_sign_nodes = 0
+    req_swis = requiredSwitches(layout, section_lbl, transit)
 
     for section in layout['sections']:
 
         if section['label'] == section_lbl:
 
-            found_sec = True
-
             for node in section['nodes']:
 
                 if node['index'][0] == transit[0]:
-                    sign = node['index'][-1]
-                    through_branch = True if node['switches'] else False
-                    through_wk_nde = node['TJS_weak_nde']
-                    entry_pk = node['pk']
 
-                if node['index'][0] == transit[1]:
-                    exit_pk = node['pk']
+                    if node['index'][-1] == '-':
+                        trans_dir = 'asc'
+                        break
 
-            for node in section['nodes']:
+                    else:
+                        trans_dir = 'desc'
+                        break
 
-                if (node['index'][-1] != sign and
-                        not (node['TJS_weak_nde'] and through_branch) and
-                        not through_wk_nde):
-                    oposite_sign_nodes += 1
-
-        if oposite_sign_nodes > 1:
-
-            for node in section['nodes']:
-
-                if node['index'][-1] != sign and node['switches']:
-
-                    for switch in node['switches']:
-
-                        if switch not in effective_switches_candidates:
-                            effective_switches_candidates.append(switch)
-
-        if found_sec:
             break
 
     effective_switches = []
 
-    for effective_switches_candidate in effective_switches_candidates:
+    for req_swi in req_swis:
 
-        if (entry_pk <= effective_switches_candidate['point_pk'] <= exit_pk or
-                exit_pk <= effective_switches_candidate['point_pk'] <=
-                entry_pk or effective_switches_candidate['lr_pk'] is None):
-            effective_switches.append(effective_switches_candidate)
+        if (req_swi['effective_direction'] == trans_dir or
+                req_swi['effective_direction'] == 'bidirectional'):
+            effective_switches.append(req_swi)
 
     return effective_switches
 
