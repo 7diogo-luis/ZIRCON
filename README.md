@@ -107,7 +107,19 @@ Automation in railway signaling projects. Possible train movements, interlocking
 * **derailer_alt_OL_allowed_types**: Movement regimes for which an alternative overlap which locks a derailer in an overlap section in the normal position can exist. Arguments can be: **Main**, **DOS** and **Shunt**
 * **derailer_margin**: Maximum distance on an overlap section before a derailer, so that an alternative overlap with the derailer locked in the normal position will have that section excluded from the overlap due to derailer filtering
 
+## CLI Commands
 
+* **proc**: Compute a station's PEE. Follow the command with the station's abbreviation (filename of corresponding **.zlt** and **.zlg** files) and the filename of the **.zop** file to use. Arguments are sepparated by white spaces
+* **debug**: Switch to debug mode. **proc** commands given in debug mode will compute a station's PEE and also return core internal variables
+* **prod**: Switch to production mode, where **proc** commands will not return core internal variables
+* **exit**: Exit the program
+
+## Usage guide
+
+1. Encode a station (write the station's **.zlt** and **.zlg** files)
+2. Place the station's **.zlt** and **.zlg** files in the directory "stations/input"
+3. Write a **.zop** file with the parameters to use (if a suitable file was not written already)
+4. 
 
 
 
