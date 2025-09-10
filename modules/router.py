@@ -527,7 +527,48 @@ def antiDistantSwitchOL(inc_OL_its, signals, layout, m_OL, d_OL, s_OL):
     for it_to_remove in its_to_remove:
         no_logic_OL_its.remove(it_to_remove)
 
+    partialLock(no_logic_OL_its, layout, m_OL, d_OL, s_OL)
+
     return no_logic_OL_its
+
+
+def partialLock(no_logic_OL_its, layout, m_OL, d_OL, s_OL):
+    """Remove ITs with alt OLs on switches with point further than OL distance.
+
+    Parameters
+    ----------
+    no_logic_OL_its : list
+        List of dictionaries, each relative to a possible itinerary. Overlaps
+        processed (excep logic OL).
+    layout : dict
+        Station's layout with explicit node signs.
+    m_OL : float
+        Overlap distance for Main itineraries.
+    d_OL : float
+        Overlap distance for DOS itineraries.
+    s_OL : float
+        Overlap distance for Shunt itineraries.
+    """
+    corresp = {'Main': m_OL,
+               'DOS': d_OL,
+               'Shunt': s_OL}
+
+    for it in no_logic_OL_its:
+
+        if it['OL_switches']:
+            stop_point = getSignalData(it['destiny'], layout)['pk']
+            switches_to_remove = []
+
+            for OL_switch in it['OL_switches']:
+                distance = distToSwiPoint(stop_point,
+                                          OL_switch['SWI_lbl'],
+                                          layout)
+
+                if distance > corresp[it['type']]:
+                    switches_to_remove.append(OL_switch)
+
+            for switch_to_remove in switches_to_remove:
+                it['OL_switches'].remove(switch_to_remove)
 
 
 def distToSwiPoint(anchor, switch_lbl, layout):
