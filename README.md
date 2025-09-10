@@ -1,189 +1,65 @@
 # ZIRCON
 
-## Background
-ZIRCON is software capable of assisting in the validation of railway signaling project documentation.
-Although intended to be flexible, ZIRCON was concieved to work in the context of the Portuguese railway infrastructure, adhering to the stipulations of IP (Infraestruturas de Portugal) in terms of operation and design principles, as well as project documents.
+## Description
+Automation in railway signaling projects. Possible train movements, interlocking requirements, delay timings and incompatible movements are automatically obtained from signaling diagrams (i.e. automatic generation of PEE and Incompatibilities from DS/DSA data). Rapid design iterations in the project phase are enabled, accelerating delivery and enhancing optimization, while also improving safety.
 
-The target for optimization is the validation of PEE (Programa de Encravamento e Exploração) and SCT (Software Control Table) data.
-ZIRCON receives a encoded form of the infrastructure layout as well as operational parameters. From these, PEE and SCT data is generated, against which these documents can be validated.
+## ZIRCON Layout Topography File (.zlt)
 
-```mermaid
----
-config:
-  layout: elk
-  theme: redux
-  look: neo
----
-flowchart LR
- subgraph Configs["Configuration Files"]
-        LtCfgL0["Level Zero"]
-        LtCfgL1["Level One"]
-        AspCfg["Level Two"]
-  end
-    DS["DS"] --> Human{{"Human"}}
-    DSA["DSA"] --> Human
-    Human --> LtCfgL0 & LtCfgL1 & AspCfg
-    LtCfgL0 --> ZIRCON{{"ZIRCON"}}
-    LtCfgL1 --> ZIRCON
-    AspCfg --> ZIRCON
-    OpPmt["Operational Parameters"] --> ZIRCON
-    ZIRCON --> PEE["PEE Data"] & SCT["SCT Data"]
-```
-
-## Configuration Files
-In railway projects, information concerning the layout of infrastructure and signal aspect sequences is usualy held in drawings, which although ideal for manual workflows, hinders automation. Higher level documentation, such as PEEs and SCTs follow more structured, text based formats.
-For the sake of reliability and simplicity, the input information for ZIRCON must follow a very structured form, exempt of ambiguity, redundancy and irrelevant information.
-The ZIRCON configuration files are human and machine readable, text based encodings of a portion of railway infrastructure.
-Although apparently trivial, these constitute the most critical part of ZIRCON, majorly affecting functionality and reliability.
-
-### Level Zero
-The level zero configuration file encodes layout topography, but excludes dimensions. It is a text file with extension ".ZcfgL0". The file name is free, but it is sugested that it is a three letter code for the station.
-The encoding of L0 data from the DS to the file adheres to the following rules:
-
-**General rules:**
-1. All caps
-2. Every line starts with a standard key (BLK, NDZ, SEC, NDE, PNT, SIG, SWP)
-3. Keys follow hierarchy (BLK and SEC and NDZ are independant, NDE and PNT depend
-    on SEC, SIG and SWP depend on NDE or BLK or NDZ)
+### General rules
+1. The filename should be the stations abbreviation, for ease of use
+2. All caps
+3. Every line starts with a keyword (**BLK**, **NDZ**, **SEC**, **NDE**, **PNT**, **SIG**, **SWP**)
 4. No trailing or leading spaces
-5. No empty paragraphs, except for empty line at end
-6. Tabs denote key hierarchy (no tabs before BLK, SEC and NDZ, one tab before
-    NDE and PNT, two or three tabs before SIG and SWP)
-7. Data points for each key are introduced after the key (same line),
-    separated by white spaces
-        
-**Specific key rules:**
+5. No empty lines, except for last line
+6. Tabs are used before keywords to denote dependency between encoded elements
+7. Keyword arguments are separated by whitespaces
+   
+### Encoding a block
+1. Write keyword **BLK**
+2. Write the block's label after the keyword (three or four letters)
+3. If the block has an associated signal, encode it on the next line using the signal specific keywords (**SIG** or **SWP**)
 
-1. BLK
-Encodes a block (group of sections between stations)
-Syntax: BLK [block name]
+### Encoding an area without train detection (singularly connected to the area with train detection)
+1. Write keyword **NDZ**
+2. Write the label of the no detection zone after the keyword (three or four letters)
+3. If the no detection zone has an associated signal, encode it on the next line using the signal specific keywords (**SIG** or **SWP**)
 
-2. NDZ
-Encodes a no detection zone
-Syntax: NDZ [no detection zone name]
+### Encoding a section
+1. Write keyword **SEC**
+2. Write the section's label after the keyword
+3. If the section contains a double junction switch, write **TJD** after the section's label
+4. If the section does not possess train detection (area without train detection not singularly connected to the area with train detection), write **NDZ** after the section's label or after **TJD**
 
-3. SEC
-Encodes a section (of a station)
-Syntax: SEC [section name]
-The section name must be 3 letters
-Any NDE or PNT keys on paragraphs posterior to a certain SEC key will be subalternate to that SEC key
+### Encoding a section's node
+1. Write keyword **NDE**
+2. Write the node's index (A, B, C, D, ...) after the keyword
+3. If there is an element connected to the node, write the label of that element after the node's index
+4. If the section containing the encoded node contains a single junction switch, and the node can not be crossed by transits that also cross section branches, write **-** after the label of the connected element
 
-4. NDE
-Encodes a node of a section (terminal point of the section). A section must always have two or more nodes
-This key can only exist asociated with a SEC key
-The syntax depends on weather the node represents a connection with another section, or with a block or a no detection zone, or in case there is no connection
-Case connection w/ another section: NDE [index] [connected section name] [connected section relevant node index]
-Case connection w/ a block or no detection zone: NDE [index] [connected block or no detection zone name]
-Case no connection: NDE [index]
-The node index follows the usual ABCD... nomenclature (clockwise rotation). However, the letter is followed (no whitespace) by a + or - sign.
-This denotes weather the section, block or no detection zone connected with the corresponding node is at a higher or lower PK. + for higher, - for lower. The + and - signs can be ommited for the first and final nodes, for which + and - signs will be assumed, respectivelly. [connected section relevant node index] never requires a sign. In case of a terminal section (one node is not connected), the sign attributed to that node shall be the one relevent if another section where to be connected by said node, attending to the layout's topography
+### Encoding a signal
+1. Write keyword **SIG** if the signal has no associated pedal, otherwise write keyword **SWP**
+2. Write the signal's label after the keyword. If the signal is for circulation movements, the label should contain "S". If the signal is for shunt movements, the label should contain "M". If the signal is for circulation and shunt movements, the label should contain "S" and "M". If the signal is a shunting limit indicator, the signal label should be "M"
+3. If the signal is for circulation movements but it can not originate main movements (i.e. the signal only has red and white beams), write __*__ after the signal's label
 
-5. SWI
-Encodes a switch
-This key can only exist asociated with a SEC key
-Syntax: SWI [switch name] [specific transit 1] [specific transit 2] [...] [specific transit n]
-A specific transit of a switch is a transit possible only if that switch is set in the reverse (-) position.
-Only one direction of a specific transit must be stated. e.g. AB obviates stating BA
-A derailer is encoded as a switch.
-
-6. SIG
-Encodes a signal on a certain section
-This key can only exist asociated with a NDE key or with a NDZ/BLK key
-Syntax: SIG [signal name] [* (if applicable)]
-A signal is not necessairly dependent on the section where it phisically lies, but instead it is associated with the section for which it filters movements. The corresponding node is the node first intersected by the movements the signal filters
-The signal name is interpreted. If it contains "S", the signal is assumed to be a circulation signal. If it contains "M", the signal is assumed to be a shunt signal, unless it also contains "S", in which case it will be considered a combined signal.
-For the cases in which a circulation signal can not be the origin of main itineraries (i.e. the signal only contains red and white aspecs), the signal name shall be followed by a whitespace and a "*". This is not applicable to Shunt signals.
-If this key is used to encode a shunt limit indicator, the signal name shall be "M"
-
-7. SWP
-Encodes a signal/pedal binomial on a certain section
-This key can only exist asociated with a NDE key or with a NDZ/BLK key
-Syntax: SWP [signal name] [* (if applicable)]
-A signal with pedal is not necessairly dependent on the section where it phisically lies, but instead it is associated with the section for which it filters movements. The corresponding node is the node first intersected by the movements the signal filters
-The signal name is interpreted. If it contains "S", the signal is assumed to be a circulation signal. If it contains "M", the signal is assumed to be a shunt signal, unless it also contains "S", in which case it will be considered a combined signal.
-For the cases in which a circulation signal can not be the origin of main itineraries (i.e. the signal only contains red and white aspecs), the signal name shall be followed by a whitespace and a "*". This is not applicable to Shunt signals.
+### Encoding a switch or derailer
+1. Write keyword **SWI**
+2. Write the switche's label after the keyword. If the switch is a derailer, the label must contain "C"
 
 
-### Level One
-The level one configuration file encodes layout geometry. It is a text file with extension ".ZcfgL1". The file name is free, but it is sugested that it is a three letter code for the station.
-The encoding of L1 data from the DS to the file adheres to the following rules:
 
-**General rules:**
-1. All caps
-2. No trailing or leading spaces
-3. No empty paragraphs, except for empty line at end
-4. Data points for each key are introduced after the key (next paragraphs until next key is reached)
-        
-**Specific key rules:**
+review each key
 
-1. SECS
-PKs of the several section's nodes
-Syntax: SECS
-            [section_1_label] [pk_of_node_A] [pk_of_node_B] ... [pk_of_node_N]
-            ...
-            [section_n_label] [pk_of_node_A] [pk_of_node_B] ... [pk_of_node_N]
-            
-2. SWIS
-Point pk and fouling point pk (if its not a derailer)
-Syntax: SWIS
-            [switch_1_label] [pk_point] [pk_fouling_point (if applicable)]
-            ...
-            [switch_n_label] [pk_point] [pk_fouling_point (if applicable)]
 
-3. SIGS
-Pk of signal poles
-Syntax: SIGS
-            [signal_1_label] [pk] [pk_ZAP_origin (if applicable)] [pk_ZAP_origin_safety_factor (if applicable)]
-               ...
-            [signal_n_label] [pk] [pk_ZAP_origin (if applicable)] [pk_ZAP_origin_safety_factor (if applicable)]
-If a ZAP origin PK is stated, the ZAP origin safety factor must v«be stated, iven if it is null.
-            
 
-### Operational Parameters
-This file contains a set of constants used for calculations. These are usually the same for most stations
 
-The variable names in the file shall not be modified, only theys attributed values.
-The variable names ocupy a paragraph each, with the corresponding value or values sepparated by white spaces
 
-**Description of constants:**
 
-1. MAIN_OL_DISTANCE
-    Overlap distance for main itineraries.
-    Value in meters.
 
-2. DOS_OL_DISTANCE
-    Overlap distance for drive on sight itineraries.
-    Value in meters.
-    
-3. SHUNT_OL_DISTANCE
-    Overlap distance for shunt itineraries.
-    Value in meters.
-    
-4. HORSE_NECK_POSSIBLE
-    If itineraries through two switches in the reverse position, both having they'r point at the same pk, are possible.
-    TRUE or FALSE
 
-5. TO_BLOCK
-    Types of itineraries that can be routed to a block.
-    [type_A] ... [type_N]
-    (types are MAIN, DOS and SHUNT)
-    (can be empty)
-    
-6. TO_NDZ
-    Types of itineraries that can be routed to a no detection zone.
-    [type_A] ... [type_N]
-    (types are MAIN, DOS and SHUNT)
-    (can be empty)
-    
-7. TO_TERMINAL
-    Types of itineraries that can be routed to a terminal section (has one or more disconnected nodes).
-    [type_A] ... [type_N]
-    (types are MAIN, DOS and SHUNT)
-    (can be empty)
-    
-8. TO_TERMINAL_SWITCH_BRANCH
-    Types of itineraries that can be routed to a terminal section, where the section has more than two nodes.
-    [type_A] ... [type_N]
-    (types are MAIN, DOS and SHUNT)
-    (can be empty)
-    
+
+
+
+
+
+
+
