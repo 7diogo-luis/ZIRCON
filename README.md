@@ -11,12 +11,12 @@ Automation in railway signaling projects. Possible train movements, interlocking
 3. Every line starts with a keyword (**BLK**, **NDZ**, **SEC**, **NDE**, **PNT**, **SIG**, **SWP**)
 4. No trailing or leading spaces
 5. No empty lines, except for last line
-6. Tabs are used before keywords to denote dependency between encoded elements
+6. Tabs should used before keywords to denote dependency between encoded elements
 7. Keyword arguments are separated by whitespaces
    
 ### Encoding a block
 1. Write keyword **BLK**
-2. Write the block's label after the keyword (three or four letters or three letters followed by one number character). If the number in the label is odd, it is assumed that the block has an ascending normal direction, and vice versa. 
+2. Write the block's label after the keyword (three letters or three letters followed by one number character). If the number in the label is odd, it is assumed that the block has an ascending normal direction, and vice versa. 
 3. If the block has an associated signal, encode it on the next line using the signal specific keywords (**SIG** or **SWP**)
 
 ### Encoding an area without train detection (singularly connected to the area with train detection)
@@ -27,14 +27,14 @@ Automation in railway signaling projects. Possible train movements, interlocking
 ### Encoding a section
 1. Write keyword **SEC**
 2. Write the section's label after the keyword
-3. If the section contains a double junction switch, write **TJD** after the section's label
+3. If the section contains a double-junction-switch, write **TJD** after the section's label
 4. If the section does not possess train detection (area without train detection not singularly connected to the area with train detection), write **NDZ** after the section's label or after **TJD**
 
 ### Encoding a node
 1. Write keyword **NDE**
 2. Write the node's index after the keyword
 3. If there is an element connected to the node, write the label of that element after the node's index
-4. If the section containing the encoded node contains a single junction switch, and the node can not be crossed by transits that also cross section branches, write **-** after the label of the connected element
+4. If the section containing the encoded node contains a single-junction-switch, and the node can not be crossed by transits that also cross section branches, write **-** after the label of the connected element
 * Note 1: A node is always associated with a section. The association is made with the section encoded immediatly before the node
 * Note 2: The index of a node is an uppercase letter found by negativelly rotating an imaginary axis over the section containing the relevant node. The first node to be intersectid by the imaginary axis has index "A", and the next intercepted nodes are assigned the following alphabet's letters
   
