@@ -119,7 +119,10 @@ Automation in railway signaling projects. Possible train movements, interlocking
 1. Encode a station (write the station's **.zlt** and **.zlg** files)
 2. Place the station's **.zlt** and **.zlg** files in the directory "stations/input"
 3. Write a **.zop** file with the parameters to use (if a suitable file was not written already)
-4. 
+4. Place the **.zop** file to use in the directory "parameters"
+5. Launch ZIRCON (run "mainLoop.py" in the main directory)
+6. Use the **proc** command to compute the station's PEE. Select the relevant **.zlt**, **.zlg** and **.zop** files via arguments of the **proc** command
+7. The generated PEE will be written by ZIRCON in the directory "stations/output"
 
 
 
