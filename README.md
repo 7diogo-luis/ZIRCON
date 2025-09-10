@@ -3,6 +3,23 @@
 ## Description
 Automation in railway signaling projects. Possible train movements, interlocking requirements, delay timings and incompatible movements are automatically obtained from signaling diagrams (i.e. automatic generation of PEE and Incompatibilities from DS/DSA data). Rapid design iterations in the project phase are enabled, accelerating delivery and enhancing optimization, while also improving safety.
 
+## Usage guide
+
+1. Encode a station (write the station's **.zlt** and **.zlg** files)
+2. Place the station's **.zlt** and **.zlg** files in the directory "stations/input"
+3. Write a **.zop** file with the parameters to use (if a suitable file was not written already)
+4. Place the **.zop** file to use in the directory "parameters"
+5. Launch ZIRCON (run "mainLoop.py" in the main directory)
+6. Use the **proc** command to compute the station's PEE. Select the relevant **.zlt**, **.zlg** and **.zop** files via arguments of the **proc** command
+7. The generated PEE will be written by ZIRCON in the directory "stations/output"
+
+## CLI Commands
+
+* **proc**: Compute a station's PEE. Follow the command with the station's abbreviation (filename of corresponding **.zlt** and **.zlg** files) and the filename of the **.zop** file to use. Arguments are sepparated by white spaces
+* **debug**: Switch to debug mode. **proc** commands given in debug mode will compute a station's PEE and also return core internal variables
+* **prod**: Switch to production mode, where **proc** commands will not return core internal variables
+* **exit**: Exit the program
+
 ## ZIRCON Layout Topography File (.zlt)
 
 ### General rules
@@ -106,35 +123,3 @@ Automation in railway signaling projects. Possible train movements, interlocking
 * **allow_distant_switch_OL_lock**: If switches in overlap sections that have the point PK's distance to the movement's destination signal greater than the overlap distance should be locked. Arguments can be **True** and **False**
 * **derailer_alt_OL_allowed_types**: Movement regimes for which an alternative overlap which locks a derailer in an overlap section in the normal position can exist. Arguments can be: **Main**, **DOS** and **Shunt**
 * **derailer_margin**: Maximum distance on an overlap section before a derailer, so that an alternative overlap with the derailer locked in the normal position will have that section excluded from the overlap due to derailer filtering
-
-## CLI Commands
-
-* **proc**: Compute a station's PEE. Follow the command with the station's abbreviation (filename of corresponding **.zlt** and **.zlg** files) and the filename of the **.zop** file to use. Arguments are sepparated by white spaces
-* **debug**: Switch to debug mode. **proc** commands given in debug mode will compute a station's PEE and also return core internal variables
-* **prod**: Switch to production mode, where **proc** commands will not return core internal variables
-* **exit**: Exit the program
-
-## Usage guide
-
-1. Encode a station (write the station's **.zlt** and **.zlg** files)
-2. Place the station's **.zlt** and **.zlg** files in the directory "stations/input"
-3. Write a **.zop** file with the parameters to use (if a suitable file was not written already)
-4. Place the **.zop** file to use in the directory "parameters"
-5. Launch ZIRCON (run "mainLoop.py" in the main directory)
-6. Use the **proc** command to compute the station's PEE. Select the relevant **.zlt**, **.zlg** and **.zop** files via arguments of the **proc** command
-7. The generated PEE will be written by ZIRCON in the directory "stations/output"
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
