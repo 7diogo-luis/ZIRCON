@@ -6,7 +6,7 @@ Automation in railway signaling projects. Possible train movements, interlocking
 ## ZIRCON Layout Topography File (.zlt)
 
 ### General rules
-1. The filename should be the stations abbreviation, for ease of use. The filename must be equal to the filename of the corresponding **.zlg** file
+1. The filename must have no white spaces. It should be the stations abbreviation, for ease of use. The filename must be equal to the filename of the corresponding **.zlg** file
 2. All caps
 3. Every line starts with a keyword (**BLK**, **NDZ**, **SEC**, **NDE**, **PNT**, **SIG**, **SWP**)
 4. No trailing or leading spaces
@@ -34,7 +34,7 @@ Automation in railway signaling projects. Possible train movements, interlocking
 1. Write keyword **NDE**
 2. Write the node's index after the keyword
 3. If there is an element connected to the node, write the label of that element after the node's index
-4. If the section containing the encoded node contains a single-junction-switch, and the node can not be crossed by transits that also cross section branches, write **-** after the label of the connected element
+4. If the section containing the encoded node contains a single-junction-switch, and the node can not be crossed by transits that also cross section branches with associated switches, write **-** after the label of the connected element
 * Note 1: A node is always associated with a section. The association is made with the section encoded immediatly before the node
 * Note 2: The index of a node is an uppercase letter found by negativelly rotating an imaginary axis over the section containing the relevant node. The first node to be intersectid by the imaginary axis has index "A", and the next intercepted nodes are assigned the following alphabet's letters
   
@@ -54,13 +54,13 @@ Automation in railway signaling projects. Possible train movements, interlocking
 ## ZIRCON Layout Geometry File (.zlg)
 
 ### General rules
-1. The filename should be the stations abbreviation, for ease of use. The filename must be equal to the filename of the corresponding **.zlt** file
+1. The filename must have no white spaces. It should be the stations abbreviation, for ease of use. The filename must be equal to the filename of the corresponding **.zlt** file
 2. All caps
 3. No trailing or leading spaces
 4. No empty lines, except for last line
 5. Tabs should used before data points to denote dependency between encoded elements
 6. Data point arguments are separated by whitespaces
-7. Any distance unit can be used, but it must be globally used
+7. The distance unit used in the **.zop** file must be used in the **.zlg** file
 
 ### Encoding a section
 1. Write the section's label
@@ -80,7 +80,32 @@ Automation in railway signaling projects. Possible train movements, interlocking
 4. If the signal is included in an aspect sequence and movements originating from the signal have a zone-of-approximation, write the zone-of-approximation's safety factor (distance)
 * Note: Signals are encoded on sepparate paragraphs, but all of them are preceded by a **SIGS** keyword
 
+## ZIRCON Operational Parameters File (.zop)
 
+### General rules
+1. The filename must have no white spaces
+2. No trailing or leading spaces
+3. No empty lines, except for last line
+4. Keyword arguments are separated by whitespaces
+5. Keywords must not be added, deleted or modified
+6. Any distance unit can be used, but it must be globally used
+
+### Keyword description and arguments
+* **regimes_to_block**: Movement regimes that are allowed to have a block as destination. Arguments can be: **Main**, **DOS** and **Shunt**
+* **regimes_to_NDZ**: Movement regimes that are allowed to have a singularly connected no-detection-zone as destination. Arguments can be: **Main**, **DOS** and **Shunt**
+* **regimes_to_terminal**: Movement regimes that are allowed to have a terminal section (section with disconnected node) as destination. Arguments can be: **Main**, **DOS** and **Shunt**
+* **allow_shunt_to_circ_sig**: If shunt movements with circulation signals as destinations are possible. Arguments can be **True** and **False**
+* **terminal_branches_are_destinations**: If a disconnected section's branch is a valid destination for movements. Arguments can be **True** and **False**. Relevant only if there are possible movement regimes with terminal sections as destinations
+* **overlap_to_terminal_branch**: If movements can have alternative overlaps that cross a section's terminal branch. Arguments can be **True** and **False**
+* **main_ol_distance**: Overlap distance of main movements
+* **dos_ol_distance**: Overlap distance of DOS movements
+* **shunt_ol_distance**: Overlap distance of shunt movements
+* **horse_neck_possible**: If movements containing "horse neck" transit sequences are allowed (i.e. four or more consecutivelly crossed sections that have switches set in the reverse position, and where the first and last sections of this sequence are connected). Arguments can be **True** and **False**
+* **logic_ol_possible_regimes**: Movement regimes that are allowed to have logic overlap. Arguments can be: **Main**, **DOS** and **Shunt**
+* **logic_ol_switch_point_dependent**: If logic overlap possibility should be assessed based on the distance between the destination signal and the overlap switch's point PK, instead of the mere existance of tip oriented switches in an overlap section. Arguments can be **True** and **False**
+* **allow_distant_switch_OL_lock**: If switches in overlap sections that have the point PK's distance to the movement's destination signal greater than the overlap distance should be locked. Arguments can be **True** and **False**
+* **derailer_alt_OL_allowed_types**: Movement regimes for which an alternative overlap which locks a derailer in an overlap section in the normal position can exist. Arguments can be: **Main**, **DOS** and **Shunt**
+* **derailer_margin**: Maximum distance on an overlap section before a derailer, so that an alternative overlap with the derailer locked in the normal position will have that section excluded from the overlap due to derailer filtering
 
 
 
