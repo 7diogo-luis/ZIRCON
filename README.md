@@ -61,6 +61,7 @@ Automation in railway signaling projects. Possible train movements, interlocking
 3. If the signal is for circulation movements but it can not originate main movements (i.e. the signal only has red and white beams), write __*__ after the signal's label
 * Note 1: A signal is always associated with a node, a block, or a no-detection-zone. The association is made with the node, block, no-detection-zone encoded immediatly before the signal
 * Note 2: A signal is associated with the element on to which it filters an incoming movement, even if it phisically lies on another element. The node with which the signal is associated is the node that would first be crossed by the incoming movement filtered by the signal. If the signal is associated with a block or singularly connected no-detection-zone, it is not associated with a node since these elements do not possess explicit nodes (they only have one connection, hence one node, hence the signal is associated with the connection of that element with the area with train detection)
+* Note 3: In cases where a signal filters movements through more than one node of a section, or even different sections (i.e. signals with origin/destination indicator), associate the signal with each of the relevant nodes. Do not change the signal's label, state the same label as many times as necessary. Proper treatment will automatically be given to that signal.
 
 ### Encoding a switch or derailer
 1. Write keyword **SWI**
