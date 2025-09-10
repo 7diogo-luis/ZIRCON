@@ -6,7 +6,7 @@ Automation in railway signaling projects. Possible train movements, interlocking
 ## ZIRCON Layout Topography File (.zlt)
 
 ### General rules
-1. The filename should be the stations abbreviation, for ease of use
+1. The filename should be the stations abbreviation, for ease of use. The filename must be equal to the filename of the corresponding **.zlg** file
 2. All caps
 3. Every line starts with a keyword (**BLK**, **NDZ**, **SEC**, **NDE**, **PNT**, **SIG**, **SWP**)
 4. No trailing or leading spaces
@@ -40,7 +40,7 @@ Automation in railway signaling projects. Possible train movements, interlocking
   
 ### Encoding a signal
 1. Write keyword **SIG** if the signal has no associated pedal, otherwise write keyword **SWP**
-2. Write the signal's label after the keyword. If the signal is for circulation movements, the label should contain "S". If the signal is for shunt movements, the label should contain "M". If the signal is for circulation and shunt movements, the label should contain "S" and "M". If the signal is a shunting limit indicator, the signal label should be "M"
+2. Write the signal's label after the keyword. If the signal is for circulation movements, the label should contain "S". If the signal is for shunt movements, the label should contain "M". If the signal is for circulation and shunt movements, the label should contain "S" and "M". If the signal is a shunting-limit-indicator, the signal label should be "M"
 3. If the signal is for circulation movements but it can not originate main movements (i.e. the signal only has red and white beams), write __*__ after the signal's label
 * Note 1: A signal is always associated with a node, a block, or a no-detection-zone. The association is made with the node, block, no-detection-zone encoded immediatly before the signal
 * Note 2: A signal is associated with the element on to which it filters an incoming movement, even if it phisically lies on another element. The node with which the signal is associated is the node that would first be crossed by the incoming movement filtered by the signal. If the signal is associated with a block or singularly connected no-detection-zone, it is not associated with a node since these elements do not possess explicit nodes (they only have one connection, hence one node, hence the signal is associated with the connection of that element with the area with train detection)
@@ -50,6 +50,35 @@ Automation in railway signaling projects. Possible train movements, interlocking
 2. Write the switch's label after the keyword. If the switch is a derailer, the label must contain "C"
 * Note 1: A switch is always associated with a node. The association is made with the node encoded immediatly before the switch
 * Note 2: If a transit through a section's node requires a switch on that section to be set in the reverse position, then that switch is associated with that node
+
+## ZIRCON Layout Geometry File (.zlg)
+
+### General rules
+1. The filename should be the stations abbreviation, for ease of use. The filename must be equal to the filename of the corresponding **.zlt** file
+2. All caps
+3. No trailing or leading spaces
+4. No empty lines, except for last line
+5. Tabs should used before data points to denote dependency between encoded elements
+6. Data point arguments are separated by whitespaces
+7. Any distance unit can be used, but it must be globally used
+
+### Encoding a section
+1. Write the section's label
+2. After the section's label, write the PKs of each of the section's nodes, sepparated by white-spaces. Start with the PK of the node with index "A", and follow alphabetic order
+* Note: Sections are encoded on sepparate paragraphs, but all of them are preceded by a **SECS** keyword
+
+### Encoding a switch or derailer
+1. Write the switch's label
+2. Write the PK of the switch or derailer's point after the switch or derailer's label
+3. If the switch is not a derailer, write the switch's LR PK after the switch's point PK
+* Note: Switches are encoded on sepparate paragraphs, but all of them are preceded by a **SWIS** keyword
+
+### Encoding a signal
+1. Write the signal's label. If the signal is a shunting-limit-indicator, it's label must be "M_section", where "section" is the label of the section with which the shunting-limit-indicator is associated
+2. Write the PK of the signal's pole after the signal's label
+3. If the signal is included in an aspect sequence and movements originating from the signal have a zone-of-approximation, write the PK of the zone-of-approximation's origin signal pole after the encoded signal's pole PK
+4. If the signal is included in an aspect sequence and movements originating from the signal have a zone-of-approximation, write the zone-of-approximation's safety factor (distance)
+* Note: Signals are encoded on sepparate paragraphs, but all of them are preceded by a **SIGS** keyword
 
 
 
