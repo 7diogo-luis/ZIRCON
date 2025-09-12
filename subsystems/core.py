@@ -1,8 +1,9 @@
-"""ZIRCON Input Layer."""
+"""ZIRCON Core."""
 
 from modules.signalProcessor import signalProcessor
 from modules.spatialEngine import spatialEngine
 from modules.router import router
+#from modules.flankProtection import flankProtection
 
 
 def core(layout, parameters, debug_mode):
@@ -31,16 +32,21 @@ def core(layout, parameters, debug_mode):
                               parameters['allow_shunt_to_circ_sig'])
     paths = spatialEngine(layout, parameters['overlap_to_terminal_branch'],
                           parameters['horse_neck_possible'])
-    movements = router(paths, signals, layout, parameters['main_ol_distance'],
-                       parameters['dos_ol_distance'],
-                       parameters['shunt_ol_distance'],
-                       parameters['logic_ol_possible_regimes'],
-                       parameters['logic_ol_switch_point_dependant'],
-                       parameters['allow_distant_switch_OL_lock'],
-                       parameters['derailer_alt_OL_allowed_types'],
-                       parameters['derailer_margin'])
+    raw_movements = router(paths, signals, layout,
+                           parameters['main_ol_distance'],
+                           parameters['dos_ol_distance'],
+                           parameters['shunt_ol_distance'],
+                           parameters['logic_ol_possible_regimes'],
+                           parameters['logic_ol_switch_point_dependant'],
+                           parameters['allow_distant_switch_OL_lock'],
+                           parameters['derailer_alt_OL_allowed_types'],
+                           parameters['derailer_margin'])
+    # movements = flankProtection(raw_movements, layout, signals,
+    #                             parameters['shunt_sig_filters_fp'])
+    movements = None #TEMPORARY
 
     if debug_mode:
         return {'signals': signals,
                 'paths': paths,
+                'raw_movements': raw_movements,
                 'movements': movements}

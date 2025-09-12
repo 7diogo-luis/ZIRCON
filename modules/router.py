@@ -22,7 +22,8 @@ def router(paths, signals, layout, m_OL, d_OL, s_OL, viable_logic_OL,
     Returns
     -------
     list
-        List of dictionaries, each relative to a possible itinerary.
+        List of dictionaries, each relative to a possible itinerary (without
+        flank protection sections).
     """
     raw_its_incomplete = ITFinder(paths, signals, layout)
     raw_its = addSwiAndTrans(raw_its_incomplete, paths)
@@ -43,9 +44,9 @@ def router(paths, signals, layout, m_OL, d_OL, s_OL, viable_logic_OL,
     unlbld_its = derailerAltOL(layout, unlbld_its_no_der_alt_OL,
                                derailer_alt_OL_allowed_types, derailer_margin)
     unconsolidated_its = ITLabeler(unlbld_its, layout, signals)
-    movements = ITConsolidator(unconsolidated_its)
+    raw_movements = ITConsolidator(unconsolidated_its)
 
-    return movements
+    return raw_movements
 
 
 def ITFinder(paths, signals, layout):
@@ -1163,9 +1164,10 @@ def ITConsolidator(unconsolidated_its, keep_aux_data=False):
     Returns
     -------
     list
-        List of dictionaries, each relative to a possible itinerary.
+        List of dictionaries, each relative to a possible itinerary (without
+        flank protection sections).
     """
-    movements = []
+    raw_movements = []
 
     for it in unconsolidated_its:
         it_dict = {}
@@ -1197,9 +1199,9 @@ def ITConsolidator(unconsolidated_its, keep_aux_data=False):
                                   != [] else None,
                               'special': it['special']}
 
-        movements.append(deepcopy(it_dict))
+        raw_movements.append(deepcopy(it_dict))
 
-    return movements
+    return raw_movements
 
 
 def getConnectedSection(section_lbl, node_idx, layout):

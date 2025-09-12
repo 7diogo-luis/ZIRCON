@@ -15,6 +15,7 @@ while True:
         parameters = output['inputLayer']['parameters']
         signals = output['core']['signals']
         paths = output['core']['paths']
+        raw_movements = output['core']['raw_movements']
         movements = output['core']['movements']
         break
 

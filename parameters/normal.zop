@@ -9,7 +9,7 @@ dos_ol_distance 50
 shunt_ol_distance 50
 horse_neck_possible False
 logic_ol_possible_regimes Shunt
-logic_ol_switch_point_dependant True
+logic_ol_switch_point_dependent True
 allow_distant_switch_OL_lock False
 derailer_alt_OL_allowed_types Main DOS Shunt
 derailer_margin 2

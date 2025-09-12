@@ -30,8 +30,7 @@ def spatialEngine(layout, allow_terminal_branches, HN_possible):
     adjacency_data = adjacency(layout)
     abs_origins = absoluteOrigins(layout, allow_terminal_branches)
     imp_trans = impossibleTransits(layout)
-    raw_paths_w_imp_trans_HN = pathFinder(adjacency_data, abs_origins, layout,
-                                          imp_trans)
+    raw_paths_w_imp_trans_HN = pathFinder(adjacency_data, abs_origins, layout)
     raw_paths_w_HN = impTransEnforcer(raw_paths_w_imp_trans_HN, imp_trans)
 
     if not HN_possible:
@@ -999,7 +998,7 @@ def pathToBranch(path, abs_origins, layout):
                         return new_path
 
 
-def pathFinder(adjacency_data, abs_origins, layout, imp_trans):
+def pathFinder(adjacency_data, abs_origins, layout):
     """Find all possible paths (transit sequences) in the station.
 
     Parameters
