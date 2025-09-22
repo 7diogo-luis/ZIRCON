@@ -189,11 +189,11 @@ def zlgParser(station_label):
             signal_pk = float(split_line[1])
 
             if len(split_line) != 2:
-                zap_origin = split_line[2]
-                zap_origin_sft_fac = split_line[3]
+                zap_origin = float(split_line[2])
+                zap_origin_sft_fac = float(split_line[3])
 
             else:
-                zap_origin = zap_origin_sft_fac = None
+                zap_origin = zap_origin_sft_fac = ''
 
             signal = {'label': signal_lbl,
                       'pk': signal_pk,

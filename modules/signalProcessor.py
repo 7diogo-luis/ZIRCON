@@ -57,7 +57,9 @@ def sigTable(layout, allow_terminal_branches):
                                       'direction',
                                       'virtual',
                                       'alt_origin',
-                                      'prev_sec'])
+                                      'prev_sec',
+                                      'zap_origin_pk',
+                                      'zap_origin_sft_fac'])
 
     for section in layout['sections']:
 
@@ -74,7 +76,12 @@ def sigTable(layout, allow_terminal_branches):
                                                  'direction': direction,
                                                  'virtual': False,
                                                  'alt_origin': False,
-                                                 'prev_sec': prev_sec}
+                                                 'prev_sec': prev_sec,
+                                                 'zap_origin_pk': node
+                                                 ['signal']['zap_origin_pk'],
+                                                 'zap_origin_sft_fac': node
+                                                 ['signal']
+                                                 ['zap_origin_sft_fac']}
 
             if (node['con_ele'] in blocks or node['con_ele'] in NDZs):
                 signal = node['con_ele']
@@ -87,7 +94,9 @@ def sigTable(layout, allow_terminal_branches):
                                                  'direction': direction,
                                                  'virtual': True,
                                                  'alt_origin': False,
-                                                 'prev_sec': prev_sec}
+                                                 'prev_sec': prev_sec,
+                                                 'zap_origin_pk': '',
+                                                 'zap_origin_sft_fac': ''}
 
             if node['con_ele'] is None and (len(section['nodes']) == 2
                                             or allow_terminal_branches):
@@ -109,7 +118,9 @@ def sigTable(layout, allow_terminal_branches):
                                                  'direction': direction,
                                                  'virtual': True,
                                                  'alt_origin': False,
-                                                 'prev_sec': prev_sec}
+                                                 'prev_sec': prev_sec,
+                                                 'zap_origin_pk': '',
+                                                 'zap_origin_sft_fac': ''}
 
     for block_dict in layout['blocks']:
 
@@ -132,7 +143,11 @@ def sigTable(layout, allow_terminal_branches):
                              'direction': direction,
                              'virtual': False,
                              'alt_origin': False,
-                             'prev_sec': prev_sec}
+                             'prev_sec': prev_sec,
+                             'zap_origin_pk': block_dict['signal']
+                             ['zap_origin_pk'],
+                             'zap_origin_sft_fac': block_dict['signal']
+                             ['zap_origin_sft_fac']}
 
     for ndz_dict in layout['NDZs']:
 
@@ -143,8 +158,8 @@ def sigTable(layout, allow_terminal_branches):
                 for node in section['nodes']:
 
                     if node['con_ele'] == ndz_dict['label']:
-                        signal = block_dict['signal']['label']
-                        section_lbl = block_dict['label']
+                        signal = ndz_dict['signal']['label']
+                        section_lbl = ndz_dict['label']
                         direction = 'desc' if node['index'][-1] ==\
                             '-' else 'asc'
                         prev_sec = section['label']
@@ -155,7 +170,11 @@ def sigTable(layout, allow_terminal_branches):
                              'direction': direction,
                              'virtual': False,
                              'alt_origin': False,
-                             'prev_sec': prev_sec}
+                             'prev_sec': prev_sec,
+                             'zap_origin_pk': ndz_dict['signal']
+                             ['zap_origin_pk'],
+                             'zap_origin_sft_fac': ndz_dict['signal']
+                             ['zap_origin_sft_fac']}
 
     return sig_table
 

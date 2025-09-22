@@ -319,7 +319,7 @@ def overlapTrimmer(raw_its, layout, m_OL, d_OL, s_OL):
 
 def derailerAltOL(layout, unlbld_its_no_der_alt_OL,
                   derailer_alt_OL_allowed_types, derailer_margin):
-    """Compute real overlap.
+    """Create movements that have normal derailers in overlap.
 
     Parameters
     ----------

@@ -426,17 +426,17 @@ def exporter(PEE):
 
     row_num = 2
 
-    for arc in PEE['DELAYS']['approach_rt_cncl']:
+    for ARC in PEE['DELAYS']['approach_rt_cncl']:
         row_num += 1
-        workbook['Delays'].cell(row_num, 3, arc['signal'])
-        workbook['Delays'].cell(row_num, 4, arc['delay'])
+        workbook['Delays'].cell(row_num, 3, ARC['signal'])
+        workbook['Delays'].cell(row_num, 4, ARC['delay'])
 
     row_num = 2
 
-    for arc in PEE['DELAYS']['emerg_rt_cncl']:
+    for ERC in PEE['DELAYS']['emerg_rt_cncl']:
         row_num += 1
-        workbook['Delays'].cell(row_num, 5, arc['destination'])
-        workbook['Delays'].cell(row_num, 6, arc['delay'])
+        workbook['Delays'].cell(row_num, 5, ERC['destination'])
+        workbook['Delays'].cell(row_num, 6, ERC['delay'])
 
     row_num = 1
 
