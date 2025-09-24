@@ -18,11 +18,17 @@ def loader(station_label, parameters_label):
         the stations topography, "lt_geo" contains the stations geometry, and
         "parameters" constains the operational parameters.
     """
-    lt_top_raw = zltParser(station_label)
-    lt_geo = zlgParser(station_label)
-    parameters = zopParser(parameters_label)
+    lt_top_raw, zlt_input = zltParser(station_label)
+    lt_geo, zlg_input = zlgParser(station_label)
+    aux_data, zad_input = zadParser(station_label)
+    parameters, zop_input = zopParser(parameters_label)
 
-    return lt_top_raw, lt_geo, parameters
+    inputs = {'zlt': zlt_input,
+              'zlg': zlg_input,
+              'zad': zad_input,
+              'zop': zop_input}
+
+    return lt_top_raw, lt_geo, aux_data, parameters, inputs
 
 
 def zltParser(station_label):
@@ -46,8 +52,10 @@ def zltParser(station_label):
     blocks = []
     NDZs = []
     sections = []
+    zlt_input = []
 
     for line in lines:
+        zlt_input.append(line)
         split_line = line.split()
 
         if split_line[0] == 'BLK':
@@ -121,7 +129,7 @@ def zltParser(station_label):
                   'NDZs': NDZs,
                   'sections': sections}
 
-    return lt_top_raw
+    return lt_top_raw, zlt_input
 
 
 def zlgParser(station_label):
@@ -145,8 +153,10 @@ def zlgParser(station_label):
     sections = []
     switches = []
     signals = []
+    zlg_input = []
 
     for line in lines:
+        zlg_input.append(line)
         split_line = line.split()
 
         if 'SECS' in split_line:
@@ -205,7 +215,76 @@ def zlgParser(station_label):
               'switches': switches,
               'signals': signals}
 
-    return lt_geo
+    return lt_geo, zlg_input
+
+
+def zadParser(station_label):
+    """Read and interpret .zad file, which encodes station's auxiliary data.
+
+    Parameters
+    ----------
+    station_label : str
+        Label of the station to be processed (<STATION_LABEL>.zad).
+
+    Returns
+    -------
+    dict
+        Layout's auxiliary data.
+    """
+    file_name = 'stations/input/' + station_label + '.zad'
+
+    with open(file_name, 'r') as file:
+        lines = file.readlines()
+
+    aux_data = {}
+    zad_input = []
+
+    for line in lines:
+        zad_input.append(line)
+        split_line = line.split()
+
+        if split_line[0] == 'station_name':
+            aux_data['station_name'] = concat_string(split_line[1:])
+
+        elif split_line[0] == 'station_lbl':
+            aux_data['station_lbl'] = concat_string(split_line[1:])
+
+        elif split_line[0] == 'interlocking_name':
+            aux_data['interlocking_name'] = concat_string(split_line[1:])
+
+        elif split_line[0] == 'encoding_author':
+            aux_data['encoding_author'] = concat_string(split_line[1:])
+
+        elif split_line[0] == 'date':
+            aux_data['date'] = concat_string(split_line[1:])
+
+    return aux_data, zad_input
+
+
+def concat_string(split_string):
+    """Transform a list of string snippets in to a concatenated string.
+
+    Parameters
+    ----------
+    split_string : list
+        List of string snippets.
+
+    Returns
+    -------
+    str
+        Concatenated string.
+    """
+    string = ''
+    first_iter = True
+    for snippet in split_string:
+
+        if not first_iter:
+            string += ' '
+
+        string += snippet
+        first_iter = False
+
+    return string
 
 
 def zopParser(parameters_label):
@@ -227,8 +306,10 @@ def zopParser(parameters_label):
         lines = file.readlines()
 
     parameters = {}
+    zop_input = []
 
     for line in lines:
+        zop_input.append(line)
         split_line = line.split()
 
         if split_line[0] == 'regimes_to_block':
@@ -279,7 +360,37 @@ def zopParser(parameters_label):
         elif split_line[0] == 'derailer_margin':
             parameters['derailer_margin'] = float(split_line[-1])
 
-    return parameters
+        elif split_line[0] == 'shunt_sig_filters_fp':
+            parameters['shunt_sig_filters_fp'] = str2bool(split_line[-1])
+
+        elif split_line[0] == 'OL_delay_dist_weight':
+            parameters['OL_delay_dist_weight'] = float(split_line[-1])
+
+        elif split_line[0] == 'OL_delay_dist_bias':
+            parameters['OL_delay_dist_bias'] = float(split_line[-1])
+
+        elif split_line[0] == 'ARC_delay_dist_weight':
+            parameters['ARC_delay_dist_weight'] = float(split_line[-1])
+
+        elif split_line[0] == 'ERC_delay_circ_multiplier':
+            parameters['ERC_delay_circ_multiplier'] = float(split_line[-1])
+
+        elif split_line[0] == 'ERC_delay_shunt_multiplier':
+            parameters['ERC_delay_shunt_multiplier'] = float(split_line[-1])
+
+        elif split_line[0] == 'RC_min_delay':
+            parameters['RC_min_delay'] = float(split_line[-1])
+
+        elif split_line[0] == 'RC_max_delay':
+            parameters['RC_max_delay'] = float(split_line[-1])
+
+        elif split_line[0] == 'delay_round_multiple':
+            parameters['delay_round_multiple'] = float(split_line[-1])
+
+        elif split_line[0] == 'delay_round_down_allowed':
+            parameters['delay_round_down_allowed'] = str2bool(split_line[-1])
+
+    return parameters, zop_input
 
 
 def str2bool(string):

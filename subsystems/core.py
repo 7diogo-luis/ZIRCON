@@ -3,7 +3,8 @@
 from modules.signalProcessor import signalProcessor
 from modules.spatialEngine import spatialEngine
 from modules.router import router
-#from modules.flankProtection import flankProtection
+from modules.flankProtection import flankProtection
+from modules.delayEngine import delayEngine
 
 
 def core(layout, parameters, debug_mode):
@@ -23,6 +24,8 @@ def core(layout, parameters, debug_mode):
         containing relevant information.
     delays : dict
         Dictionary containing OL, ARI and AEI delays.
+    signals : Pandas DataFrame
+        Table of signals and their respective properties.
     """
     signals = signalProcessor(layout,
                               parameters['terminal_branches_are_destinations'],
@@ -41,12 +44,28 @@ def core(layout, parameters, debug_mode):
                            parameters['allow_distant_switch_OL_lock'],
                            parameters['derailer_alt_OL_allowed_types'],
                            parameters['derailer_margin'])
-    # movements = flankProtection(raw_movements, layout, signals,
-    #                             parameters['shunt_sig_filters_fp'])
-    movements = None #TEMPORARY
+    movements = flankProtection(raw_movements, layout, signals,
+                                parameters['shunt_sig_filters_fp'])
+    delays = delayEngine(movements, layout, signals,
+                         parameters['OL_delay_dist_weight'],
+                         parameters['OL_delay_dist_bias'],
+                         parameters['ARC_delay_dist_weight'],
+                         parameters['ERC_delay_circ_multiplier'],
+                         parameters['ERC_delay_shunt_multiplier'],
+                         parameters['main_ol_distance'],
+                         parameters['dos_ol_distance'],
+                         parameters['shunt_ol_distance'],
+                         parameters['RC_min_delay'],
+                         parameters['RC_max_delay'],
+                         parameters['delay_round_multiple'],
+                         parameters['delay_round_down_allowed'])
 
     if debug_mode:
         return {'signals': signals,
                 'paths': paths,
                 'raw_movements': raw_movements,
-                'movements': movements}
+                'movements': movements,
+                'delays': delays}
+
+    else:
+        return movements, delays, signals

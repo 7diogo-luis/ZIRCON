@@ -21,7 +21,8 @@ def inputLayer(station_label, parameters_label):
     parameters : dict
         Operational parameter variables as encoded in the .zop file.
     """
-    lt_top_raw, lt_geo, parameters = loader(station_label, parameters_label)
+    lt_top_raw, lt_geo, aux_data, parameters, inputs = loader(station_label,
+                                                              parameters_label)
     layout = preProcessor(lt_top_raw, lt_geo)
 
-    return layout, parameters
+    return layout, parameters, aux_data, inputs

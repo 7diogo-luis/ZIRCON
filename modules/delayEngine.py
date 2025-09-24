@@ -4,6 +4,70 @@ from math import ceil, floor
 from modules.router import getSignalData
 
 
+def delayEngine(movements, layout, signals, OL_delay_dist_weight,
+                OL_delay_dist_bias, ARC_delay_dist_weight,
+                ERC_delay_circ_multiplier, ERC_delay_shunt_multiplier, m_OL,
+                d_OL, s_OL, RC_min_delay, RC_max_delay, delay_round_multiple,
+                delay_round_down_allowed):
+    """Compute delay timings for the encoded station.
+
+    Parameters
+    ----------
+    movements : list
+        List of dictionaries, each relative to a possible itinerary.
+    layout : dict
+        Station's layout with explicit node signs.
+    signals : Pandas DataFrame
+        Table of signals and their respective properties.
+    OL_delay_dist_weight : float
+        Weight of the track length for calculation of overlap delays.
+    OL_delay_dist_bias : float
+        OL delay bias (value added to the overlap delay timing).
+    ARC_delay_dist_weight : float
+        Weight of the total distance for calculation of the ARC delay.
+    ERC_delay_circ_multiplier : float
+        Distance multiplier for curculation movements (ERC delay calculation).
+    ERC_delay_shunt_multiplier : float
+        Distance multiplier for shunt movements (ERC delay calculation).
+    m_OL : float
+        Overlap distance for main movements.
+    d_OL : float
+        Overlap distance for DOS movements.
+    s_OL : float
+        Overlap distance for shunt movements.
+    RC_min_delay : float
+        Minimum value for route cancellation delay timings.
+    RC_max_delay : float
+        Maximum value for route cancellation delay timings.
+    delay_round_multiple : float
+        Rounded delay timings will be a multiple of this number (after
+        rounding).
+    delay_round_down_allowed : bool
+        True if delay timings can be rounded down, False otherwise.
+
+    Returns
+    -------
+    dict
+        Dictionary containing OL, ARC and ERC delay timings.
+    """
+    overlap_delays = overlapDelays(movements, layout, OL_delay_dist_weight,
+                                   OL_delay_dist_bias, delay_round_multiple,
+                                   delay_round_down_allowed)
+    ARC_delays = ARCdelays(layout, signals, ARC_delay_dist_weight,
+                           RC_min_delay, RC_max_delay, delay_round_multiple,
+                           delay_round_down_allowed)
+    ERC_delays = ERCdelays(movements, layout, ERC_delay_circ_multiplier,
+                           ERC_delay_shunt_multiplier, m_OL, d_OL, s_OL,
+                           RC_min_delay, RC_max_delay, delay_round_multiple,
+                           delay_round_down_allowed, overlap_delays,
+                           ARC_delays)
+    delays = {'overlap': overlap_delays,
+              'approach_rt_cncl': ARC_delays,
+              'emerg_rt_cncl': ERC_delays}
+
+    return delays
+
+
 def extractNodePk(sec_lbl, nde_idx, layout):
     """Get PK of a specified node of a specified section.
 
@@ -334,10 +398,20 @@ def ERCdelays(movements, layout, circ_multiplier, shunt_multiplier, m_OL, d_OL,
         rnd_delay = roundTiming(delay, round_multiple, round_down_allowed)
 
         if destination is None:
-            dest_lbl = movement['destination']['literal']
+
+            if 'M_' in movement['destination']['literal']:
+                dest_lbl = movement['destination']['alias']
+
+            else:
+                dest_lbl = movement['destination']['literal']
 
         else:
-            dest_lbl = destination['label']
+
+            if 'M_' in movement['destination']['literal']:
+                dest_lbl = movement['destination']['alias']
+
+            else:
+                dest_lbl = destination['label']
 
         if dest_lbl in raw_ERC_delays['destinations']:
             index = raw_ERC_delays['destinations'].index(dest_lbl)

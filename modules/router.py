@@ -1149,7 +1149,7 @@ def ITLabeler(unlbld_its, layout, signals):
     return unconsolidated_its
 
 
-def ITConsolidator(unconsolidated_its, keep_aux_data=False):
+def ITConsolidator(unconsolidated_its, keep_aux_data=True):
     """Rearange the IT dictionaries, prioritizing the most relevant info.
 
     Parameters
@@ -1179,6 +1179,7 @@ def ITConsolidator(unconsolidated_its, keep_aux_data=False):
         it_dict['type'] = it['type']
         it_dict['direction'] = it['direction']
         it_dict['logic_overlap'] = it['logic_OL']
+        it_dict['special'] = it['special']
         it_dict['sections'] = {'route': it['route_secs'],
                                'overlap': it['OL_secs']}
         it_dict['transits'] = {'route': it['route_transits'],
@@ -1196,8 +1197,7 @@ def ITConsolidator(unconsolidated_its, keep_aux_data=False):
                               'alt_OL': it['alt_OL'],
                               'alt_route':
                                   it['alt_route'] if it['alt_route']
-                                  != [] else None,
-                              'special': it['special']}
+                                  != [] else None}
 
         raw_movements.append(deepcopy(it_dict))
 

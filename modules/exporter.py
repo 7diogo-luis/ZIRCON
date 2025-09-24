@@ -20,6 +20,8 @@ def exporter(PEE):
     workbook['Cover']['B8'] = sta_lbl_str
     workbook['Cover']['B9'] = PEE['COVER']['interlocking_name']
     workbook['Cover']['F3'] = PEE['COVER']['sw_version']
+    workbook['Cover']['A19'] = PEE['COVER']['encoding_author']
+    workbook['Cover']['A20'] = PEE['COVER']['date']
 
     row_num = 5
 
@@ -455,6 +457,12 @@ def exporter(PEE):
     for zop_line in PEE['INPUTS']['zop']:
         row_num += 1
         workbook['Inputs'].cell(row_num, 3, zop_line)
+
+    row_num = 1
+
+    for zad_line in PEE['INPUTS']['zad']:
+        row_num += 1
+        workbook['Inputs'].cell(row_num, 4, zad_line)
 
     save_path = os.getcwd() + '\\stations\\output\\'
     file_lbl = PEE['COVER']['station_lbl'] + '_Interlocking_Program.xlsx'

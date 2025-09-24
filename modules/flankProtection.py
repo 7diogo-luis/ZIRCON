@@ -2,6 +2,26 @@
 #INCOMPLETE
 
 from modules.spatialEngine import impossibleTransits
+from copy import deepcopy
+
+
+def flankProtection(raw_movements, layout, signals, shunt_sig_filters_fp):
+    
+    movements = deepcopy(raw_movements)
+
+    for movement in movements:
+
+        movement['sections']['flank_prot'] = {'route': {'vital': [],
+                                                        'sub_vital': [],
+                                                        'remote': []},
+                                              'overlap': {'vital': [],
+                                                          'sub_vital': [],
+                                                          'remote': []}}
+
+        movement['switches']['flank_prot'] = {'route': [],
+                                              'overlap': []}
+
+    return movements
 
 
 def flankProtectionSecsAndTransO1(raw_movement, layout, signals,
