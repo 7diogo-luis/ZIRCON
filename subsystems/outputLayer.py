@@ -4,7 +4,7 @@ from modules.exporter import exporter
 from modules.outputAssembler import outputAssembler
 
 
-def outputLayer(movements, delays, aux_data, inputs, layout, signals):
+def outputLayer(movements, delays, aux_data, inputs, layout, signals, mode):
     """Create .xlsx file containing the interlocking program data.
 
     Parameters
@@ -17,8 +17,17 @@ def outputLayer(movements, delays, aux_data, inputs, layout, signals):
         Dictionary containing the station's auxiliary data.
     inputs : dict
         Dictionary containing input data (.zlt, .zlg and .zop).
-    """
-    PEE = outputAssembler(movements, delays, aux_data, inputs, layout, signals)
-    exporter(PEE)
+    mode : str
+        "pickle" if the data is to be exported to a pickled file, "xlsx" if the
+        data is to be exported to a .xlsx file.
 
-    return PEE
+    Returns
+    -------
+    dict
+        Interlocking program.
+    """
+    interlocking_prog = outputAssembler(movements, delays, aux_data, inputs,
+                                        layout, signals)
+    exporter(interlocking_prog, mode)
+
+    return interlocking_prog

@@ -1,0 +1,25 @@
+regimes_to_block Main DOS
+regimes_to_NDZ DOS Shunt
+regimes_to_terminal Main DOS Shunt
+allow_shunt_to_circ_sig True
+terminal_branches_are_destinations False
+overlap_to_terminal_branch True
+main_ol_distance 120
+dos_ol_distance 50
+shunt_ol_distance 50
+horse_neck_possible False
+logic_ol_possible_regimes Shunt
+logic_ol_switch_point_dependent True
+allow_distant_switch_OL_lock False
+derailer_alt_OL_allowed_types Main DOS Shunt
+derailer_margin 2
+shunt_sig_filters_fp True
+OL_delay_dist_weight 0.18
+OL_delay_dist_bias 15
+ARC_delay_dist_weight 0.08
+ERC_delay_circ_multiplier 0.12
+ERC_delay_shunt_multiplier 0.36
+RC_min_delay 60
+RC_max_delay 255
+delay_round_multiple 5
+delay_round_down_allowed False

@@ -6,51 +6,67 @@ from subsystems.core import core
 from subsystems.outputLayer import outputLayer
 
 
-def controller(debug_mode, sw_version):
+def controller(persist):
     """Invoke relevant subsystems.
 
     Parameters
     ----------
-    debug_mode : bool
-        True if internal variables are to be returned after execution stops,
-        False otherwise.
-    sw_version : str
-        ZIRCON software version.
+    persist : dict
+        Current main variables.
 
     Returns
     -------
-    bool or str or None
-        String if user commands exit, dictionary with internal variables if
-        debug mode is set, None if another call to the controller is required.
+    dict
+        Updated main variables.
     """
-    commands = cli()
+    usr_request = cli(persist['sw_version'], persist['loaded_layout'],
+                      persist['processed_layout'])
+    persist['usr_request'] = usr_request
 
-    if commands is None:
-        return
+    if persist['usr_request']['action'] == 'load':
+        layout, parameters, aux_data, inputs = inputLayer(persist
+                                                          ['usr_request']
+                                                          ['modifier'], None)
+        aux_data['sw_version'] = persist['sw_version']
 
-    elif commands == 'exit':
-        return commands
+        persist['layout'] = layout
+        persist['aux_data'] = aux_data
+        persist['inputs'] = inputs
+        persist['loaded_layout'] = True
 
-    elif commands == 'debug' or commands == 'prod':
-        return commands
+        return persist
+
+    elif persist['usr_request']['action'] == 'process':
+        layout, parameters, aux_data, inputs = inputLayer(None, persist
+                                                          ['usr_request']
+                                                          ['modifier'])
+        persist['inputs']['zop'] = inputs['zop']
+
+        persist['parameters'] = parameters
+        signals, paths, raw_movements, movements, delays = core(persist
+                                                                ['layout'],
+                                                                persist
+                                                                ['parameters'])
+        persist['signals'] = signals
+        persist['paths'] = paths
+        persist['raw_movements'] = raw_movements
+        persist['movements'] = movements
+        persist['delays'] = delays
+        persist['processed_layout'] = True
+
+        return persist
+
+    elif persist['usr_request']['action'] == 'export':
+        interlocking_prog = outputLayer(persist['movements'],
+                                        persist['delays'],
+                                        persist['aux_data'],
+                                        persist['inputs'],
+                                        persist['layout'],
+                                        persist['signals'],
+                                        persist['usr_request']['modifier'])
+        persist['interlocking_prog'] = interlocking_prog
+
+        return persist
 
     else:
-        station_label = commands['station_label']
-        parameters_label = commands['parameters_label']
-
-        layout, parameters, aux_data, inputs = inputLayer(station_label,
-                                                          parameters_label)
-        aux_data['sw_version'] = sw_version
-
-    if debug_mode:
-        core_debug_data = core(layout, parameters, debug_mode)
-
-        return {'inputLayer': {'layout': layout,
-                               'parameters': parameters,
-                               'aux_data': aux_data,
-                               'inputs': inputs},
-                'core': core_debug_data}
-
-    else:
-        movements, delays, signals = core(layout, parameters, debug_mode)
-        outputLayer(movements, delays, aux_data, inputs, layout, signals)
+        return persist

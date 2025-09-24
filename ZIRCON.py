@@ -2,28 +2,24 @@
 
 from subsystems.controller import controller
 
-sw_version = 'v0.20.0'
-debug_mode = False
+persist = {'sw_version': 'v0.21.0',
+           'loaded_layout': False,
+           'processed_layout': False,
+           'usr_request': None,
+           'station_label': None,
+           'layout': None,
+           'parameters': None,
+           'aux_data': None,
+           'inputs': None,
+           'signals': None,
+           'paths': None,
+           'raw_movements': None,
+           'movements': None,
+           'delays': None,
+           'interlocking_prog': None}
 
 while True:
-    output = controller(debug_mode, sw_version)
+    persist = controller(persist)
 
-    if output == 'exit':
+    if persist['usr_request']['action'] == 'exit':
         break
-
-    elif type(output) is dict:
-        layout = output['inputLayer']['layout']
-        aux_data = output['inputLayer']['aux_data']
-        parameters = output['inputLayer']['parameters']
-        signals = output['core']['signals']
-        paths = output['core']['paths']
-        raw_movements = output['core']['raw_movements']
-        movements = output['core']['movements']
-        delays = output['core']['delays']
-        break
-
-    elif output == 'debug':
-        debug_mode = True
-
-    elif output == 'prod':
-        debug_mode = False

@@ -23,6 +23,11 @@ def inputLayer(station_label, parameters_label):
     """
     lt_top_raw, lt_geo, aux_data, parameters, inputs = loader(station_label,
                                                               parameters_label)
-    layout = preProcessor(lt_top_raw, lt_geo)
+
+    if lt_top_raw is not None and lt_geo is not None:
+        layout = preProcessor(lt_top_raw, lt_geo)
+
+    else:
+        layout = None
 
     return layout, parameters, aux_data, inputs

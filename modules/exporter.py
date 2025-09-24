@@ -2,9 +2,43 @@
 
 from openpyxl import load_workbook
 import os
+import pickle
 
 
-def exporter(PEE):
+def exporter(PEE, mode):
+    """Export data contained in the PEE dictionary.
+
+    Parameters
+    ----------
+    PEE : dict
+        Station's interlocking program.
+    mode : str
+        "pickle" if the data is to be exported to a pickled file, "xlsx" if the
+        data is to be exported to a .xlsx file.
+    """
+    if mode == 'pickle':
+        exportPickle(PEE)
+
+    elif mode == 'xlsx':
+        exportXlsx(PEE)
+
+
+def exportPickle(PEE):
+    """Pickle the PEE dictionary and save it to a file.
+
+    Parameters
+    ----------
+    PEE : dict
+        Station's interlocking program.
+    """
+    save_path = os.getcwd() + '\\stations\\output\\'
+    file_lbl = PEE['COVER']['station_lbl'] + '_Interlocking_Program'
+
+    with open((save_path + file_lbl), 'ab') as file:
+        pickle.dump((save_path + file_lbl), file)
+
+
+def exportXlsx(PEE):
     """Create a copy of the .xlsx template and populate it with PEE data.
 
     Parameters

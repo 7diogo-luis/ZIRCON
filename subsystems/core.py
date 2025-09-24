@@ -7,7 +7,7 @@ from modules.flankProtection import flankProtection
 from modules.delayEngine import delayEngine
 
 
-def core(layout, parameters, debug_mode):
+def core(layout, parameters):
     """Return results of processing.
 
     Parameters
@@ -60,12 +60,4 @@ def core(layout, parameters, debug_mode):
                          parameters['delay_round_multiple'],
                          parameters['delay_round_down_allowed'])
 
-    if debug_mode:
-        return {'signals': signals,
-                'paths': paths,
-                'raw_movements': raw_movements,
-                'movements': movements,
-                'delays': delays}
-
-    else:
-        return movements, delays, signals
+    return signals, paths, raw_movements, movements, delays

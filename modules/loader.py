@@ -18,15 +18,32 @@ def loader(station_label, parameters_label):
         the stations topography, "lt_geo" contains the stations geometry, and
         "parameters" constains the operational parameters.
     """
-    lt_top_raw, zlt_input = zltParser(station_label)
-    lt_geo, zlg_input = zlgParser(station_label)
-    aux_data, zad_input = zadParser(station_label)
-    parameters, zop_input = zopParser(parameters_label)
+    if station_label is not None:
+        lt_top_raw, zlt_input = zltParser(station_label)
+        lt_geo, zlg_input = zlgParser(station_label)
+        aux_data, zad_input = zadParser(station_label)
 
-    inputs = {'zlt': zlt_input,
-              'zlg': zlg_input,
-              'zad': zad_input,
-              'zop': zop_input}
+        if parameters_label is None:
+            parameters = None
+            inputs = {'zlt': zlt_input,
+                      'zlg': zlg_input,
+                      'zad': zad_input,
+                      'zop': None}
+
+        else:
+            parameters, zop_input = zopParser(parameters_label)
+            inputs = {'zlt': zlt_input,
+                      'zlg': zlg_input,
+                      'zad': zad_input,
+                      'zop': zop_input}
+
+    else:
+        lt_top_raw = lt_geo = aux_data = inputs = None
+        parameters, zop_input = zopParser(parameters_label)
+        inputs = {'zlt': None,
+                  'zlg': None,
+                  'zad': None,
+                  'zop': zop_input}
 
     return lt_top_raw, lt_geo, aux_data, parameters, inputs
 
