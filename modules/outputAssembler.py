@@ -31,8 +31,11 @@ def outputAssembler(movements, delays, aux_data, inputs, layout, signals):
                    'reverse_exit': []}
     shunt = {'forward': [],
              'backward': []}
+    sorted_movements = sortMovements(movements, signals)
+    block_labels = [block['label'] for block in layout['blocks']]
+    NDZ_labels = [NDZ['label'] for NDZ in layout['NDZs']]
 
-    for movement in movements:
+    for movement in sorted_movements:
         orig_loc, dest_loc = locFinder(movement, signals)
 
         if movement['origin']['alias'] is None:
@@ -41,11 +44,17 @@ def outputAssembler(movements, delays, aux_data, inputs, layout, signals):
         else:
             origin_sig = movement['origin']['alias']
 
-        if movement['destination']['alias'] is None:
-            destination_sig = movement['destination']['literal']
+        if 'M_' in movement['destination']['literal']:
+            destination_sig = 'SLI'
+
+        elif movement['destination']['literal'] in block_labels:
+            destination_sig = 'Block'
+
+        elif movement['destination']['literal'] in NDZ_labels:
+            destination_sig = 'NDZ'
 
         else:
-            destination_sig = movement['destination']['alias']
+            destination_sig = movement['destination']['literal']
 
         if movement['aux']['alt_OL'] is None:
             alt_ol = ''
@@ -116,6 +125,32 @@ def outputAssembler(movements, delays, aux_data, inputs, layout, signals):
             else:
                 shunt['backward'].append(distilled_mov)
 
+    counter = 0
+
+    for mov in circulation['normal_entry']:
+        counter += 1
+        mov['rt_ID'] = counter
+
+    for mov in circulation['normal_exit']:
+        counter += 1
+        mov['rt_ID'] = counter
+
+    for mov in circulation['reverse_entry']:
+        counter += 1
+        mov['rt_ID'] = counter
+
+    for mov in circulation['reverse_exit']:
+        counter += 1
+        mov['rt_ID'] = counter
+
+    for mov in shunt['forward']:
+        counter += 1
+        mov['rt_ID'] = counter
+
+    for mov in shunt['backward']:
+        counter += 1
+        mov['rt_ID'] = counter
+
     PEE = {'COVER': aux_data,
            'CIRCULATION': circulation,
            'SHUNT': shunt,
@@ -123,6 +158,338 @@ def outputAssembler(movements, delays, aux_data, inputs, layout, signals):
            'INPUTS': inputs}
 
     return PEE
+
+
+def sortSigLabels(sig_labels_raw, signals):
+    """Sort a list of signal labels.
+
+    Parameters
+    ----------
+    sig_labels_raw : list
+        List of strings, each being a signal label.
+    signals : Pandas Dataframe
+        Signal table containing the possible itinerary types departing from
+        and arriving to each signal.
+
+    Returns
+    -------
+    dict
+        Sorted list of strings, each being a signal label.
+    """
+    sig_labels_pre_sort_rev = [sig_lbl[::-1] for sig_lbl in sig_labels_raw]
+    sig_labels_pre_sort_rev.sort()
+    sig_labels = [sig_lbl[::-1] for sig_lbl in sig_labels_pre_sort_rev]
+
+    M_asc = []
+    M_desc = []
+    SLI_asc = []
+    SLI_desc = []
+    SM_asc = []
+    SM_desc = []
+    SC_asc = []
+    SC_desc = []
+
+    for sig_lbl in sig_labels:
+        sig_dir = signals.loc[signals.signal == sig_lbl].direction.iloc[0]
+
+        if 'M' in sig_lbl and 'S' not in sig_lbl:
+
+            if sig_dir == 'asc':
+                M_asc.append(sig_lbl)
+
+            else:
+                M_desc.append(sig_lbl)
+
+        elif 'M_' in sig_lbl:
+
+            if sig_dir == 'asc':
+                SLI_asc.append(sig_lbl)
+
+            else:
+                SLI_desc.append(sig_lbl)
+
+        elif 'SC' in sig_lbl:
+
+            if sig_dir == 'asc':
+                SC_asc.append(sig_lbl)
+
+            else:
+                SC_desc.append(sig_lbl)
+
+        else:
+
+            if sig_dir == 'asc':
+                SM_asc.append(sig_lbl)
+
+            else:
+                SM_desc.append(sig_lbl)
+
+    return (SM_asc + SM_desc + SC_asc + SC_desc + M_asc + M_desc + SLI_asc +
+            SLI_desc)
+
+
+def sortMovements(movements, signals):
+    """Prepare output information for printing and processing minor features.
+
+    Parameters
+    ----------
+    movements : list
+        List of dictionaries, each relative to a possible itinerary.
+    signals : Pandas Dataframe
+        Signal table containing the possible itinerary types departing from
+        and arriving to each signal.
+
+    Returns
+    -------
+    dict
+        Sorted list of dictionaries, each relative to a possible itinerary.
+    """
+    circ = []
+    shunt = []
+
+    for movement in movements:
+
+        if movement['type'] == 'Shunt':
+            shunt.append(movement)
+
+        else:
+            circ.append(movement)
+
+    asc_circ = []
+    desc_circ = []
+    asc_shunt = []
+    desc_shunt = []
+
+    for movement in circ:
+
+        if movement['direction'] == 'asc':
+            asc_circ.append(movement)
+
+        else:
+            desc_circ.append(movement)
+
+    for movement in shunt:
+
+        if movement['direction'] == 'asc':
+            asc_shunt.append(movement)
+
+        else:
+            desc_shunt.append(movement)
+
+    origins_pre_sort = []
+    destinations_pre_sort = []
+
+    for movement in asc_circ:
+
+        if movement['origin']['literal'] not in origins_pre_sort:
+            origins_pre_sort.append(movement['origin']['literal'])
+
+        if movement['destination']['literal'] not in destinations_pre_sort:
+            destinations_pre_sort.append(movement['destination']['literal'])
+
+    for movement in desc_circ:
+
+        if movement['origin']['literal'] not in origins_pre_sort:
+            origins_pre_sort.append(movement['origin']['literal'])
+
+        if movement['destination']['literal'] not in destinations_pre_sort:
+            destinations_pre_sort.append(movement['destination']['literal'])
+
+    for movement in asc_shunt:
+
+        if movement['origin']['literal'] not in origins_pre_sort:
+            origins_pre_sort.append(movement['origin']['literal'])
+
+        if movement['destination']['literal'] not in destinations_pre_sort:
+            destinations_pre_sort.append(movement['destination']['literal'])
+
+    for movement in desc_shunt:
+
+        if movement['origin']['literal'] not in origins_pre_sort:
+            origins_pre_sort.append(movement['origin']['literal'])
+
+        if movement['destination']['literal'] not in destinations_pre_sort:
+            destinations_pre_sort.append(movement['destination']['literal'])
+
+    origins = sortSigLabels(origins_pre_sort, signals)
+    destinations = sortSigLabels(destinations_pre_sort, signals)
+
+    asc_circ_pre_srt = []
+    desc_circ_pre_srt = []
+    asc_shunt_pre_srt = []
+    desc_shunt_pre_srt = []
+
+    for origin in origins:
+        temp = []
+
+        for movement in asc_circ:
+
+            if movement['origin']['literal'] == origin:
+                temp.append(movement)
+
+        if temp:
+            asc_circ_pre_srt.append(temp)
+
+        temp = []
+
+        for movement in desc_circ:
+
+            if movement['origin']['literal'] == origin:
+                temp.append(movement)
+
+        if temp:
+            desc_circ_pre_srt.append(temp)
+
+        temp = []
+
+        for movement in asc_shunt:
+
+            if movement['origin']['literal'] == origin:
+                temp.append(movement)
+
+        if temp:
+            asc_shunt_pre_srt.append(temp)
+
+        temp = []
+
+        for movement in desc_shunt:
+
+            if movement['origin']['literal'] == origin:
+                temp.append(movement)
+
+        if temp:
+            desc_shunt_pre_srt.append(temp)
+
+    semi_sorted_raw = []
+
+    for destination in destinations:
+
+        for group in asc_circ_pre_srt:
+            temp = []
+
+            for movement in group:
+
+                if movement['destination']['literal'] == destination:
+                    temp.append(movement)
+
+            if temp:
+                semi_sorted_raw.append(temp)
+
+        for group in desc_circ_pre_srt:
+            temp = []
+
+            for movement in group:
+
+                if movement['destination']['literal'] == destination:
+                    temp.append(movement)
+
+            if temp:
+                semi_sorted_raw.append(temp)
+
+        for group in asc_shunt_pre_srt:
+            temp = []
+
+            for movement in group:
+
+                if movement['destination']['literal'] == destination:
+                    temp.append(movement)
+
+            if temp:
+                semi_sorted_raw.append(temp)
+
+        for group in desc_shunt_pre_srt:
+            temp = []
+
+            for movement in group:
+
+                if movement['destination']['literal'] == destination:
+                    temp.append(movement)
+
+            if temp:
+                semi_sorted_raw.append(temp)
+
+    sorted_movements = []
+
+    for group in semi_sorted_raw:
+
+        for movement in group:
+
+            if (movement['aux']['alt_OL'] is None and
+                    movement['aux']['alt_route'] is None):
+                sorted_movements.append(movement)
+
+        for movement in group:
+
+            if (movement['aux']['alt_OL'] is not None and
+                    '-' not in movement['aux']['alt_OL'] and
+                    movement['aux']['alt_route'] is None):
+                sorted_movements.append(movement)
+
+        for movement in group:
+
+            if (movement['aux']['alt_OL'] is not None and
+                    '-' in movement['aux']['alt_OL'] and
+                    movement['aux']['alt_route'] is None):
+                sorted_movements.append(movement)
+
+        for movement in group:
+
+            if (movement['aux']['alt_OL'] is None and
+                    movement['aux']['alt_route'] is not None and
+                    movement['aux']['alt_route'][0]['SWI_pos'] != '-'):
+                sorted_movements.append(movement)
+
+        for movement in group:
+
+            if (movement['aux']['alt_OL'] is None and
+                    movement['aux']['alt_route'] is not None and
+                    movement['aux']['alt_route'][0]['SWI_pos'] == '-'):
+                sorted_movements.append(movement)
+
+        for movement in group:
+
+            if (movement['aux']['alt_OL'] is not None and
+                    '-' not in movement['aux']['alt_OL'] and
+                    movement['aux']['alt_route'] is not None and
+                    movement['aux']['alt_route'][0]['SWI_pos'] != '-'):
+                sorted_movements.append(movement)
+
+        for movement in group:
+
+            if (movement['aux']['alt_OL'] is not None and
+                    '-' in movement['aux']['alt_OL'] and
+                    movement['aux']['alt_route'] is not None and
+                    movement['aux']['alt_route'][0]['SWI_pos'] != '-'):
+                sorted_movements.append(movement)
+
+        for movement in group:
+
+            if (movement['aux']['alt_OL'] is not None and
+                    '-' not in movement['aux']['alt_OL'] and
+                    movement['aux']['alt_route'] is not None and
+                    movement['aux']['alt_route'][0]['SWI_pos'] == '-'):
+                sorted_movements.append(movement)
+
+        for movement in group:
+
+            if (movement['aux']['alt_OL'] is not None and
+                    '-' in movement['aux']['alt_OL'] and
+                    movement['aux']['alt_route'] is not None and
+                    movement['aux']['alt_route'][0]['SWI_pos'] == '-'):
+                sorted_movements.append(movement)
+
+    circ = []
+    shunt = []
+
+    for movement in sorted_movements:
+
+        if movement['type'] == 'Shunt':
+            shunt.append(movement)
+
+        else:
+            circ.append(movement)
+
+    return circ + shunt
 
 
 def locFinder(movement, signals):

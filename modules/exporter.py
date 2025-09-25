@@ -35,7 +35,7 @@ def exportPickle(PEE):
     file_lbl = PEE['COVER']['station_lbl'] + '_Interlocking_Program'
 
     with open((save_path + file_lbl), 'ab') as file:
-        pickle.dump((save_path + file_lbl), file)
+        pickle.dump(PEE, file)
 
 
 def exportXlsx(PEE):
