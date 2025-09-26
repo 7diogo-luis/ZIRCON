@@ -3,6 +3,35 @@
 ## Description
 Automation in railway signaling projects. Possible train movements, interlocking requirements and delay timings are automatically generated from signaling diagram data. Rapid design iterations in the project phase are enabled, accelerating delivery and enhancing optimization, while also improving safety.
 
+---
+config:
+  theme: redux
+  layout: fixed
+---
+flowchart LR
+ subgraph s1["Station Data"]
+        n9["Layout Topography"]
+        n10["Layout Geometry"]
+        n11["Auxiliary Data"]
+  end
+ subgraph s2["Interlocking Program"]
+        n12["Visual (.xlsx)"]
+        n13@{ label: "<span style=\"color:\">Byte stream</span>" }
+  end
+    n9 --> n1["ZIRCON"]
+    n10 --> n1
+    n11 --> n1
+    n8["Operational Parameters"] --> n1
+    n1 --> n12 & n13
+    n9@{ shape: rect}
+    n10@{ shape: rect}
+    n11@{ shape: rect}
+    n12@{ shape: rect}
+    n13@{ shape: rect}
+    n1@{ shape: hex}
+    n8@{ shape: rect}
+
+
 ## Usage Guidelines
 
 1. Encode a station (through ZIRCON layout parameterization files (**.zlt**, **.zlg** and **.zad**))
