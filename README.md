@@ -3,6 +3,7 @@
 ## Description
 Automation in railway signaling projects. Possible train movements, interlocking requirements and delay timings are automatically generated from signaling diagram data. Rapid design iterations in the project phase are enabled, accelerating delivery and enhancing optimization, while also improving safety.
 
+```mermaid
 ---
 config:
   theme: redux
@@ -30,6 +31,7 @@ flowchart LR
     n13@{ shape: rect}
     n1@{ shape: hex}
     n8@{ shape: rect}
+```
 
 
 ## Usage Guidelines
