@@ -11,9 +11,9 @@ config:
 ---
 flowchart LR
  subgraph s1["Station Data"]
-        n9["Layout Topography"]
-        n10["Layout Geometry"]
-        n11["Auxiliary Data"]
+        n9["Layout Topography (.zlt)"]
+        n10["Layout Geometry (.zlg)"]
+        n11["Auxiliary Data (.zad)"]
   end
  subgraph s2["Interlocking Program"]
         n12["Visual (.xlsx)"]
@@ -22,7 +22,7 @@ flowchart LR
     n9 --> n1["ZIRCON"]
     n10 --> n1
     n11 --> n1
-    n8["Operational Parameters"] --> n1
+    n8["Operational Parameters (.zop)"] --> n1
     n1 --> n12 & n13
     n9@{ shape: rect}
     n10@{ shape: rect}
