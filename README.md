@@ -25,7 +25,7 @@ Automation in railway signaling projects. Possible train movements, interlocking
 ## ZIRCON Layout Topography File (.zlt)
 
 ### General rules
-1. The filename must have no white spaces. It should be the stations abbreviation, for ease of use. The filename must be equal to the filename of the corresponding **.zlg** file
+1. The filename must have no white spaces. It should be the stations abbreviation, for ease of use. The filename must be equal to the filename of the corresponding **.zlg** and **.zag** files
 2. All caps
 3. Every line starts with a keyword (**BLK**, **NDZ**, **SEC**, **NDE**, **PNT**, **SIG**, **SWP**)
 4. No trailing or leading spaces
@@ -74,7 +74,7 @@ Automation in railway signaling projects. Possible train movements, interlocking
 ## ZIRCON Layout Geometry File (.zlg)
 
 ### General rules
-1. The filename must have no white spaces. It should be the stations abbreviation, for ease of use. The filename must be equal to the filename of the corresponding **.zlt** file
+1. The filename must have no white spaces. It should be the stations abbreviation, for ease of use. The filename must be equal to the filename of the corresponding **.zlt** and **.zag** files
 2. All caps
 3. No trailing or leading spaces
 4. No empty lines, except for last line
@@ -100,6 +100,22 @@ Automation in railway signaling projects. Possible train movements, interlocking
 4. If the signal is included in an aspect sequence and movements originating from the signal have a zone-of-approximation, write the zone-of-approximation's safety factor (distance)
 * Note: Signals are encoded on sepparate paragraphs, but all of them are preceded by a **SIGS** keyword
 
+## ZIRCON Auxiliary Data File (.zad)
+
+### General rules
+1. The filename must have no white spaces. It should be the stations abbreviation, for ease of use. The filename must be equal to the filename of the corresponding **.zlt** and **.zlg** files
+2. No trailing or leading spaces
+3. No empty lines, except for last line
+4. Keyword arguments are separated by whitespaces
+5. Keywords must not be added, deleted or modified
+
+### Keyword description and arguments
+* **station_name**: Name of the encoded station
+* **station_lbl**: Label of the encoded station
+* **interlocking_name**: Name of the interlocking where the encoded station lies
+* **encoding_author**: Name of the author of the station's encoding files
+* **date**: Date of the station's encoding
+
 ## ZIRCON Operational Parameters File (.zop)
 
 ### General rules
@@ -111,18 +127,28 @@ Automation in railway signaling projects. Possible train movements, interlocking
 6. Any distance unit can be used, but it must be globally used
 
 ### Keyword description and arguments
-* **regimes_to_block**: Movement regimes that are allowed to have a block as destination. Arguments can be: **Main**, **DOS** and **Shunt**
-* **regimes_to_NDZ**: Movement regimes that are allowed to have a singularly connected no-detection-zone as destination. Arguments can be: **Main**, **DOS** and **Shunt**
-* **regimes_to_terminal**: Movement regimes that are allowed to have a terminal section (section with disconnected node) as destination. Arguments can be: **Main**, **DOS** and **Shunt**
-* **allow_shunt_to_circ_sig**: If shunt movements with circulation signals as destinations are possible. Arguments can be **True** and **False**
-* **terminal_branches_are_destinations**: If a disconnected section's branch is a valid destination for movements. Arguments can be **True** and **False**. Relevant only if there are possible movement regimes with terminal sections as destinations
-* **overlap_to_terminal_branch**: If movements can have alternative overlaps that cross a section's terminal branch. Arguments can be **True** and **False**
+* **regimes_to_block**: Movement regimes that are allowed to have a block as destination. Arguments can be: **Main**, **DOS** or **Shunt**
+* **regimes_to_NDZ**: Movement regimes that are allowed to have a singularly connected no-detection-zone as destination. Arguments can be: **Main**, **DOS** or **Shunt**
+* **regimes_to_terminal**: Movement regimes that are allowed to have a terminal section (section with disconnected node) as destination. Arguments can be: **Main**, **DOS** or **Shunt**
+* **allow_shunt_to_circ_sig**: If shunt movements with circulation signals as destinations are possible. Arguments can be **True** or **False**
+* **terminal_branches_are_destinations**: If a disconnected section's branch is a valid destination for movements. Arguments can be **True** or **False**. Relevant only if there are possible movement regimes with terminal sections as destinations
+* **overlap_to_terminal_branch**: If movements can have alternative overlaps that cross a section's terminal branch. Arguments can be **True** or **False**
 * **main_ol_distance**: Overlap distance of main movements
 * **dos_ol_distance**: Overlap distance of DOS movements
 * **shunt_ol_distance**: Overlap distance of shunt movements
 * **horse_neck_possible**: If movements containing "horse neck" transit sequences are allowed (i.e. four or more consecutivelly crossed sections that have switches set in the reverse position, and where the first and last sections of this sequence are connected). Arguments can be **True** and **False**
-* **logic_ol_possible_regimes**: Movement regimes that are allowed to have logic overlap. Arguments can be: **Main**, **DOS** and **Shunt**
+* **logic_ol_possible_regimes**: Movement regimes that are allowed to have logic overlap. Arguments can be: **Main**, **DOS** or **Shunt**
 * **logic_ol_switch_point_dependent**: If logic overlap possibility should be assessed based on the distance between the destination signal and the overlap switch's point PK, instead of the mere existance of tip oriented switches in an overlap section. Arguments can be **True** and **False**
 * **allow_distant_switch_OL_lock**: If switches in overlap sections that have the point PK's distance to the movement's destination signal greater than the overlap distance should be locked. Arguments can be **True** and **False**
 * **derailer_alt_OL_allowed_types**: Movement regimes for which an alternative overlap which locks a derailer in an overlap section in the normal position can exist. Arguments can be: **Main**, **DOS** and **Shunt**
 * **derailer_margin**: Maximum distance on an overlap section before a derailer, so that an alternative overlap with the derailer locked in the normal position will have that section excluded from the overlap due to derailer filtering
+* **shunt_sig_filters_fp**: If a shunt signal can can filter movements for flank protection purposes. Arguments can be **True** or **False**
+* **OL_delay_dist_weight**: Weight of the computed distance for calculation of overlap delay timings
+* **OL_delay_dist_bias**: Bias value added during computation of overlap delay timings
+* **ARC_delay_dist_weight**: Weight of the computed distance for calculation of Approach Route Cancellation delay timings
+* **ERC_delay_circ_multiplier**: Multiplier value used during computation of Emergency Route Cancellation delay timings of circulation movements
+* **ERC_delay_shunt_multiplier**: Multiplier value used during computation of Emergency Route Cancellation delay timings of shunt movements
+* **RC_min_delay**: Minimum value for Route Cancellation (ARC and ERC) delay timings
+* **delay_round_multiple**: Maximum value for Route Cancellation (ARC and ERC) delay timings
+* **delay_round_multiple**: Delay timings will be rounded to a multiple of this value
+* **delay_round_down_allowed**: If delay timing values can be rounded down. Arguments can be **True** or **False**
