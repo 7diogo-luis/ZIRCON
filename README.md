@@ -1,24 +1,26 @@
 # ZIRCON
 
 ## Description
-Automation in railway signaling projects. Possible train movements, interlocking requirements, delay timings and incompatible movements are automatically obtained from signaling diagrams (i.e. automatic generation of PEE and Incompatibilities from DS/DSA data). Rapid design iterations in the project phase are enabled, accelerating delivery and enhancing optimization, while also improving safety.
+Automation in railway signaling projects. Possible train movements, interlocking requirements and delay timings are automatically generated from signaling diagram data. Rapid design iterations in the project phase are enabled, accelerating delivery and enhancing optimization, while also improving safety.
 
-## Usage guide
+## Usage Guidelines
 
-1. Encode a station (write the station's **.zlt** and **.zlg** files)
-2. Place the station's **.zlt** and **.zlg** files in the directory "stations/input"
-3. Write a **.zop** file with the parameters to use (if a suitable file was not written already)
-4. Place the **.zop** file to use in the directory "parameters"
-5. Launch ZIRCON (run "mainLoop.py" in the main directory)
-6. Use the **proc** command to compute the station's PEE. Select the relevant **.zlt**, **.zlg** and **.zop** files via arguments of the **proc** command
-7. The generated PEE will be written by ZIRCON in the directory "stations/output"
+1. Encode a station (through ZIRCON layout parameterization files (**.zlt**, **.zlg** and **.zad**))
+2. Place the station's parameterization files in the directory "ZIRCON/stations/input"
+3. If necessary, create a new ZIRCON operational parameters file (**.zop**)
+4. Ensure the **.zop** file to use is in directory ""ZIRCON/parameters"
+5. Launch the program (ZIRCON/ZIRCON.py)
+6. Interact with the program via the Command Line Interface (CLI). Type "**help**" to get a list of possible commands and their descriptions
+7. Outputs will be generated in directory "ZIRCON/stations/output"
 
 ## CLI Commands
 
-* **proc**: Compute a station's PEE. Follow the command with the station's abbreviation (filename of corresponding **.zlt** and **.zlg** files) and the filename of the **.zop** file to use. Arguments are sepparated by white spaces
-* **debug**: Switch to debug mode. **proc** commands given in debug mode will compute a station's PEE and also return core internal variables
-* **prod**: Switch to production mode, where **proc** commands will not return core internal variables
-* **exit**: Exit the program
+* **load**: Load a station's layout into memory and perform low level pre-processing. Layout parameterization files will be read. The **load** command takes argument [STATION_LABEL], which is the filename of each of the station's layout parameterization files (same for all files of the same station). The **process** command takes argument [ZOP_FILE_NAME], which shall correspond to the filename of the desired **.zop** file
+* **process**: Process the loaded layout according to a specified set o operational parameters
+* **export**: Perform basig post-processing and export the output to a file. The **process** command takes argument [FORMAT], which must be "**xlsx**" (for visual interpretation) or "**pickle**" (for downstream processing)
+* **exit**: Stop execution
+* **version**: Print the ZIRCON software version
+* **help**: Print a list of possible commands and their descriptions
 
 ## ZIRCON Layout Topography File (.zlt)
 
