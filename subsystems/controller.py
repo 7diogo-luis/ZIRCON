@@ -1,6 +1,6 @@
 """ZIRCON Controller."""
 
-from subsystems.cli import cli
+from subsystems.CLI import CLI
 from subsystems.inputLayer import inputLayer
 from subsystems.core import core
 from subsystems.outputLayer import outputLayer
@@ -19,7 +19,7 @@ def controller(persist):
     dict
         Updated main variables.
     """
-    usr_request = cli(persist['sw_version'], persist['loaded_layout'],
+    usr_request = CLI(persist['sw_version'], persist['loaded_layout'],
                       persist['processed_layout'])
     persist['usr_request'] = usr_request
 

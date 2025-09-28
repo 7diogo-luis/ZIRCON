@@ -2,7 +2,7 @@
 
 from subsystems.controller import controller
 
-persist = {'sw_version': 'v0.21.0',
+persist = {'sw_version': 'v0.23.0',
            'loaded_layout': False,
            'processed_layout': False,
            'usr_request': None,
@@ -23,3 +23,6 @@ while True:
 
     if persist['usr_request']['action'] == 'exit':
         break
+
+for key, data in persist.items():
+    locals()[key] = data

@@ -23,7 +23,7 @@ def router(paths, signals, layout, m_OL, d_OL, s_OL, viable_logic_OL,
     -------
     list
         List of dictionaries, each relative to a possible itinerary (without
-        flank protection sections).
+        flank protection required sections and switches).
     """
     raw_its_incomplete = ITFinder(paths, signals, layout)
     raw_its = addSwiAndTrans(raw_its_incomplete, paths)

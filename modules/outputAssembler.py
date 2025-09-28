@@ -53,6 +53,10 @@ def outputAssembler(movements, delays, aux_data, inputs, layout, signals):
         elif movement['destination']['literal'] in NDZ_labels:
             destination_sig = 'NDZ'
 
+        elif bool(signals.loc[signals.signal == movement['destination']
+                              ['literal']].virtual.iloc[0]):
+            destination_sig = 'Terminal'
+
         else:
             destination_sig = movement['destination']['literal']
 

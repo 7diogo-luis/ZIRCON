@@ -56,6 +56,7 @@ def sigTable(layout, allow_terminal_branches):
                                       'section',
                                       'direction',
                                       'virtual',
+                                      'terminal',
                                       'alt_origin',
                                       'prev_sec',
                                       'zap_origin_pk',
@@ -75,6 +76,7 @@ def sigTable(layout, allow_terminal_branches):
                                                  'section': section_lbl,
                                                  'direction': direction,
                                                  'virtual': False,
+                                                 'terminal': False,
                                                  'alt_origin': False,
                                                  'prev_sec': prev_sec,
                                                  'zap_origin_pk': node
@@ -93,6 +95,7 @@ def sigTable(layout, allow_terminal_branches):
                                                  'section': section_lbl,
                                                  'direction': direction,
                                                  'virtual': True,
+                                                 'terminal': False,
                                                  'alt_origin': False,
                                                  'prev_sec': prev_sec,
                                                  'zap_origin_pk': '',
@@ -117,6 +120,7 @@ def sigTable(layout, allow_terminal_branches):
                                                  'section': section_lbl,
                                                  'direction': direction,
                                                  'virtual': True,
+                                                 'terminal': True,
                                                  'alt_origin': False,
                                                  'prev_sec': prev_sec,
                                                  'zap_origin_pk': '',
@@ -142,6 +146,7 @@ def sigTable(layout, allow_terminal_branches):
                              'section': section_lbl,
                              'direction': direction,
                              'virtual': False,
+                             'terminal': False,
                              'alt_origin': False,
                              'prev_sec': prev_sec,
                              'zap_origin_pk': block_dict['signal']
@@ -169,6 +174,7 @@ def sigTable(layout, allow_terminal_branches):
                              'section': section_lbl,
                              'direction': direction,
                              'virtual': False,
+                             'terminal': False,
                              'alt_origin': False,
                              'prev_sec': prev_sec,
                              'zap_origin_pk': ndz_dict['signal']
