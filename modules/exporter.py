@@ -1,65 +1,69 @@
-"""ZIRCON Exporter."""
+"""Copyright (c) 2025-present Diogo Luís.
+
+Distributed under the MIT software license, see the accompanying
+file LICENSE or http://www.opensource.org/licenses/mit-license.php.
+"""
 
 from openpyxl import load_workbook
 import os
 import pickle
 
 
-def exporter(PEE, mode):
-    """Export data contained in the PEE dictionary.
+def exporter(IP, mode):
+    """Export data contained in the IP dictionary.
 
     Parameters
     ----------
-    PEE : dict
+    IP : dict
         Station's interlocking program.
     mode : str
         "pickle" if the data is to be exported to a pickled file, "xlsx" if the
         data is to be exported to a .xlsx file.
     """
     if mode == 'pickle':
-        exportPickle(PEE)
+        exportPickle(IP)
 
     elif mode == 'xlsx':
-        exportXlsx(PEE)
+        exportXlsx(IP)
 
 
-def exportPickle(PEE):
-    """Pickle the PEE dictionary and save it to a file.
+def exportPickle(IP):
+    """Pickle the IP dictionary and save it to a byte stream file.
 
     Parameters
     ----------
-    PEE : dict
+    IP : dict
         Station's interlocking program.
     """
     save_path = os.getcwd() + '\\stations\\output\\'
-    file_lbl = PEE['COVER']['station_lbl'] + '_Interlocking_Program'
+    file_lbl = IP['COVER']['station_lbl'] + '_Interlocking_Program'
 
     with open((save_path + file_lbl), 'ab') as file:
-        pickle.dump(PEE, file)
+        pickle.dump(IP, file)
 
 
-def exportXlsx(PEE):
-    """Create a copy of the .xlsx template and populate it with PEE data.
+def exportXlsx(IP):
+    """Create a copy of the .xlsx template and populate it with IP data.
 
     Parameters
     ----------
-    PEE : dict
+    IP : dict
         Station's interlocking program.
     """
     path = os.getcwd() + '\\templates\\interlocking_program.xlsx'
     workbook = load_workbook(path)
 
-    sta_lbl_str = (PEE['COVER']['station_name'] + ' (' +
-                   PEE['COVER']['station_lbl'] + ')')
+    sta_lbl_str = (IP['COVER']['station_name'] + ' (' +
+                   IP['COVER']['station_lbl'] + ')')
     workbook['Cover']['B8'] = sta_lbl_str
-    workbook['Cover']['B9'] = PEE['COVER']['interlocking_name']
-    workbook['Cover']['F3'] = PEE['COVER']['sw_version']
-    workbook['Cover']['A19'] = PEE['COVER']['encoding_author']
-    workbook['Cover']['A20'] = PEE['COVER']['date']
+    workbook['Cover']['B9'] = IP['COVER']['interlocking_name']
+    workbook['Cover']['F3'] = IP['COVER']['sw_version']
+    workbook['Cover']['A19'] = IP['COVER']['encoding_author']
+    workbook['Cover']['A20'] = IP['COVER']['date']
 
     row_num = 5
 
-    for movement in PEE['CIRCULATION']['normal_entry']:
+    for movement in IP['CIRCULATION']['normal_entry']:
         row_num += 1
         workbook['Normal Entries (circulation)'].cell(row_num, 1, movement
                                                       ['rt_ID'])
@@ -132,7 +136,7 @@ def exportXlsx(PEE):
 
     row_num = 5
 
-    for movement in PEE['CIRCULATION']['normal_exit']:
+    for movement in IP['CIRCULATION']['normal_exit']:
         row_num += 1
         workbook['Normal Exits (circulation)'].cell(row_num, 1, movement
                                                     ['rt_ID'])
@@ -205,7 +209,7 @@ def exportXlsx(PEE):
 
     row_num = 5
 
-    for movement in PEE['CIRCULATION']['reverse_entry']:
+    for movement in IP['CIRCULATION']['reverse_entry']:
         row_num += 1
         workbook['Reverse Entries (circulation)'].cell(row_num, 1, movement
                                                        ['rt_ID'])
@@ -278,7 +282,7 @@ def exportXlsx(PEE):
 
     row_num = 5
 
-    for movement in PEE['CIRCULATION']['reverse_exit']:
+    for movement in IP['CIRCULATION']['reverse_exit']:
         row_num += 1
         workbook['Reverse Exits (circulation)'].cell(row_num, 1, movement
                                                      ['rt_ID'])
@@ -351,7 +355,7 @@ def exportXlsx(PEE):
 
     row_num = 5
 
-    for movement in PEE['SHUNT']['forward']:
+    for movement in IP['SHUNT']['forward']:
         row_num += 1
         workbook['Forward (shunt)'].cell(row_num, 1, movement['rt_ID'])
         workbook['Forward (shunt)'].cell(row_num, 2, movement['origin_sig'])
@@ -403,7 +407,7 @@ def exportXlsx(PEE):
 
     row_num = 5
 
-    for movement in PEE['SHUNT']['backward']:
+    for movement in IP['SHUNT']['backward']:
         row_num += 1
         workbook['Backward (shunt)'].cell(row_num, 1, movement['rt_ID'])
         workbook['Backward (shunt)'].cell(row_num, 2, movement['origin_sig'])
@@ -455,49 +459,49 @@ def exportXlsx(PEE):
 
     row_num = 2
 
-    for ol_delay in PEE['DELAYS']['overlap']:
+    for ol_delay in IP['DELAYS']['overlap']:
         row_num += 1
         workbook['Delays'].cell(row_num, 1, ol_delay['track'])
         workbook['Delays'].cell(row_num, 2, ol_delay['delay'])
 
     row_num = 2
 
-    for ARC in PEE['DELAYS']['approach_rt_cncl']:
+    for ARC in IP['DELAYS']['approach_rt_cncl']:
         row_num += 1
         workbook['Delays'].cell(row_num, 3, ARC['signal'])
         workbook['Delays'].cell(row_num, 4, ARC['delay'])
 
     row_num = 2
 
-    for ERC in PEE['DELAYS']['emerg_rt_cncl']:
+    for ERC in IP['DELAYS']['emerg_rt_cncl']:
         row_num += 1
         workbook['Delays'].cell(row_num, 5, ERC['destination'])
         workbook['Delays'].cell(row_num, 6, ERC['delay'])
 
     row_num = 1
 
-    for zlt_line in PEE['INPUTS']['zlt']:
+    for zlt_line in IP['INPUTS']['zlt']:
         row_num += 1
         workbook['Inputs'].cell(row_num, 1, zlt_line)
 
     row_num = 1
 
-    for zlg_line in PEE['INPUTS']['zlg']:
+    for zlg_line in IP['INPUTS']['zlg']:
         row_num += 1
         workbook['Inputs'].cell(row_num, 2, zlg_line)
 
     row_num = 1
 
-    for zop_line in PEE['INPUTS']['zop']:
+    for zop_line in IP['INPUTS']['zop']:
         row_num += 1
         workbook['Inputs'].cell(row_num, 3, zop_line)
 
     row_num = 1
 
-    for zad_line in PEE['INPUTS']['zad']:
+    for zad_line in IP['INPUTS']['zad']:
         row_num += 1
         workbook['Inputs'].cell(row_num, 4, zad_line)
 
     save_path = os.getcwd() + '\\stations\\output\\'
-    file_lbl = PEE['COVER']['station_lbl'] + '_Interlocking_Program.xlsx'
+    file_lbl = IP['COVER']['station_lbl'] + '_Interlocking_Program.xlsx'
     workbook.save(save_path + file_lbl)

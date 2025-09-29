@@ -1,22 +1,26 @@
-"""ZIRCON Pre-processor."""
+"""Copyright (c) 2025-present Diogo Luís.
+
+Distributed under the MIT software license, see the accompanying
+file LICENSE or http://www.opensource.org/licenses/mit-license.php.
+"""
 
 from copy import deepcopy
 
 
 def preProcessor(lt_top_raw, lt_geo):
-    """Infer node signs and add them to the station's layout.
+    """Pre process layout information, returning unified layout description.
 
     Parameters
     ----------
-    station_label : str
-        Label of the station to be processed (<STATION_LABEL>.zlt).
+    lt_top_raw : dict
+        Layout's topography with incomplete ILM labels.
     lt_geo : dict
         Layout's geometry.
 
     Returns
     -------
     dict
-        Station's layout with explicit node signs.
+        Description of the station's layout.
     """
     lt_top_canonical = ILMLabelProc(lt_top_raw)
     layout_canonical = layoutAssembler(lt_top_canonical, lt_geo)
@@ -38,7 +42,7 @@ def inferNdeSigns(layout_canonical):
     -------
     list
         Station's layout without flags for special sections, except for TJD,
-        which is directly read from the zlt file. Node signs are explicit.
+        which is directly read from the .zlt file. Node signs are explicit.
     """
     layout = deepcopy(layout_canonical)
 
@@ -105,7 +109,10 @@ def ILMLabelProc(lt_top_raw):
     ----------
     lt_top_raw : dict
         Layout's topography with incomplete ILM labels.
-    lt_top_canonical : dict
+
+    Returns
+    -------
+    dict
         Layout's topography.
     """
     lt_top_canonical = deepcopy(lt_top_raw)

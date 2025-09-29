@@ -1,4 +1,8 @@
-"""ZIRCON Main Loop."""
+"""Copyright (c) 2025-present Diogo Luís.
+
+Distributed under the MIT software license, see the accompanying
+file LICENSE or http://www.opensource.org/licenses/mit-license.php.
+"""
 
 from subsystems.controller import controller
 
@@ -13,7 +17,6 @@ persist = {'sw_version': 'v0.23.0',
            'inputs': None,
            'signals': None,
            'paths': None,
-           'raw_movements': None,
            'movements': None,
            'delays': None,
            'interlocking_prog': None}

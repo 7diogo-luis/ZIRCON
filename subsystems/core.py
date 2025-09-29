@@ -1,4 +1,8 @@
-"""ZIRCON Core."""
+"""Copyright (c) 2025-present Diogo Luís.
+
+Distributed under the MIT software license, see the accompanying
+file LICENSE or http://www.opensource.org/licenses/mit-license.php.
+"""
 
 from modules.signalProcessor import signalProcessor
 from modules.spatialEngine import spatialEngine
@@ -8,24 +12,26 @@ from modules.delayEngine import delayEngine
 
 
 def core(layout, parameters):
-    """Return results of processing.
+    """Handle processing of the loaded layout.
 
     Parameters
     ----------
     layout : dict
-        Station's layout with explicit node signs.
+        Description of the station's layout.
     parameters : dict
         Operational parameter variables as encoded in the .zop file.
 
     Returns
     -------
-    itineraries : list
-        List of dictionaries, each corresponding to a possible itinerary,
-        containing relevant information.
-    delays : dict
-        Dictionary containing OL, ARI and AEI delays.
     signals : Pandas DataFrame
         Table of signals and their respective properties.
+    paths : list
+        List of all possible paths in the station.
+    movements : list
+        List of dictionaries, each relative to a possible movement (without
+        flank protection required sections and switches).
+    delays : dict
+        Dictionary containing OL, ARC and ERC delays.
     """
     signals = signalProcessor(layout,
                               parameters['terminal_branches_are_destinations'],
@@ -60,4 +66,4 @@ def core(layout, parameters):
                          parameters['delay_round_multiple'],
                          parameters['delay_round_down_allowed'])
 
-    return signals, paths, raw_movements, movements, delays
+    return signals, paths, movements, delays

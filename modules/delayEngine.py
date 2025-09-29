@@ -1,4 +1,8 @@
-"""ZIRCON Delay Timings Engine."""
+"""Copyright (c) 2025-present Diogo Luís.
+
+Distributed under the MIT software license, see the accompanying
+file LICENSE or http://www.opensource.org/licenses/mit-license.php.
+"""
 
 from math import ceil, floor
 from modules.router import getSignalData
@@ -14,7 +18,7 @@ def delayEngine(movements, layout, signals, OL_delay_dist_weight,
     Parameters
     ----------
     movements : list
-        List of dictionaries, each relative to a possible itinerary.
+        List of dictionaries, each relative to a possible movement.
     layout : dict
         Station's layout with explicit node signs.
     signals : Pandas DataFrame
@@ -68,7 +72,7 @@ def delayEngine(movements, layout, signals, OL_delay_dist_weight,
     return delays
 
 
-def extractNodePk(sec_lbl, nde_idx, layout):
+def extractNodePK(sec_lbl, nde_idx, layout):
     """Get PK of a specified node of a specified section.
 
     Parameters
@@ -131,7 +135,7 @@ def overlapDelays(movements, layout, weight, bias, round_multiple,
     Parameters
     ----------
     movements : list
-        List of dictionaries, each relative to a possible itinerary.
+        List of dictionaries, each relative to a possible movement.
     layout : dict
         Station's layout with explicit node signs.
     weight : float
@@ -167,8 +171,8 @@ def overlapDelays(movements, layout, weight, bias, round_multiple,
                 park_sec_con_ele in NDZs):
             continue
 
-        entry_pk = extractNodePk(park_section, park_transit[0], layout)
-        exit_pk = extractNodePk(park_section, park_transit[-1], layout)
+        entry_pk = extractNodePK(park_section, park_transit[0], layout)
+        exit_pk = extractNodePK(park_section, park_transit[-1], layout)
 
         delay = abs(entry_pk - exit_pk) * weight + bias
 
@@ -284,7 +288,7 @@ def ERCdelays(movements, layout, circ_multiplier, shunt_multiplier, m_OL, d_OL,
     Parameters
     ----------
     movements : list
-        List of dictionaries, each relative to a possible itinerary.
+        List of dictionaries, each relative to a possible movement.
     layout : dict
         Station's layout with explicit node signs.
     circ_multiplier : float
@@ -328,7 +332,7 @@ def ERCdelays(movements, layout, circ_multiplier, shunt_multiplier, m_OL, d_OL,
                                     ['literal'], layout)
 
         if destination is None:
-            end_point = extractNodePk(movement['sections']['route'][-1],
+            end_point = extractNodePK(movement['sections']['route'][-1],
                                       movement['transits']['route'][-1][-1],
                                       layout)
             no_OL = True
@@ -372,7 +376,7 @@ def ERCdelays(movements, layout, circ_multiplier, shunt_multiplier, m_OL, d_OL,
 
             else:
                 park_trans = movement['transits']['route'][-1]
-                park_entry_pk = extractNodePk(park_sec, park_trans[0], layout)
+                park_entry_pk = extractNodePK(park_sec, park_trans[0], layout)
                 delay = abs(park_entry_pk - start_point) * shunt_multiplier
 
         if delay < minimum:

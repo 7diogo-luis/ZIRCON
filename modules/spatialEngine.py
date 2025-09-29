@@ -1,11 +1,15 @@
-"""ZIRCON Spatial Engine."""
+"""Copyright (c) 2025-present Diogo Luís.
+
+Distributed under the MIT software license, see the accompanying
+file LICENSE or http://www.opensource.org/licenses/mit-license.php.
+"""
 
 import numpy as np
 from copy import deepcopy
 
 
 def spatialEngine(layout, allow_terminal_branches, HN_possible):
-    """Abstract station's layout, returning all possible paths and aux info.
+    """Abstract station's layout, returning all possible paths in the station.
 
     Parameters
     ----------
@@ -13,19 +17,15 @@ def spatialEngine(layout, allow_terminal_branches, HN_possible):
         Description of the station's layout.
     allow_terminal_branches : bool
         True if a terminal section branch is to be considered a possible
-        origin/destiny of paths, False otherwise.
+        origin/destination of paths, False otherwise.
     HN_possible : bool
         True if paths containing horse-neck are to be allowed, False otherwise.
 
     Returns
     -------
     list
-        List of dictionaries (each representing a possible path) where key
-        "path_secs" holds a list of ordered sections intercepted by the path,
-        key "path_transits" holds a list of the transits through the path
-        sections (same index), and "switch_positions" holds a list of the
-        required switches, their required position, and respective sections.
-        Finally, "direction" is the path's direction.
+        List of dictionaries (each representing a possible path) containing
+        their respective sections, transits, switches and direction.
     """
     adjacency_data = adjacency(layout)
     abs_origins = absoluteOrigins(layout, allow_terminal_branches)
@@ -105,14 +105,14 @@ def absoluteOrigins(layout, allow_terminal_branches):
         Description of the station's layout.
     allow_terminal_branches : bool
         True if a terminal section branch is to be considered a possible
-        origin/destiny of paths, False otherwise.
+        origin/destination of paths, False otherwise.
 
     Returns
     -------
     list
         List of dictionaries, one for each absolute origin, containing the
-        respective label and a "low" or "high" "place" key, for weather the
-        absolute origin is of ascending or descending itinieraries.
+        respective label and a "low" or "high" "place" key, depending on the
+        the absolute origin originating ascending or descending movements.
     """
     abs_origins = []
     blocks = [block['label'] for block in layout['blocks']]
@@ -151,8 +151,8 @@ def connectedSections(section_lbl, rel_position, adjacency_data):
     section_lbl : str
         Label of the section to be considered.
     rel_position : str
-        'upstream' or 'downstream' weather to find a connection at a higher or
-        lower PK, respectivelly.
+        'upstream' if the connected section is to be found at a higher PK,
+        'downstream' otherwise.
     adjacency_data : dict
         Dictionary containing the adjacency matrix (as a Numpy Array) and a
         list of the layout elements, indexed congruently with the adjacency
@@ -179,16 +179,16 @@ def connectedSections(section_lbl, rel_position, adjacency_data):
 
 
 def transitFinder(section_prior, section_crossed, section_after, layout):
-    """Identify immediate connections of a section at a higher or lower PK.
+    """For a sequence of occupations, identify the corresponding transit.
 
     Parameters
     ----------
     section_prior : str
         Label of the section from where the transit originates.
     section_crossed : str
-        Label of the section through which the transit passes.
+        Label of the section crossed by the transit.
     section_after : str
-        Label of the section to which the transit goes.
+        Label of the section to where the transit goes.
     layout : dict
         Description of the station's layout.
 
@@ -396,14 +396,11 @@ def impTransEnforcer(raw_paths_w_imp_trans_HN, imp_trans):
     Parameters
     ----------
     raw_paths_w_imp_trans_HN : list
-       List of dictionaries (each representing a possible path) where key
-       "path_secs" holds a list of ordered sections intercepted by the path,
-       key "path_transits" holds a list of the transits through the path
-       sections (same index), and "switch_positions" holds a list of the
-       required switches, their required position, and respective sections.
-       Finally, "direction" is the path's direction. Paths to terminal
-       sections don't have a virtual transit associated with the last section.
-       Impossible transits at TJS and horse neck paths are included.
+        List of dictionaries (each representing a possible path) containing
+        their respective sections, transits and switches and direction. Paths
+        to terminal sections don't have a virtual transit associated with the
+        last section. Impossible transits at TJS and horse neck paths are
+        included.
     imp_trans : list
         List of dictionaries, each containing a section where an impossible
         transit exists, as well as the transit itself.
@@ -411,14 +408,10 @@ def impTransEnforcer(raw_paths_w_imp_trans_HN, imp_trans):
     Returns
     -------
     list
-       List of dictionaries (each representing a possible path) where key
-       "path_secs" holds a list of ordered sections intercepted by the path,
-       key "path_transits" holds a list of the transits through the path
-       sections (same index), and "switch_positions" holds a list of the
-       required switches, their required position, and respective sections.
-       Finally, "direction" is the path's direction. Paths to terminal
-       sections don't have a virtual transit associated with the last section.
-       Horse neck paths are included.
+        List of dictionaries (each representing a possible path) containing
+        their respective sections, transits and switches and direction. Paths
+        to terminal sections don't have a virtual transit associated with the
+        last section. Horse neck paths are included.
     """
     imp_paths = []
     raw_paths_w_HN = deepcopy(raw_paths_w_imp_trans_HN)
@@ -447,9 +440,9 @@ def switchPositionFinder(paths_wo_swi_pos, layout):
 
     Parameters
     ----------
-    path : dict
-        Dictionary containing the sections crossed by a given path, as well as
-        the respective transits.
+    paths_wo_swi_pos : dict
+        List of dictionaries (each representing a possible path) containing
+        their respective sections, transits and direction.
     layout : dict
         Description of the station's layout.
 
@@ -897,19 +890,15 @@ def crossesSwitchBranch(sec_lbl, transit, layout):
 
 
 def antiHorseNeck(raw_paths_w_HN, layout, adjacency_data):
-    """Remove paths that contain horse-neck (legal but invalid paths).
+    """Remove paths that contain horse-neck.
 
     Parameters
     ----------
     raw_paths_w_HN : list
-       List of dictionaries (each representing a possible path) where key
-       "path_secs" holds a list of ordered sections intercepted by the path,
-       key "path_transits" holds a list of the transits through the path
-       sections (same index), and "switch_positions" holds a list of the
-       required switches, their required position, and respective sections.
-       Finally, "direction" is the path's direction. Paths to terminal
-       sections don't have a virtual transit associated with the last section.
-       Horse neck paths are included.
+        List of dictionaries (each representing a possible path) containing
+        their respective sections, transits and switches and direction. Paths
+        to terminal sections don't have a virtual transit associated with the
+        last section. Horse neck paths are included.
     layout : dict
         Description of the station's layout.
     adjacency_data : dict
@@ -920,13 +909,10 @@ def antiHorseNeck(raw_paths_w_HN, layout, adjacency_data):
     Returns
     -------
     list
-       List of dictionaries (each representing a possible path) where key
-       "path_secs" holds a list of ordered sections intercepted by the path,
-       key "path_transits" holds a list of the transits through the path
-       sections (same index), and "switch_positions" holds a list of the
-       required switches, their required position, and respective sections.
-       Finally, "direction" is the path's direction. Paths to terminal
-       sections don't have a virtual transit associated with the last section.
+        List of dictionaries (each representing a possible path) containing
+        their respective sections, transits and switches and direction. Paths
+        to terminal sections don't have a virtual transit associated with the
+        last section.
     """
     raw_paths = deepcopy(raw_paths_w_HN)
 
@@ -968,8 +954,8 @@ def pathToBranch(path, abs_origins, layout):
         the respective transits.
     abs_origins : list
         List of dictionaries, one for each absolute origin, containing the
-        respective label and a "low" or "high" "place" key, for weather the
-        absolute origin is of ascending or descending itinieraries.
+        respective label and a "low" or "high" "place" key, depending on the
+        the absolute origin originating ascending or descending movements.
     layout : dict
         Description of the station's layout.
 
@@ -978,7 +964,7 @@ def pathToBranch(path, abs_origins, layout):
     path : dict
         Dictionary containing the sections crossed by a given path, as well as
         the respective transits. This corresponds to the new path found. If
-        no new path was found, the function returns None
+        no new path was found, the function returns None.
     """
     corresp = {'low': 'desc',
                'high': 'asc'}
@@ -1009,22 +995,19 @@ def pathFinder(adjacency_data, abs_origins, layout):
         matrix.
     abs_origins : list
         List of dictionaries, one for each absolute origin, containing the
-        respective label and a "low" or "high" "place" key, for weather the
-        absolute origin is of ascending or descending itinieraries.
+        respective label and a "low" or "high" "place" key, depending on the
+        the absolute origin originating ascending or descending movements.
     layout : dict
         Description of the station's layout.
 
     Returns
     -------
     list
-        List of dictionaries (each representing a possible path) where key
-        "path_secs" holds a list of ordered sections intercepted by the path,
-        key "path_transits" holds a list of the transits through the path
-        sections (same index), and "switch_positions" holds a list of the
-        required switches, their required position, and respective sections.
-        Finally, "direction" is the path's direction. Paths to terminal
-        sections don't have a virtual transit associated with the last section.
-        Impossible transits at TJS and horse neck paths are included.
+        List of dictionaries (each representing a possible path) containing
+        their respective sections, transits and switches and direction. Paths
+        to terminal sections don't have a virtual transit associated with the
+        last section. Impossible transits at TJS and horse neck paths are
+        included.
     """
     raw_paths_w_imp_trans_HN = []
     corresp = {'asc': 'upstream',
@@ -1090,30 +1073,23 @@ def pathFinder(adjacency_data, abs_origins, layout):
 
 
 def addVirtualTransits(raw_paths, layout):
-    """Find all possible paths (transit sequences) in the station.
+    """Add virtual transits to paths (transits on terminal sections).
 
     Parameters
     ----------
     raw_paths : list
-        List of dictionaries (each representing a possible path) where key
-        "path_secs" holds a list of ordered sections intercepted by the path,
-        key "path_transits" holds a list of the transits through the path
-        sections (same index), and "switch_positions" holds a list of the
-        required switches, their required position, and respective sections.
-        Finally, "direction" is the path's direction. Paths to terminal
-        sections don't have a virtual transit associated with the last section.
+        List of dictionaries (each representing a possible path) containing
+        their respective sections, transits and switches and direction. Paths
+        to terminal sections don't have a virtual transit associated with the
+        last section.
     layout : dict
         Description of the station's layout.
 
     Returns
     -------
     list
-        List of dictionaries (each representing a possible path) where key
-        "path_secs" holds a list of ordered sections intercepted by the path,
-        key "path_transits" holds a list of the transits through the path
-        sections (same index), and "switch_positions" holds a list of the
-        required switches, their required position, and respective sections.
-        Finally, "direction" is the path's direction.
+        List of dictionaries (each representing a possible path) containing
+        their respective sections, transits and switches and direction.
     """
     sections = [section['label'] for section in layout['sections']]
     paths_wo_swi_pos = deepcopy(raw_paths)

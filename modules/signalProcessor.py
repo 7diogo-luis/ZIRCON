@@ -1,4 +1,8 @@
-"""ZIRCON Signal Processor."""
+"""Copyright (c) 2025-present Diogo Luís.
+
+Distributed under the MIT software license, see the accompanying
+file LICENSE or http://www.opensource.org/licenses/mit-license.php.
+"""
 
 import pandas as pd
 from copy import deepcopy
@@ -6,14 +10,14 @@ from copy import deepcopy
 
 def signalProcessor(layout, allow_terminal_branches, reg_to_block, reg_to_ndz,
                     reg_to_terminal, allow_shunt_to_circ_sig):
-    """Generate a table containing relevant info on real and virtual signals.
+    """Create a dataframe containing relevant info on real and virtual signals.
 
     Parameters
     ----------
     layout : dict
         Description of the station's layout.
     allow_terminal_branches : bool
-        True if terminal section branches are to be consideres virtual signals,
+        True if terminal section branches are to be considered virtual signals,
         False otherwise.
     reg_to_block : list
         List of strings, each corresponding to a regime that is possible with a
@@ -24,11 +28,14 @@ def signalProcessor(layout, allow_terminal_branches, reg_to_block, reg_to_ndz,
     reg_to_terminal : list
         List of strings, each corresponding to a regime that is possible with a
         terminal section as destination.
+    allow_shunt_to_circ_sig : bool
+        True if shunting movements with circulation signals (no shunt beams)
+        as destinations are to be allowed, False otherwise.
 
     Returns
     -------
     Pandas DataFrame
-        Table of signals and their respective properties.
+        Dataframe of signals and their respective properties.
     """
     sig_table = sigTable(layout, allow_terminal_branches)
     signals = sigDecoder(sig_table, layout, reg_to_block, reg_to_ndz,
@@ -44,6 +51,9 @@ def sigTable(layout, allow_terminal_branches):
     ----------
     layout : dict
         Description of the station's layout.
+    allow_terminal_branches : bool
+        True if terminal section branches are to be considered virtual signals,
+        False otherwise.
 
     Returns
     -------
@@ -187,55 +197,56 @@ def sigTable(layout, allow_terminal_branches):
 
 def sigLogic(circ, shunt, ILM, pedal, RW, block, NDZ, terminal, reg_to_block,
              reg_to_ndz, reg_to_terminal, allow_shunt_to_circ_sig):
-    """AUX. Derive signal abilities from flags.
+    """Compute possible origins/destinations from/to signals.
 
     Parameters
     ----------
     circ : bool
-        Circulation signal.
+        True if circulation signal, False otherwise.
     shunt : bool
-        Shunt signal.
+        True if shunt signal, False otherwise.
     ILM : bool
-        Shunt limit indicator.
+        True if shunt limit indicator, False otherwise.
     pedal : bool
         Signal has an associated pedal.
     RW : bool
-        Signal has only red and white aspects.
+        True if the signal has only red and white aspects, False otherwise.
     block : bool
-        Block (virtual signal).
+        True if the signal is a block (virtual signal), False otherwise.
     NDZ : bool
-        NDZ (virtual signal).
+        True if the signal is a NDZ (virtual signal), False otherwise.
     terminal : bool
-        Terminal section (virtual signal).
+        True if the signal is a terminal section (virtual signal), False
+        otherwise.
     reg_to_block : list
-        List of strings, each corresponding to a regime that is possible with a
-        block as destination.
+        List of strings, each corresponding to a regime (movement type) that is
+        possible with a block as destination.
     reg_to_ndz : list
-        List of strings, each corresponding to a regime that is possible with a
-        NDZ as destination.
+        List of strings, each corresponding to a regime (movement type) that is
+        possible with a NDZ as destination.
     reg_to_terminal : list
-        List of strings, each corresponding to a regime that is possible with a
-        terminal section as destination.
+        List of strings, each corresponding to a regime (movement type) that is
+        possible with a terminal section as destination.
     allow_shunt_to_circ_sig : bool
-        True if shunting movements with circulation signals (no shunt lights)
-        as destinations are to be allowed. False otherwise.
+        True if shunting movements with circulation signals (no shunt beams)
+        as destinations are to be allowed, False otherwise.
 
     Returns
     -------
     dict
-        Types of itineraries possible from and to the signal.
+        Types of movements possible from and to the signal.
     """
     M_origin = D_origin = S_origin = True
-    M_destiny = D_destiny = S_destiny = True
+    M_destination = D_destination = S_destination = True
 
     if not circ:
-        M_origin = D_origin = M_destiny = D_destiny = False
+        M_origin = D_origin = M_destination = D_destination = False
 
     if not shunt:
         S_origin = False
 
         if not allow_shunt_to_circ_sig:
-            S_destiny = False
+            S_destination = False
 
     if not pedal:
         D_origin = False
@@ -245,48 +256,48 @@ def sigLogic(circ, shunt, ILM, pedal, RW, block, NDZ, terminal, reg_to_block,
 
     if block:
         M_origin = D_origin = S_origin = False
-        M_destiny = D_destiny = S_destiny = False
+        M_destination = D_destination = S_destination = False
 
         if 'Main' in reg_to_block:
-            M_destiny = True
+            M_destination = True
 
         if 'DOS' in reg_to_block:
-            D_destiny = True
+            D_destination = True
 
         if 'Shunt' in reg_to_block:
-            S_destiny = True
+            S_destination = True
 
     if terminal:
         M_origin = D_origin = S_origin = False
-        M_destiny = D_destiny = S_destiny = False
+        M_destination = D_destination = S_destination = False
 
         if 'Main' in reg_to_terminal:
-            M_destiny = True
+            M_destination = True
 
         if 'DOS' in reg_to_terminal:
-            D_destiny = True
+            D_destination = True
 
         if 'Shunt' in reg_to_terminal:
-            S_destiny = True
+            S_destination = True
 
     if NDZ:
         M_origin = D_origin = S_origin = False
-        M_destiny = D_destiny = S_destiny = False
+        M_destination = D_destination = S_destination = False
 
         if 'Main' in reg_to_ndz:
-            M_destiny = True
+            M_destination = True
 
         if 'DOS' in reg_to_ndz:
-            D_destiny = True
+            D_destination = True
 
         if 'Shunt' in reg_to_ndz:
-            S_destiny = True
+            S_destination = True
 
     if ILM:
-        S_origin = M_origin = D_origin = M_destiny = D_destiny = False
-        S_destiny = True
+        S_origin = M_origin = D_origin = M_destination = D_destination = False
+        S_destination = True
 
-    possible_origin = possible_destiny = ''
+    possible_origin = possible_destination = ''
 
     if M_origin:
         possible_origin += ('M')
@@ -297,24 +308,24 @@ def sigLogic(circ, shunt, ILM, pedal, RW, block, NDZ, terminal, reg_to_block,
     if S_origin:
         possible_origin += ('S')
 
-    if M_destiny:
-        possible_destiny += ('M')
+    if M_destination:
+        possible_destination += ('M')
 
-    if D_destiny:
-        possible_destiny += ('D')
+    if D_destination:
+        possible_destination += ('D')
 
-    if S_destiny:
-        possible_destiny += ('S')
+    if S_destination:
+        possible_destination += ('S')
 
     signal_abilities = {'possible_origin': possible_origin,
-                        'possible_destiny': possible_destiny}
+                        'possible_destination': possible_destination}
 
     return signal_abilities
 
 
 def sigDecoder(sig_table, layout, reg_to_block, reg_to_ndz, reg_to_terminal,
                allow_shunt_to_circ_sig):
-    """Decode signal names and flags.
+    """Decode signal names and flags, extracting possible origins/destinations.
 
     Parameters
     ----------
@@ -323,23 +334,23 @@ def sigDecoder(sig_table, layout, reg_to_block, reg_to_ndz, reg_to_terminal,
     layout : dict
         Description of the station's layout.
     reg_to_block : list
-        List of strings, each corresponding to a regime that is possible with a
-        block as destination.
+        List of strings, each corresponding to a regime (movement type) that is
+        possible with a block as destination.
     reg_to_ndz : list
-        List of strings, each corresponding to a regime that is possible with a
-        NDZ as destination.
+        List of strings, each corresponding to a regime (movement type) that is
+        possible with a NDZ as destination.
     reg_to_terminal : list
-        List of strings, each corresponding to a regime that is possible with a
-        terminal section as destination.
+        List of strings, each corresponding to a regime (movement type) that is
+        possible with a terminal section as destination.
 
     Returns
     -------
     Pandas DataFrame
-        Signal table containing the possible itinerary types departing from
+        Signal table containing the possible movement types departing from
         and arriving to each signal.
     """
     signals = deepcopy(sig_table)
-    signals['possible_origin'] = signals['possible_destiny'] = None
+    signals['possible_origin'] = signals['possible_destination'] = None
 
     blocks = [block['label'] for block in layout['blocks']]
     NDZs = [ndz['label'] for ndz in layout['NDZs']]
@@ -372,8 +383,8 @@ def sigDecoder(sig_table, layout, reg_to_block, reg_to_ndz, reg_to_terminal,
 
                         signals.loc[index, 'possible_origin'] =\
                             signal_abilities['possible_origin']
-                        signals.loc[index, 'possible_destiny'] =\
-                            signal_abilities['possible_destiny']
+                        signals.loc[index, 'possible_destination'] =\
+                            signal_abilities['possible_destination']
 
         for block_dict in layout['blocks']:
 
@@ -398,8 +409,8 @@ def sigDecoder(sig_table, layout, reg_to_block, reg_to_ndz, reg_to_terminal,
 
                     signals.loc[index, 'possible_origin'] =\
                         signal_abilities['possible_origin']
-                    signals.loc[index, 'possible_destiny'] =\
-                        signal_abilities['possible_destiny']
+                    signals.loc[index, 'possible_destination'] =\
+                        signal_abilities['possible_destination']
 
         for ndz_dict in layout['NDZs']:
 
@@ -424,8 +435,8 @@ def sigDecoder(sig_table, layout, reg_to_block, reg_to_ndz, reg_to_terminal,
 
                     signals.loc[index, 'possible_origin'] =\
                         signal_abilities['possible_origin']
-                    signals.loc[index, 'possible_destiny'] =\
-                        signal_abilities['possible_destiny']
+                    signals.loc[index, 'possible_destination'] =\
+                        signal_abilities['possible_destination']
 
         if (row['signal'] in blocks or row['signal'] in NDZs or
                 row['signal'] in secs):
@@ -446,8 +457,8 @@ def sigDecoder(sig_table, layout, reg_to_block, reg_to_ndz, reg_to_terminal,
 
             signals.loc[index, 'possible_origin'] =\
                 signal_abilities['possible_origin']
-            signals.loc[index, 'possible_destiny'] =\
-                signal_abilities['possible_destiny']
+            signals.loc[index, 'possible_destination'] =\
+                signal_abilities['possible_destination']
 
     altOrigin(signals)
 
@@ -455,12 +466,12 @@ def sigDecoder(sig_table, layout, reg_to_block, reg_to_ndz, reg_to_terminal,
 
 
 def altOrigin(signals):
-    """Flag repeated (alternative origin) signals.
+    """Flag repeated (alternative origin/destination) signals.
 
     Parameters
     ----------
     sig_table : Pandas DataFrame
-        Signal table containing the possible itinerary types departing from
+        Signal table containing the possible movement types departing from
         and arriving to each signal.
     """
     mask = signals.signal.duplicated(keep=False)

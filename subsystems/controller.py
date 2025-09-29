@@ -1,4 +1,8 @@
-"""ZIRCON Controller."""
+"""Copyright (c) 2025-present Diogo Luís.
+
+Distributed under the MIT software license, see the accompanying
+file LICENSE or http://www.opensource.org/licenses/mit-license.php.
+"""
 
 from subsystems.CLI import CLI
 from subsystems.inputLayer import inputLayer
@@ -7,7 +11,7 @@ from subsystems.outputLayer import outputLayer
 
 
 def controller(persist):
-    """Invoke relevant subsystems.
+    """High level coordination and calling of relevant subsystems.
 
     Parameters
     ----------
@@ -43,13 +47,10 @@ def controller(persist):
         persist['inputs']['zop'] = inputs['zop']
 
         persist['parameters'] = parameters
-        signals, paths, raw_movements, movements, delays = core(persist
-                                                                ['layout'],
-                                                                persist
-                                                                ['parameters'])
+        signals, paths, movements, delays = core(persist['layout'],
+                                                 persist['parameters'])
         persist['signals'] = signals
         persist['paths'] = paths
-        persist['raw_movements'] = raw_movements
         persist['movements'] = movements
         persist['delays'] = delays
         persist['processed_layout'] = True

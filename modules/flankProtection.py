@@ -1,4 +1,8 @@
-"""ZIRCON Flank Protection Engine."""
+"""Copyright (c) 2025-present Diogo Luís.
+
+Distributed under the MIT software license, see the accompanying
+file LICENSE or http://www.opensource.org/licenses/mit-license.php.
+"""
 #INCOMPLETE
 
 from modules.spatialEngine import impossibleTransits
@@ -12,12 +16,12 @@ def flankProtection(raw_movements, layout, signals, shunt_sig_filters_fp):
     Parameters
     ----------
     raw_movements : list
-        List of dictionaries, each relative to a possible itinerary (without
+        List of dictionaries, each relative to a possible movement (without
         flank protection required sections and switches).
     layout : dict
-        Station's layout with explicit node signs.
+        Description of the station's layout.
     signals : Pandas Dataframe
-        Signal table containing the possible itinerary types departing from
+        Signal table containing the possible movement types departing from
         and arriving to each signal.
     shunt_sig_filters_fp : bool
         True if a shunt only signal filters movements in flank protection
@@ -26,7 +30,7 @@ def flankProtection(raw_movements, layout, signals, shunt_sig_filters_fp):
     Returns
     -------
     list
-        List of dictionaries, each relative to a possible itinerary.
+        List of dictionaries, each relative to a possible movement.
     """
     movements = deepcopy(raw_movements)
 
@@ -53,12 +57,12 @@ def flankProtectionPROTO(raw_movements, layout, signals, shunt_sig_filters_fp,
     Parameters
     ----------
     raw_movements : list
-        List of dictionaries, each relative to a possible itinerary (without
+        List of dictionaries, each relative to a possible movement (without
         flank protection required sections and switches).
     layout : dict
         Station's layout with explicit node signs.
     signals : Pandas Dataframe
-        Signal table containing the possible itinerary types departing from
+        Signal table containing the possible movement types departing from
         and arriving to each signal.
     shunt_sig_filters_fp : bool
         True if a shunt only signal filters movements in flank protection
@@ -67,7 +71,7 @@ def flankProtectionPROTO(raw_movements, layout, signals, shunt_sig_filters_fp,
     Returns
     -------
     list
-        List of dictionaries, each relative to a possible itinerary.
+        List of dictionaries, each relative to a possible movement.
     """
     movements = deepcopy(raw_movements)
 
@@ -354,7 +358,7 @@ def flankProtectionSecsAndTransO1(raw_movement, layout, signals,
     layout : dict
         Station's layout with explicit node signs.
     signals : Pandas Dataframe
-        Signal table containing the possible itinerary types departing from
+        Signal table containing the possible movement types departing from
         and arriving to each signal.
     shunt_sig_filters_fp : bool
         True if a shunt only signal filters movements in flank protection
@@ -436,7 +440,7 @@ def getNodeSignalPossDest(sec_lbl, nde_idx, layout, signals):
     layout : dict
         Station's layout with explicit node signs.
     signals : Pandas Dataframe
-        Signal table containing the possible itinerary types departing from
+        Signal table containing the possible movement types departing from
         and arriving to each signal.
 
     Returns
@@ -462,7 +466,7 @@ def getNodeSignalPossDest(sec_lbl, nde_idx, layout, signals):
 
     else:
         sig_data = signals.loc[signals.signal == node['signal']['label']]
-        return sig_data.possible_destiny.iloc[0]
+        return sig_data.possible_destination.iloc[0]
 
 
 def getNdeInfo(sec_lbl, nde_idx, layout):
@@ -506,7 +510,7 @@ def higherLevelFPsecsAndTransAlgo(FP_secs_trans_O1, layout, signals,
     layout : dict
         Station's layout with explicit node signs.
     signals : Pandas Dataframe
-        Signal table containing the possible itinerary types departing from
+        Signal table containing the possible movement types departing from
         and arriving to each signal.
     shunt_sig_filters_fp : bool
         True if a shunt only signal filters movements in flank protection
@@ -554,7 +558,7 @@ def higherLevelFPsecsAndTrans(FP_secs_trans_O1, layout, signals,
     layout : dict
         Station's layout with explicit node signs.
     signals : Pandas Dataframe
-        Signal table containing the possible itinerary types departing from
+        Signal table containing the possible movement types departing from
         and arriving to each signal.
     shunt_sig_filters_fp : bool
         True if a shunt only signal filters movements in flank protection
@@ -597,7 +601,7 @@ def vulnerableNodes(sec_lbl, transit, layout, signals, shunt_sig_filters_fp):
     layout : dict
         Station's layout with explicit node signs.
     signals : Pandas Dataframe
-        Signal table containing the possible itinerary types departing from
+        Signal table containing the possible movement types departing from
         and arriving to each signal.
     shunt_sig_filters_fp : bool
         True if a shunt only signal filters movements in flank protection
@@ -626,7 +630,7 @@ def vulnerableNodes(sec_lbl, transit, layout, signals, shunt_sig_filters_fp):
 
             else:
                 sig_poss_dest = signals.loc[signals.signal == node['signal']
-                                            ['label']].possible_destiny.iloc[0]
+                                            ['label']].possible_destination.iloc[0]
 
                 if (sig_poss_dest == '' or (sig_poss_dest == 'S' and not
                                             shunt_sig_filters_fp)):

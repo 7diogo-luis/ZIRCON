@@ -1,4 +1,8 @@
-"""ZIRCON Command Line Interface."""
+"""Copyright (c) 2025-present Diogo Luís.
+
+Distributed under the MIT software license, see the accompanying
+file LICENSE or http://www.opensource.org/licenses/mit-license.php.
+"""
 
 
 def CLI(sw_version, loaded_layout, processed_layout):

@@ -1,22 +1,32 @@
-"""ZIRCON Loader."""
+"""Copyright (c) 2025-present Diogo Luís.
+
+Distributed under the MIT software license, see the accompanying
+file LICENSE or http://www.opensource.org/licenses/mit-license.php.
+"""
 
 
 def loader(station_label, parameters_label):
-    """Load .zlt, .zlg and .zop files.
+    """Load .zlt, .zlg, .zad and .zop files.
 
     Parameters
     ----------
     station_label : str
-        Label of the station to be processed (<STATION_LABEL>.zlt).
+        Label of the station to be processed.
     parameters_label : str
-        Label of the parameter file to be considered (<PARAMETERS_LABEL>.zop).
+        Label of the parameter file to be considered.
 
     Returns
     -------
-    dict
-        Dictionary containing three other dictionaries. "lt_top_raw" contains
-        the stations topography, "lt_geo" contains the stations geometry, and
-        "parameters" constains the operational parameters.
+    lt_top_raw : dict
+        Layout's topography with incomplete ILM labels.
+    lt_geo : dict
+        Layout's geometry.
+    aux_data : dict
+        Layout's auxiliary data.
+    parameters : dict
+        Operational parameter variables as encoded in the .zop file.
+    inputs : dict
+        Inputs read from each file.
     """
     if station_label is not None:
         lt_top_raw, zlt_input = zltParser(station_label)
@@ -54,7 +64,7 @@ def zltParser(station_label):
     Parameters
     ----------
     station_label : str
-        Label of the station to be processed (<STATION_LABEL>.zlt).
+        Label of the station to be processed.
 
     Returns
     -------
@@ -155,7 +165,7 @@ def zlgParser(station_label):
     Parameters
     ----------
     station_label : str
-        Label of the station to be processed (<STATION_LABEL>.zlg).
+        Label of the station to be processed.
 
     Returns
     -------
@@ -241,7 +251,7 @@ def zadParser(station_label):
     Parameters
     ----------
     station_label : str
-        Label of the station to be processed (<STATION_LABEL>.zad).
+        Label of the station to be processed.
 
     Returns
     -------
@@ -310,7 +320,7 @@ def zopParser(parameters_label):
     Parameters
     ----------
     parameters_label : str
-        Label of the parameter file to be considered (<PARAMETERS_LABEL>.zop).
+        Label of the parameter file to be considered.
 
     Returns
     -------

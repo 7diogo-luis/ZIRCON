@@ -1,29 +1,32 @@
-"""ZIRCON Output Assembler."""
+"""Copyright (c) 2025-present Diogo Luís.
+
+Distributed under the MIT software license, see the accompanying
+file LICENSE or http://www.opensource.org/licenses/mit-license.php.
+"""
 
 
 def outputAssembler(movements, delays, aux_data, inputs, layout, signals):
-    """Prepare output information for printing and processing minor features.
+    """Post process and prepare output information for printing/serialization.
 
     Parameters
     ----------
     movements : list
-        List of dictionaries, each relative to a possible itinerary.
+        List of dictionaries, each relative to a possible movement.
     delays : dict
         Dictionary containing the delay timings for the station layout.
     aux_data : dict
         Dictionary containing the station's auxiliary data.
     inputs : dict
-        Dictionary containing input data (.zlt, .zlg and .zop).
+        Dictionary containing input data (.zlt, .zlg, .zad and .zop).
     layout : dict
-        Station's layout with explicit node signs.
+        Description of the station's layout.
     signals : Pandas Dataframe
-        Signal table containing the possible itinerary types departing from
-        and arriving to each signal.
+        Dataframe of signals and their respective properties.
 
     Returns
     -------
     dict
-        Aggregation of processing outputs, ready for printing to .xlsx
+        Aggregation of processing outputs, ready for printing/serialization
     """
     circulation = {'normal_entry': [],
                    'normal_exit': [],
@@ -84,7 +87,8 @@ def outputAssembler(movements, delays, aux_data, inputs, layout, signals):
                                    movement['logic_overlap'])
         sections = refactorSecDict(movement['sections'],
                                    movement['type'],
-                                   movement['logic_overlap'])
+                                   movement['logic_overlap'],
+                                   layout)
         blocks = getBlockDir(movement, layout)
 
         distilled_mov = {'rt_ID': None,
@@ -155,13 +159,13 @@ def outputAssembler(movements, delays, aux_data, inputs, layout, signals):
         counter += 1
         mov['rt_ID'] = counter
 
-    PEE = {'COVER': aux_data,
-           'CIRCULATION': circulation,
-           'SHUNT': shunt,
-           'DELAYS': delays,
-           'INPUTS': inputs}
+    IP = {'COVER': aux_data,
+          'CIRCULATION': circulation,
+          'SHUNT': shunt,
+          'DELAYS': delays,
+          'INPUTS': inputs}
 
-    return PEE
+    return IP
 
 
 def sortSigLabels(sig_labels_raw, signals):
@@ -172,8 +176,7 @@ def sortSigLabels(sig_labels_raw, signals):
     sig_labels_raw : list
         List of strings, each being a signal label.
     signals : Pandas Dataframe
-        Signal table containing the possible itinerary types departing from
-        and arriving to each signal.
+        Dataframe of signals and their respective properties.
 
     Returns
     -------
@@ -233,20 +236,19 @@ def sortSigLabels(sig_labels_raw, signals):
 
 
 def sortMovements(movements, signals):
-    """Prepare output information for printing and processing minor features.
+    """Sort movements.
 
     Parameters
     ----------
     movements : list
-        List of dictionaries, each relative to a possible itinerary.
+        List of dictionaries, each relative to a possible movement.
     signals : Pandas Dataframe
-        Signal table containing the possible itinerary types departing from
-        and arriving to each signal.
+        Dataframe of signals and their respective properties.
 
     Returns
     -------
     dict
-        Sorted list of dictionaries, each relative to a possible itinerary.
+        Sorted list of dictionaries, each relative to a possible movement.
     """
     circ = []
     shunt = []
@@ -504,8 +506,7 @@ def locFinder(movement, signals):
     movement : dict
         Dictionary containing data relative to a certain movement.
     signals : Pandas Dataframe
-        Signal table containing the possible itinerary types departing from
-        and arriving to each signal.
+        Dataframe of signals and their respective properties.
 
     Returns
     -------
@@ -536,7 +537,7 @@ def reverseMovement(movement, layout):
     movement : dict
         Dictionary containing data relative to a certain movement.
     layout : dict
-        Station's layout with explicit node signs.
+        Description of the station's layout.
 
     Returns
     -------
@@ -576,7 +577,7 @@ def entryExit(orig_loc, dest_loc, layout):
     dest_loc : str
         Label of the destination location of the movement.
     layout : dict
-        Station's layout with explicit node signs.
+        Description of the station's layout.
 
     Returns
     -------
@@ -604,7 +605,7 @@ def tampSec(sec_lbl, layout):
     sec_lbl : str
         Label of the section to evaluate.
     layout : dict
-        Station's layout with explicit node signs.
+        Description of the station's layout.
 
     Returns
     -------
@@ -635,7 +636,7 @@ def forwardBackward(movement, layout):
     movement : dict
         Dictionary containing data relative to a certain movement.
     layout : dict
-        Station's layout with explicit node signs.
+        Description of the station's layout.
 
     Returns
     -------
@@ -664,13 +665,13 @@ def refactorSwiDict(swi_dict, logic_ol):
     swi_dict : dict
         Dictionary containing required switch information.
     logic_ol : Bool
-        True if the associated movement has logiv overlap, False otherwise.
+        True if the associated movement has logic overlap, False otherwise.
 
     Returns
     -------
     dict
         Dictionary containing required switch information, ready for .xlsx
-        printing.
+        printing or serialization.
     """
     refac_swi_dict = {'rt': {'normal': '',
                              'reverse': ''},
@@ -752,7 +753,33 @@ def refactorSwiDict(swi_dict, logic_ol):
     return refac_swi_dict
 
 
-def refactorSecDict(sec_dict, regime, logic_ol):
+def sectionIsNDZ(sec_lbl, layout):
+    """Evaluate is a section is a NDZ.
+
+    Parameters
+    ----------
+    sec_lbl : dict
+        Label of the section to evaluate.
+    layout : dict
+        Description of the station's layout.
+
+    Returns
+    -------
+    bool
+        True if the section is a NDZ, False otherwise.
+    """
+    for section in layout['sections']:
+
+        if section['label'] == sec_lbl:
+
+            if section['NDZ']:
+                return True
+
+            else:
+                return False
+
+
+def refactorSecDict(sec_dict, regime, logic_ol, layout):
     """Refactor the sections dictionary and ready data for printing to .xlsx.
 
     Parameters
@@ -760,15 +787,17 @@ def refactorSecDict(sec_dict, regime, logic_ol):
     sec_dict : dict
         Dictionary containing required section information.
     regime : str
-        Regime of the associated movement.
+        Regime (type) of the associated movement.
     logic_ol : Bool
-        True if the associated movement has logiv overlap, False otherwise.
+        True if the associated movement has logic overlap, False otherwise.
+    layout : dict
+        Description of the station's layout.
 
     Returns
     -------
     dict
         Dictionary containing required section information, ready for .xlsx
-        printing.
+        printing or serialization.
     """
     refac_sec_dict = {'rt': '',
                       'ol': '',
@@ -783,61 +812,77 @@ def refactorSecDict(sec_dict, regime, logic_ol):
 
         for req_sec in sec_dict['route']:
 
-            if len(refac_sec_dict['rt']) != 0:
-                refac_sec_dict['rt'] += ', '
+            if not sectionIsNDZ(req_sec, layout):
 
-            refac_sec_dict['rt'] += req_sec
+                if len(refac_sec_dict['rt']) != 0:
+                    refac_sec_dict['rt'] += ', '
+
+                refac_sec_dict['rt'] += req_sec
 
         for req_sec in sec_dict['overlap']:
 
-            if len(refac_sec_dict['ol']) != 0:
-                refac_sec_dict['ol'] += ', '
+            if not sectionIsNDZ(req_sec, layout):
 
-            refac_sec_dict['ol'] += req_sec
+                if len(refac_sec_dict['ol']) != 0:
+                    refac_sec_dict['ol'] += ', '
+
+                    refac_sec_dict['ol'] += req_sec
 
     for req_sec in sec_dict['flank_prot']['route']['vital']:
 
-        if len(refac_sec_dict['fp']['rt']['vital']) != 0:
-            refac_sec_dict['fp']['rt']['vital'] += ', '
+        if not sectionIsNDZ(req_sec, layout):
 
-        refac_sec_dict['fp']['rt']['vital'] += req_sec
+            if len(refac_sec_dict['fp']['rt']['vital']) != 0:
+                refac_sec_dict['fp']['rt']['vital'] += ', '
+
+                refac_sec_dict['fp']['rt']['vital'] += req_sec
 
     for req_sec in sec_dict['flank_prot']['route']['sub_vital']:
 
-        if len(refac_sec_dict['fp']['rt']['sub_vital']) != 0:
-            refac_sec_dict['fp']['rt']['sub_vital'] += ', '
+        if not sectionIsNDZ(req_sec, layout):
 
-        refac_sec_dict['fp']['rt']['sub_vital'] += req_sec
+            if len(refac_sec_dict['fp']['rt']['sub_vital']) != 0:
+                refac_sec_dict['fp']['rt']['sub_vital'] += ', '
+
+                refac_sec_dict['fp']['rt']['sub_vital'] += req_sec
 
     for req_sec in sec_dict['flank_prot']['route']['remote']:
 
-        if len(refac_sec_dict['fp']['rt']['remote']) != 0:
-            refac_sec_dict['fp']['rt']['remote'] += ', '
+        if not sectionIsNDZ(req_sec, layout):
 
-        refac_sec_dict['fp']['rt']['remote'] += req_sec
+            if len(refac_sec_dict['fp']['rt']['remote']) != 0:
+                refac_sec_dict['fp']['rt']['remote'] += ', '
+
+                refac_sec_dict['fp']['rt']['remote'] += req_sec
 
     if not logic_ol:
 
         for req_sec in sec_dict['flank_prot']['overlap']['vital']:
 
-            if len(refac_sec_dict['fp']['ol']['vital']) != 0:
-                refac_sec_dict['fp']['ol']['vital'] += ', '
+            if not sectionIsNDZ(req_sec, layout):
 
-            refac_sec_dict['fp']['ol']['vital'] += req_sec
+                if len(refac_sec_dict['fp']['ol']['vital']) != 0:
+                    refac_sec_dict['fp']['ol']['vital'] += ', '
+
+                    refac_sec_dict['fp']['ol']['vital'] += req_sec
 
         for req_sec in sec_dict['flank_prot']['overlap']['sub_vital']:
 
-            if len(refac_sec_dict['fp']['ol']['sub_vital']) != 0:
-                refac_sec_dict['fp']['ol']['sub_vital'] += ', '
+            if not sectionIsNDZ(req_sec, layout):
 
-            refac_sec_dict['fp']['ol']['sub_vital'] += req_sec
+                if len(refac_sec_dict['fp']['ol']['sub_vital']) != 0:
+                    refac_sec_dict['fp']['ol']['sub_vital'] += ', '
+
+                    refac_sec_dict['fp']['ol']['sub_vital'] += req_sec
 
         for req_sec in sec_dict['flank_prot']['overlap']['remote']:
 
-            if len(refac_sec_dict['fp']['ol']['remote']) != 0:
-                refac_sec_dict['fp']['ol']['remote'] += ', '
+            if not sectionIsNDZ(req_sec, layout):
 
-            refac_sec_dict['fp']['ol']['remote'] += req_sec
+                if len(refac_sec_dict['fp']['ol']['remote']) != 0:
+                    refac_sec_dict['fp']['ol']['remote'] += ', '
+
+                    refac_sec_dict['fp']['ol']['remote'] += req_sec
 
     return refac_sec_dict
 
@@ -850,12 +895,13 @@ def getBlockDir(movement, layout):
     movement : dict
         Dictionary containing data relative to a certain movement.
     layout : dict
-        Station's layout with explicit node signs.
+        Description of the station's layout.
 
     Returns
     -------
     dict
-        Dictionary containing required blocks, ready for .xlsx printing.
+        Dictionary containing required blocks, ready for .xlsx printing or
+        serialization.
     """
     block_labels = [block['label'] for block in layout['blocks']]
     blocks_dict = {'up': '',
