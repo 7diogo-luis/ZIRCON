@@ -217,7 +217,7 @@ flowchart LR
         n15@{ label: "<span style=\"color:\">Byte stream</span>" }
   end
  subgraph s4["Signaling Diagram"]
-        n16["Visual (.xlsx)"]
+        n16["Visual (.dwg)"]
         n17@{ label: "<span style=\"color:\">Byte stream</span>" }
   end
     n1["ZIRCON+"] --> n12 & n13 & n15 & n14 & n16 & n17
