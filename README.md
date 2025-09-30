@@ -183,3 +183,49 @@ flowchart LR
 * **delay_round_multiple**: Maximum value for Route Cancellation (ARC and ERC) delay timings
 * **delay_round_multiple**: Delay timings will be rounded to a multiple of this value
 * **delay_round_down_allowed**: If delay timing values can be rounded down. Arguments can be **True** or **False**
+
+## Next Steps in Development
+
+This is a non-exhaustive exploration of possible improvements to the overal system. All this new functionality relies on the already developed interlocking engine, greatly simplifying further efforts. The estimated complexity of these new developments is estimated in a scale of 1 to 3, with 1 representing the lowest level of complexity.
+
+### Upstream
+1. **Layout Encoding Assistant** (complexity: 2)
+2. **Unified Layout Encoding File** (complexity: 1)
+3. **Signaling Diagram Generator** (complexity: 3)
+
+## Midstream
+1. **Incompatible Movement Engine** (complexity: 2)
+2. **Inspection Assistant** (complexity: 1)
+3. **Visual assistant** (complexity: 3)
+
+## Downstream
+1. **Software Control Table Generator** (complexity: 1)
+
+```mermaid
+---
+config:
+  look: neo
+  theme: redux
+---
+flowchart LR
+ subgraph s2["Software Control Tables"]
+        n12["Visual (.xlsx)"]
+        n13@{ label: "<span style=\"color:\">Byte stream</span>" }
+  end
+ subgraph s3["Interlocking Program"]
+        n14["Visual (.xlsx)"]
+        n15@{ label: "<span style=\"color:\">Byte stream</span>" }
+  end
+ subgraph s4["Signaling Diagram"]
+        n16["Visual (.xlsx)"]
+        n17@{ label: "<span style=\"color:\">Byte stream</span>" }
+  end
+    n1["ZIRCON+"] --> n12 & n13 & n15 & n14 & n16 & n17
+    n11["Unified Layout Encoding"] <--> n1
+    n13@{ shape: rect}
+    n15@{ shape: rect}
+    n16@{ shape: rect}
+    n17@{ shape: rect}
+    n1@{ shape: hex}
+
+```
