@@ -173,7 +173,6 @@ flowchart LR
 * **allow_distant_switch_OL_lock**: If switches in overlap sections that have the point PK's distance to the movement's destination signal larger than the overlap distance should be locked. Arguments can be **True** or **False**
 * **derailer_alt_OL_allowed_types**: Movement regimes for which an alternative overlap which locks a derailer in an overlap section in the normal position can exist. Arguments can be: **Main**, **DOS**, **Shunt**, or any combination of these
 * **derailer_margin**: Maximum distance on an overlap section before a derailer, so that an alternative overlap with the derailer locked in the normal position will have that section excluded from the overlap due to derailer filtering
-* **shunt_sig_filters_fp**: If a shunt signal can filter movements for flank protection purposes. Arguments can be **True** or **False**
 * **OL_delay_dist_weight**: Weight of the computed distance for calculation of overlap delay timings
 * **OL_delay_dist_bias**: Bias value added during computation of overlap delay timings
 * **ARC_delay_dist_weight**: Weight of the computed distance for calculation of Approach Route Cancellation delay timings
@@ -183,6 +182,10 @@ flowchart LR
 * **delay_round_multiple**: Maximum value for Route Cancellation (ARC and ERC) delay timings
 * **delay_round_multiple**: Delay timings will be rounded to a multiple of this value
 * **delay_round_down_allowed**: If delay timing values can be rounded down. Arguments can be **True** or **False**
+* **shunt_sig_filters_fp**: If a shunt signal can filter movements for flank protection purposes. Arguments can be **True** or **False**
+* **vital_fp_threshold**: Threshold distance from section to LR for the section to be required as vital for flank protection
+* **sub_vital_fp_threshold**: Threshold distance from section to LR for the section to be required as sub-vital for flank protection
+* **remote_fp_threshold**: Threshold distance from section to LR for the section to be required as remote for flank protection
 
 ## Next Steps in Development
 
