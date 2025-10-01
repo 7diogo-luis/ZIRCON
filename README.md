@@ -91,9 +91,9 @@ flowchart LR
 ### Encoding a signal
 1. Write keyword **SIG** if the signal has no associated pedal, otherwise write keyword **SWP**
 2. Write the signal's label after the keyword. If the signal is for circulation movements, the label must contain "S". If the signal is for shunt movements, the label must contain "M". If the signal is for circulation and shunt movements, the label must contain "S" and "M". If the signal is a shunting-limit-indicator, the signal label must be "M". If the signal is intended to be used with reverse movements, its label must contain "SC"
-3. If the signal is for circulation movements but it can not originate main movements (i.e. the signal only has red and white beams), write __*__ after the signal's label
-* Note 1: A signal is always associated with a node, a block, or a no-detection-zone. The association is made with the node, block, no-detection-zone encoded immediatly before the signal
-* Note 2: A signal is associated with the element on to which it filters an incoming movement, even if it phisically lies on another element. The node with which the signal is associated is the node that would first be crossed by the incoming movement filtered by the signal. If the signal is associated with a block or singularly connected no-detection-zone, it is not associated with a node since these elements do not possess explicit nodes (they only have one connection, hence one node, hence the signal is associated with the connection of that element with the area with train detection)
+3. If the signal is for circulation movements but it cannot originate main movements (i.e. the signal only has red and white beams), write __*__ after the signal's label
+* Note 1: A signal is always associated with a node, a block, or a no-detection-zone. The association is made with the node, block, or no-detection-zone encoded immediately before the signal
+* Note 2: A signal is associated with the element on to which it filters an incoming movement, even if it physically lies on another element. The node with which the signal is associated is the node that would first be crossed by the incoming movement filtered by the signal. If the signal is associated with a block or singularly connected no-detection-zone, it is not associated with a node since these elements do not possess explicit nodes (they only have one connection, hence one node, hence the signal is associated with the connection of that element with the area with train detection)
 * Note 3: In cases where a signal filters movements through more than one node of a section, or even different sections (i.e. signals with origin/destination indicator), associate the signal with each of the relevant nodes. Do not change the signal's label. State the same label as many times as necessary. Proper treatment will automatically be given to that signal.
 
 ### Encoding a switch or derailer
@@ -105,36 +105,36 @@ flowchart LR
 ## ZIRCON Layout Geometry File (.zlg)
 
 ### General rules
-1. The filename must have no white spaces. It should be the stations abbreviation, for ease of use. The filename must be equal to the filename of the corresponding **.zlt** and **.zag** files
+1. The filename must have no white spaces. It should be the station's abbreviation, for ease of use. The filename must be equal to the filename of the corresponding **.zlt** and **.zag** files
 2. All caps
 3. No trailing or leading spaces
 4. No empty lines, except for last line
-5. Tabs should used before data points to denote dependency between encoded elements
+5. Tabs should be used before data points to denote dependency between encoded elements
 6. Data point arguments are separated by whitespaces
 7. The distance unit used in the **.zop** file must be used in the **.zlg** file
 
 ### Encoding a section
 1. Write the section's label
-2. After the section's label, write the PKs of each of the section's nodes, sepparated by white-spaces. Start with the PK of the node with index "A", and follow alphabetic order
-* Note: Sections are encoded in sepparate lines, without stating the keyword on every line. Every line relative to a section is in a block preceded by a **SECS** keyword
+2. After the section's label, write the PKs of each of the section's nodes, separated by white spaces. Start with the PK of the node with index "A", and follow alphabetic order
+* Note: Sections are encoded in separated lines, without stating the keyword on every line. Every line relative to a section is in a block preceded by a **SECS** keyword
 
 ### Encoding a switch or derailer
 1. Write the switch's label
 2. Write the PK of the switch or derailer's point after the switch or derailer's label
 3. If the switch is not a derailer, write the switch's LR PK after the switch's point PK
-* Note: Switches are encoded in sepparate lines, without stating the keyword on every line. Every line relative to a switch is in a block preceded by a **SWIS** keyword
+* Note: Switches are encoded in separated lines, without stating the keyword on every line. Every line relative to a switch is in a block preceded by a **SWIS** keyword
 
 ### Encoding a signal
 1. Write the signal's label. If the signal is a shunting-limit-indicator, it's label must be "M_section", where "section" is the label of the section with which the shunting-limit-indicator is associated
 2. Write the PK of the signal's pole after the signal's label
 3. If the signal is included in an aspect sequence and movements originating from the signal have a zone-of-approximation, write the PK of the zone-of-approximation's origin signal pole after the encoded signal's pole PK
 4. If the signal is included in an aspect sequence and movements originating from the signal have a zone-of-approximation, write the zone-of-approximation's safety factor (distance) after the encoded signal's PK of the zone-of-approximation's origin signal
-* Note: Signals are encoded in sepparate lines, without stating the keyword on every line. Every line relative to a signal is in a block preceded by a **SIGS** keyword
+* Note: Signals are encoded in separated lines, without stating the keyword on every line. Every line relative to a signal is in a block preceded by a **SIGS** keyword
 
 ## ZIRCON Auxiliary Data File (.zad)
 
 ### General rules
-1. The filename must have no white spaces. It should be the stations abbreviation, for ease of use. The filename must be equal to the filename of the corresponding **.zlt** and **.zlg** files
+1. The filename must have no white spaces. It should be the station's abbreviation, for ease of use. The filename must be equal to the filename of the corresponding **.zlt** and **.zlg** files
 2. No trailing or leading spaces
 3. No empty lines, except for last line
 4. Keyword arguments are separated by whitespaces
@@ -167,13 +167,13 @@ flowchart LR
 * **main_ol_distance**: Overlap distance of main movements
 * **dos_ol_distance**: Overlap distance of DOS movements
 * **shunt_ol_distance**: Overlap distance of shunt movements
-* **horse_neck_possible**: If movements containing "horse neck" transit sequences are allowed (i.e. four or more consecutivelly crossed sections that have switches set in the reverse position, and where the first and last sections of this sequence are connected). Arguments can be **True** or **False**
+* **horse_neck_possible**: If movements containing "horse neck" transit sequences are allowed (i.e. four or more consecutively crossed sections that have switches set in the reverse position, and where the first and last sections of this sequence are connected). Arguments can be **True** or **False**
 * **logic_ol_possible_regimes**: Movement regimes that are allowed to have logic overlap. Arguments can be: **Main**, **DOS**, **Shunt**, or any combination of these
-* **logic_ol_switch_point_dependent**: If logic overlap possibility should be assessed based on the distance between the destination signal and the overlap switch's point PK, instead of the mere existance of tip oriented switches in an overlap section. Arguments can be **True** or **False**
+* **logic_ol_switch_point_dependent**: If logic overlap possibility should be assessed based on the distance between the destination signal and the overlap switch's point PK, instead of the mere existence of tip-oriented switches in an overlap section. Arguments can be **True** or **False**
 * **allow_distant_switch_OL_lock**: If switches in overlap sections that have the point PK's distance to the movement's destination signal larger than the overlap distance should be locked. Arguments can be **True** or **False**
 * **derailer_alt_OL_allowed_types**: Movement regimes for which an alternative overlap which locks a derailer in an overlap section in the normal position can exist. Arguments can be: **Main**, **DOS**, **Shunt**, or any combination of these
 * **derailer_margin**: Maximum distance on an overlap section before a derailer, so that an alternative overlap with the derailer locked in the normal position will have that section excluded from the overlap due to derailer filtering
-* **shunt_sig_filters_fp**: If a shunt signal can can filter movements for flank protection purposes. Arguments can be **True** or **False**
+* **shunt_sig_filters_fp**: If a shunt signal can filter movements for flank protection purposes. Arguments can be **True** or **False**
 * **OL_delay_dist_weight**: Weight of the computed distance for calculation of overlap delay timings
 * **OL_delay_dist_bias**: Bias value added during computation of overlap delay timings
 * **ARC_delay_dist_weight**: Weight of the computed distance for calculation of Approach Route Cancellation delay timings
@@ -186,32 +186,32 @@ flowchart LR
 
 ## Next Steps in Development
 
-This is a non-exhaustive exploration of possible improvements to the overal system. All this new functionality relies on the already developed interlocking engine, greatly simplifying further efforts. The complexity of these new developments is estimated in a scale of 1 to 3, with 1 representing the lowest level of complexity.
+This is a non-exhaustive exploration of possible improvements to the overall system. All this new functionality relies on the already developed interlocking engine, greatly simplifying further efforts. The complexity of these new developments is estimated in a scale of 1 to 3, with 1 representing the lowest level of complexity.
 
 ### Upstream
 1. **Layout Encoding Assistant** (complexity: 2) - The user is guided through the encoding process, which will be done through CLI interactions instead of manual file creation. Redundancy is eliminated, greatly improving efficiency. Ongoing verification ensures there are no inconsistencies in the encoding process
-3. **Unified Layout Encoding** (complexity: 1) - All input files to ZIRCON will be wrapped on a single unified descriptor of the layout and operational parameters to use. This encoding will be embeded on every ZIRCON Standard output file, so that any file can be used as input to generate the other files
+3. **Unified Layout Encoding** (complexity: 1) - All input files to ZIRCON will be wrapped on a single unified descriptor of the layout and operational parameters to use. This encoding will be embedded on every ZIRCON Standard output file, so that any file can be used as input to generate the other files
 4. **Signaling Diagram Generator** (complexity: 3) - The layout encoding will be used to synthesize a signaling diagram. The diagram will be in a standard form, distilled of irrelevant or ambiguous information. Every aspect relevant for the signaling project will be present on the diagram
 
 ### Midstream
 1. **Incompatible Movement Engine** (complexity: 2) - The interlocking engine will compute incompatible movements
 
 ### Downstream
-1. **Software Control Table Generator** (complexity: 1) - Software control tables (e.g. movement SCT, switch SCT, etc.) will be derived from the interlocking program and incompatibile movements
+1. **Software Control Table Generator** (complexity: 1) - Software control tables (e.g. movement SCT, switch SCT, etc.) will be derived from the interlocking program and incompatible movements
 2. **Inspection Assistant** (complexity: 1) - The user can, for example, easily get a list of all movements that lock a switch in a certain position or all movements that overlap to a certain section
 3. **Visual assistant** (complexity: 3) - Movements can be visualized on a representation of the station, per user request, as well as auxiliary information, like flank protection sections, incompatible movements, etc.
 
 ### Others
 1. **GUI** (complexity: 1) - A graphical user interface will be built to reduce the steepness of the learning curve of new ZIRCON users, as well as to improve overall aesthetics. The command line interface (CLI) will always be available
-2. **Installer** (complexity: 1) - ZIRCON will have an installer so the program files are kept on a safe directory. In production, the user launches ZIRCON through a shortcut and selects the location for exporting generated files
+2. **Installer** (complexity: 1) - ZIRCON will have an installer so the program files are kept in a safe directory. In production, the user launches ZIRCON through a shortcut and selects the location for exporting generated files
 3. **Project File Format Converter** (complexity: 1) - A tool that converts ZIRCON generated project files to formats that conform to the norms of costumer organizations
 
 ### New workflow enabled
-The signaling project phase is often unorganized and inneficcient. It is centered around several interdependant major document types (e.g. signaling diagram, interlocking program, software control tables, etc.). When a modification is required due errors, under optimization or changing requirements, all documents must be manually changed and validated and even before that, the interlocking logic might need to be modified, creating tremendous lag and unnecessary resource consumption.
+The signaling project phase is often unorganized and inefficient. It is centered around several interdependent major document types (e.g. signaling diagram, interlocking program, software control tables, etc.). When a modification is required due to errors, under optimization or changing requirements, all documents must be manually changed and validated and even before that, the interlocking logic might need to be modified, creating tremendous lag and unnecessary resource consumption.
 
-In a vicious cycle, the very inneficiency of the current system breeds ground for more errors and under optimizations, which then leed to more iterations and manual modifications, then more errors, and so on. Railways are the most efficient form of transportation, allowing fast movement of heavy loads and large numbers of passangers, at minimal cost. However inneficciencies are common, and change is very slow. This is a result of the problems in the project/validation workflows. Delayed timelines and cost slippage commonly found in the Railway world. ZIRCON helps bring the 21st century to railway signaling projects. Better optimization and safety, while dramatically reducing costs.
+In a vicious cycle, the very inefficiency of the current system breeds ground for more errors and under optimizations, which then lead to more iterations and manual modifications, then more errors, and so on. Railways are the most efficient form of transportation, allowing fast movement of heavy loads and large numbers of passengers, at minimal cost. However, inefficiencies are common, and change is very slow. This is a result of the problems with the project/validation workflows. Delayed timelines and cost slippage commonly found in the Railway world. ZIRCON helps bring the 21st century to railway signaling projects. Better optimization and safety, while dramatically reducing costs.
 
-In a ZIRCON enabled efficient workflow model, the project/validation phase will only be centered around the ZIRCON Standard format files. Major project documents, like Signaling Diagrams, Interlocking Programs or Software Control Tables, will be of the ZIRCON standard, meaning they can be instantly generated from each other. When a modification is necessary, it is quikly done via the **Layout Encoding Assistant** and a new version of all files is generated. Instead of spending hundreds of hours manually reviewing logic and updating documents, iterations become practically instantaneous. ZIRCON itself incorporates verification, reducing the amount of errors throughout the project phase. Hands on rapid prototyping becomes possible greatly improving end solution optimization.
+In a ZIRCON enabled efficient workflow model, the project/validation phase will only be centered around the ZIRCON Standard format files. Major project documents, like Signaling Diagrams, Interlocking Programs or Software Control Tables, will be of the ZIRCON standard, meaning they can be instantly generated from each other. When a modification is necessary, it is quickly done via the **Layout Encoding Assistant**, and a new version of all files is generated. Instead of spending hundreds of hours manually reviewing logic and updating documents, iterations become practically instantaneous. ZIRCON itself incorporates verification, reducing the number of errors throughout the project phase. Hands on rapid prototyping becomes possible, greatly improving end solution optimization.
 
 ```mermaid
 ---
