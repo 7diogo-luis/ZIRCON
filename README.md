@@ -216,28 +216,30 @@ In a ZIRCON enabled efficient workflow model, the project/validation phase will 
 ```mermaid
 ---
 config:
+  layout: fixed
   look: neo
   theme: redux
 ---
 flowchart LR
- subgraph s2["Software Control Tables"]
-        n12["Visual (.xlsx)"]
-        n13@{ label: "<span style=\"color:\">Byte stream</span>" }
+ subgraph s1["ZIRCON Standard Format"]
+        n12@{ label: "<span style=\"background-color:\">Software Control Tables</span>" }
+        n14@{ label: "<span style=\"background-color:\">Interlocking Program</span>" }
+        n16@{ label: "<span style=\"background-color:\">Signaling Diagram</span>" }
   end
- subgraph s3["Interlocking Program"]
-        n14["Visual (.xlsx)"]
-        n15@{ label: "<span style=\"color:\">Byte stream</span>" }
+ subgraph s2["Costumer Requested Format"]
+        n17@{ label: "<span style=\"background-color:\">Software Control Tables</span>" }
+        n18@{ label: "<span style=\"background-color:\">Interlocking Program</span>" }
+        n19@{ label: "<span style=\"background-color:\">Signaling Diagram</span>" }
   end
- subgraph s4["Signaling Diagram"]
-        n16["Visual (.dwg)"]
-        n17@{ label: "<span style=\"color:\">Byte stream</span>" }
-  end
-    n1["ZIRCON"] --> n12 & n13 & n15 & n14 & n16 & n17
-    n11["Unified Layout Encoding"] <--> n1
-    n13@{ shape: rect}
-    n15@{ shape: rect}
+    n1["ZIRCON"] --> n19 & n18 & n17 & n12 & n14 & n16
+    n12 --> n1
+    n14 --> n1
+    n16 --> n1
+    n12@{ shape: rect}
+    n14@{ shape: rect}
     n16@{ shape: rect}
     n17@{ shape: rect}
+    n18@{ shape: rect}
+    n19@{ shape: rect}
     n1@{ shape: hex}
-
 ```
