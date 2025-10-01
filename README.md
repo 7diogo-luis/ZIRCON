@@ -216,9 +216,8 @@ In a ZIRCON enabled efficient workflow model, the project/validation phase will 
 ```mermaid
 ---
 config:
-  layout: fixed
-  look: neo
   theme: redux
+  layout: fixed
 ---
 flowchart LR
  subgraph s1["ZIRCON Standard Format"]
@@ -226,7 +225,7 @@ flowchart LR
         n14@{ label: "<span style=\"background-color:\">Interlocking Program</span>" }
         n16@{ label: "<span style=\"background-color:\">Signaling Diagram</span>" }
   end
- subgraph s2["Costumer Requested Format"]
+ subgraph s2["Costumer Req. Format"]
         n17@{ label: "<span style=\"background-color:\">Software Control Tables</span>" }
         n18@{ label: "<span style=\"background-color:\">Interlocking Program</span>" }
         n19@{ label: "<span style=\"background-color:\">Signaling Diagram</span>" }
