@@ -39,7 +39,7 @@ flowchart LR
 1. Encode a station (through ZIRCON parameterization files (**.zlt**, **.zlg** and **.zad**))
 2. Place the station's parameterization files in the directory "ZIRCON/stations/input"
 3. If necessary, create a new ZIRCON operational parameters file (**.zop**)
-4. Ensure the **.zop** file to use is in directory ""ZIRCON/parameters"
+4. Ensure the **.zop** file to use is in directory "ZIRCON/parameters"
 5. Launch the program (ZIRCON/ZIRCON.py)
 6. Interact with the program via the Command Line Interface (CLI). Type "**help**" to get a list of possible commands and their descriptions
 7. Outputs will be generated in directory "ZIRCON/stations/output"
