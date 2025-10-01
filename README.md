@@ -34,7 +34,7 @@ flowchart LR
 ```
 
 
-## Usage Guidelines
+## Use Guidelines
 
 1. Encode a station (through ZIRCON parameterization files (**.zlt**, **.zlg** and **.zad**))
 2. Place the station's parameterization files in the directory "ZIRCON/stations/input"
