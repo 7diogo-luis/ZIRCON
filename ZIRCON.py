@@ -6,7 +6,7 @@ file LICENSE or http://www.opensource.org/licenses/mit-license.php.
 
 from subsystems.controller import controller
 
-persist = {'sw_version': 'v0.24.2',
+persist = {'sw_version': 'v0.24.3',
            'loaded_layout': False,
            'processed_layout': False,
            'usr_request': None,
@@ -29,3 +29,4 @@ while True:
 
 for key, data in persist.items():
     locals()[key] = data
+
