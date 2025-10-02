@@ -869,7 +869,10 @@ def vulnerableNodes(sec_lbl, transit, layout, signals, shunt_sig_filters_fp):
 
         if node['index'][0] not in transit:
 
-            if node['signal'] is None and node['con_ele'] is not None:
+            if node['con_ele'] is None:
+                continue
+
+            if node['signal'] is None:
 
                 vulnerable_nodes.append(node)
 

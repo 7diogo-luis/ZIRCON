@@ -6,7 +6,7 @@ file LICENSE or http://www.opensource.org/licenses/mit-license.php.
 
 from subsystems.controller import controller
 
-persist = {'sw_version': 'v0.23.1',
+persist = {'sw_version': 'v0.24.1',
            'loaded_layout': False,
            'processed_layout': False,
            'usr_request': None,

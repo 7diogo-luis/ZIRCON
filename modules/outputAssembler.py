@@ -826,7 +826,7 @@ def refactorSecDict(sec_dict, regime, logic_ol, layout):
                 if len(refac_sec_dict['ol']) != 0:
                     refac_sec_dict['ol'] += ', '
 
-                    refac_sec_dict['ol'] += req_sec
+                refac_sec_dict['ol'] += req_sec
 
     for req_sec in sec_dict['flank_prot']['route']['vital']:
 
@@ -835,7 +835,7 @@ def refactorSecDict(sec_dict, regime, logic_ol, layout):
             if len(refac_sec_dict['fp']['rt']['vital']) != 0:
                 refac_sec_dict['fp']['rt']['vital'] += ', '
 
-                refac_sec_dict['fp']['rt']['vital'] += req_sec
+            refac_sec_dict['fp']['rt']['vital'] += req_sec
 
     for req_sec in sec_dict['flank_prot']['route']['sub_vital']:
 
@@ -844,7 +844,7 @@ def refactorSecDict(sec_dict, regime, logic_ol, layout):
             if len(refac_sec_dict['fp']['rt']['sub_vital']) != 0:
                 refac_sec_dict['fp']['rt']['sub_vital'] += ', '
 
-                refac_sec_dict['fp']['rt']['sub_vital'] += req_sec
+            refac_sec_dict['fp']['rt']['sub_vital'] += req_sec
 
     for req_sec in sec_dict['flank_prot']['route']['remote']:
 
@@ -853,7 +853,7 @@ def refactorSecDict(sec_dict, regime, logic_ol, layout):
             if len(refac_sec_dict['fp']['rt']['remote']) != 0:
                 refac_sec_dict['fp']['rt']['remote'] += ', '
 
-                refac_sec_dict['fp']['rt']['remote'] += req_sec
+            refac_sec_dict['fp']['rt']['remote'] += req_sec
 
     if not logic_ol:
 
@@ -864,7 +864,7 @@ def refactorSecDict(sec_dict, regime, logic_ol, layout):
                 if len(refac_sec_dict['fp']['ol']['vital']) != 0:
                     refac_sec_dict['fp']['ol']['vital'] += ', '
 
-                    refac_sec_dict['fp']['ol']['vital'] += req_sec
+                refac_sec_dict['fp']['ol']['vital'] += req_sec
 
         for req_sec in sec_dict['flank_prot']['overlap']['sub_vital']:
 
@@ -873,7 +873,7 @@ def refactorSecDict(sec_dict, regime, logic_ol, layout):
                 if len(refac_sec_dict['fp']['ol']['sub_vital']) != 0:
                     refac_sec_dict['fp']['ol']['sub_vital'] += ', '
 
-                    refac_sec_dict['fp']['ol']['sub_vital'] += req_sec
+                refac_sec_dict['fp']['ol']['sub_vital'] += req_sec
 
         for req_sec in sec_dict['flank_prot']['overlap']['remote']:
 
@@ -882,7 +882,7 @@ def refactorSecDict(sec_dict, regime, logic_ol, layout):
                 if len(refac_sec_dict['fp']['ol']['remote']) != 0:
                     refac_sec_dict['fp']['ol']['remote'] += ', '
 
-                    refac_sec_dict['fp']['ol']['remote'] += req_sec
+                refac_sec_dict['fp']['ol']['remote'] += req_sec
 
     return refac_sec_dict
 

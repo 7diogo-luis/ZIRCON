@@ -938,9 +938,8 @@ def altRouteLabeler(unlbld_movs, layout):
                     if route_switch['SWI_lbl'] == diff_swi['SWI_lbl']:
                         section = route_switch['sec_lbl']
 
-                transit = mov['route_transits']
-                [mov['route_secs'].index(section)]
-                effective_switches = effectiveSwitches(transit,
+                trans = mov['route_transits'][mov['route_secs'].index(section)]
+                effective_switches = effectiveSwitches(trans,
                                                        section,
                                                        layout)
                 eff_swi_lbls = [swi['label'] for swi in effective_switches]
