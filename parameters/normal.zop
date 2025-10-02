@@ -13,7 +13,6 @@ logic_ol_switch_point_dependent True
 allow_distant_switch_OL_lock False
 derailer_alt_OL_allowed_types Main DOS Shunt
 derailer_margin 2
-shunt_sig_filters_fp True
 OL_delay_dist_weight 0.18
 OL_delay_dist_bias 15
 ARC_delay_dist_weight 0.08
@@ -23,3 +22,7 @@ RC_min_delay 60
 RC_max_delay 255
 delay_round_multiple 5
 delay_round_down_allowed False
+shunt_sig_filters_fp True
+vital_fp_threshold 6
+sub_vital_fp_threshold 50
+remote_fp_threshold 150

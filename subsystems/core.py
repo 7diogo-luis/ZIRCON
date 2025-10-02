@@ -50,8 +50,11 @@ def core(layout, parameters):
                            parameters['allow_distant_switch_OL_lock'],
                            parameters['derailer_alt_OL_allowed_types'],
                            parameters['derailer_margin'])
-    movements = flankProtection(raw_movements, layout, signals,
-                                parameters['shunt_sig_filters_fp'])
+    movements = flankProtection(raw_movements, layout, signals, paths,
+                                parameters['shunt_sig_filters_fp'],
+                                parameters['vital_fp_threshold'],
+                                parameters['sub_vital_fp_threshold'],
+                                parameters['remote_fp_threshold'])
     delays = delayEngine(movements, layout, signals,
                          parameters['OL_delay_dist_weight'],
                          parameters['OL_delay_dist_bias'],

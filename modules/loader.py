@@ -387,9 +387,6 @@ def zopParser(parameters_label):
         elif split_line[0] == 'derailer_margin':
             parameters['derailer_margin'] = float(split_line[-1])
 
-        elif split_line[0] == 'shunt_sig_filters_fp':
-            parameters['shunt_sig_filters_fp'] = str2bool(split_line[-1])
-
         elif split_line[0] == 'OL_delay_dist_weight':
             parameters['OL_delay_dist_weight'] = float(split_line[-1])
 
@@ -416,6 +413,18 @@ def zopParser(parameters_label):
 
         elif split_line[0] == 'delay_round_down_allowed':
             parameters['delay_round_down_allowed'] = str2bool(split_line[-1])
+
+        elif split_line[0] == 'shunt_sig_filters_fp':
+            parameters['shunt_sig_filters_fp'] = str2bool(split_line[-1])
+
+        elif split_line[0] == 'vital_fp_threshold':
+            parameters['vital_fp_threshold'] = float(split_line[-1])
+
+        elif split_line[0] == 'sub_vital_fp_threshold':
+            parameters['sub_vital_fp_threshold'] = float(split_line[-1])
+
+        elif split_line[0] == 'remote_fp_threshold':
+            parameters['remote_fp_threshold'] = float(split_line[-1])
 
     return parameters, zop_input
 
