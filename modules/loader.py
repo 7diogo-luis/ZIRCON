@@ -289,7 +289,7 @@ def zadParser(station_label):
 
 
 def concat_string(split_string):
-    """Transform a list of string snippets in to a concatenated string.
+    """Transform a list of string snippets into a concatenated string.
 
     Parameters
     ----------

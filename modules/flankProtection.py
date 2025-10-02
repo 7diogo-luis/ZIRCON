@@ -86,7 +86,7 @@ def assembleFPdicts(mov, proto_FP_data, layout):
     Parameters
     ----------
     mov : dict
-        Dictionary containing info relating to a specifi movement.
+        Dictionary containing info relating to a specific movement.
     proto_FP_data : dict
         Dictionary containing FP data in an intermediate format.
     layout : dict
@@ -158,7 +158,7 @@ def purgeFPsections(movement, layout, paths):
     Parameters
     ----------
     movement : dict
-        Dictionary containing info relating to a specifi movement.
+        Dictionary containing info relating to a specific movement.
     layout : dict
         Station's layout with explicit node signs.
     paths : list
@@ -457,8 +457,8 @@ def syntheticRequiredSwitches(sec_lbl, layout):
     -------
     list
         List of dictionaries, each relative pair relative to a switch in the
-        specified section. One of the dicts corresponds to the normal position
-        and the other to the reverse position.
+        specified section. One of the dictionaries corresponds to the normal
+        position and the other to the reverse position.
     """
     for section in layout['sections']:
 
@@ -524,7 +524,7 @@ def flankProtectionGeometricEngine(movement, layout, vital_fp_threshold,
     Parameters
     ----------
     movement : dict
-        Dictionary containing info relating to a specifi movement.
+        Dictionary containing info relating to a specific movement.
     layout : dict
         Station's layout with explicit node signs.
     vital_fp_threshold : float
@@ -693,7 +693,7 @@ def getNodeSignalPossDest(sec_lbl, nde_idx, layout, signals):
     str
         String containing the first letter of the movement types that can have
         the relevant signal as a destination. If there is no signal at the
-        specified node, or the signal can not be a destination of movements,
+        specified node, or the signal cannot be a destination of movements,
         the returned string is empty.
     """
     for section in layout['sections']:

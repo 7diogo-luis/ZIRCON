@@ -418,71 +418,82 @@ def sortMovements(movements, signals):
 
     for group in semi_sorted_raw:
 
-        for movement in group:
+        for regime in ['Main', 'DOS', 'Shunt']:
 
-            if (movement['aux']['alt_OL'] is None and
-                    movement['aux']['alt_route'] is None):
-                sorted_movements.append(movement)
+            for movement in group:
 
-        for movement in group:
+                if (movement['aux']['alt_OL'] is None and
+                        movement['aux']['alt_route'] is None and
+                        movement['type'] == regime):
+                    sorted_movements.append(movement)
 
-            if (movement['aux']['alt_OL'] is not None and
-                    '-' not in movement['aux']['alt_OL'] and
-                    movement['aux']['alt_route'] is None):
-                sorted_movements.append(movement)
+            for movement in group:
 
-        for movement in group:
+                if (movement['aux']['alt_OL'] is not None and
+                        '-' not in movement['aux']['alt_OL'] and
+                        movement['aux']['alt_route'] is None and
+                        movement['type'] == regime):
+                    sorted_movements.append(movement)
 
-            if (movement['aux']['alt_OL'] is not None and
-                    '-' in movement['aux']['alt_OL'] and
-                    movement['aux']['alt_route'] is None):
-                sorted_movements.append(movement)
+            for movement in group:
 
-        for movement in group:
+                if (movement['aux']['alt_OL'] is not None and
+                        '-' in movement['aux']['alt_OL'] and
+                        movement['aux']['alt_route'] is None and
+                        movement['type'] == regime):
+                    sorted_movements.append(movement)
 
-            if (movement['aux']['alt_OL'] is None and
-                    movement['aux']['alt_route'] is not None and
-                    movement['aux']['alt_route'][0]['SWI_pos'] != '-'):
-                sorted_movements.append(movement)
+            for movement in group:
 
-        for movement in group:
+                if (movement['aux']['alt_OL'] is None and
+                        movement['aux']['alt_route'] is not None and
+                        movement['aux']['alt_route'][0]['SWI_pos'] != '-' and
+                        movement['type'] == regime):
+                    sorted_movements.append(movement)
 
-            if (movement['aux']['alt_OL'] is None and
-                    movement['aux']['alt_route'] is not None and
-                    movement['aux']['alt_route'][0]['SWI_pos'] == '-'):
-                sorted_movements.append(movement)
+            for movement in group:
 
-        for movement in group:
+                if (movement['aux']['alt_OL'] is None and
+                        movement['aux']['alt_route'] is not None and
+                        movement['aux']['alt_route'][0]['SWI_pos'] == '-' and
+                        movement['type'] == regime):
+                    sorted_movements.append(movement)
 
-            if (movement['aux']['alt_OL'] is not None and
-                    '-' not in movement['aux']['alt_OL'] and
-                    movement['aux']['alt_route'] is not None and
-                    movement['aux']['alt_route'][0]['SWI_pos'] != '-'):
-                sorted_movements.append(movement)
+            for movement in group:
 
-        for movement in group:
+                if (movement['aux']['alt_OL'] is not None and
+                        '-' not in movement['aux']['alt_OL'] and
+                        movement['aux']['alt_route'] is not None and
+                        movement['aux']['alt_route'][0]['SWI_pos'] != '-' and
+                        movement['type'] == regime):
+                    sorted_movements.append(movement)
 
-            if (movement['aux']['alt_OL'] is not None and
-                    '-' in movement['aux']['alt_OL'] and
-                    movement['aux']['alt_route'] is not None and
-                    movement['aux']['alt_route'][0]['SWI_pos'] != '-'):
-                sorted_movements.append(movement)
+            for movement in group:
 
-        for movement in group:
+                if (movement['aux']['alt_OL'] is not None and
+                        '-' in movement['aux']['alt_OL'] and
+                        movement['aux']['alt_route'] is not None and
+                        movement['aux']['alt_route'][0]['SWI_pos'] != '-' and
+                        movement['type'] == regime):
+                    sorted_movements.append(movement)
 
-            if (movement['aux']['alt_OL'] is not None and
-                    '-' not in movement['aux']['alt_OL'] and
-                    movement['aux']['alt_route'] is not None and
-                    movement['aux']['alt_route'][0]['SWI_pos'] == '-'):
-                sorted_movements.append(movement)
+            for movement in group:
 
-        for movement in group:
+                if (movement['aux']['alt_OL'] is not None and
+                        '-' not in movement['aux']['alt_OL'] and
+                        movement['aux']['alt_route'] is not None and
+                        movement['aux']['alt_route'][0]['SWI_pos'] == '-' and
+                        movement['type'] == regime):
+                    sorted_movements.append(movement)
 
-            if (movement['aux']['alt_OL'] is not None and
-                    '-' in movement['aux']['alt_OL'] and
-                    movement['aux']['alt_route'] is not None and
-                    movement['aux']['alt_route'][0]['SWI_pos'] == '-'):
-                sorted_movements.append(movement)
+            for movement in group:
+
+                if (movement['aux']['alt_OL'] is not None and
+                        '-' in movement['aux']['alt_OL'] and
+                        movement['aux']['alt_route'] is not None and
+                        movement['aux']['alt_route'][0]['SWI_pos'] == '-' and
+                        movement['type'] == regime):
+                    sorted_movements.append(movement)
 
     circ = []
     shunt = []
@@ -582,15 +593,21 @@ def entryExit(orig_loc, dest_loc, layout):
     Returns
     -------
     str
-        "entry" if the movement is enters the station, "exit" otherwise.
+        "entry" if the movement enters the station, "exit" otherwise.
     """
     block_labels = [block['label'] for block in layout['blocks']]
     ndz_labels = [ndz['label'] for ndz in layout['NDZs']]
 
-    if orig_loc in block_labels or orig_loc in ndz_labels:
+    if orig_loc in block_labels:
         return 'entry'
 
-    elif dest_loc in block_labels or dest_loc in ndz_labels:
+    elif dest_loc in block_labels:
+        return 'exit'
+
+    elif orig_loc in ndz_labels:
+        return 'entry'
+
+    elif dest_loc in ndz_labels:
         return 'exit'
 
     else:
@@ -766,7 +783,7 @@ def sectionIsNDZ(sec_lbl, layout):
     Returns
     -------
     bool
-        True if the section is a NDZ, False otherwise.
+        True if the section is an NDZ, False otherwise.
     """
     for section in layout['sections']:
 

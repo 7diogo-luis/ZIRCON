@@ -282,7 +282,7 @@ def specialSectionFlagsAndSwitchDir(layout_wo_special_sec_flags):
     ----------
     layout_wo_special_sec_flags : list
         Station's layout without flags for special sections, except for TJD,
-        which is directly read from the zlt file. Node signs are explicit.
+        which is directly read from the .zlt file. Node signs are explicit.
 
     Returns
     -------

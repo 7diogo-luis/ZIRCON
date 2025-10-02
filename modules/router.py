@@ -284,7 +284,7 @@ def overlapTrimmer(raw_movs, layout, m_OL, d_OL, s_OL):
     -------
     list
         List of dictionaries, each relative to a possible movement, including
-        clones. Overlaps sections processed (excep logic OL).
+        clones. Overlaps sections processed (except logic OL).
     """
     blocks = [block['label'] for block in layout['blocks']]
     NDZs = [ndz['label'] for ndz in layout['NDZs']]
@@ -355,7 +355,7 @@ def derailerAltOL(layout, unlbld_movs_no_der_alt_OL,
         Description of the station's layout.
     unlbld_movs_no_der_alt_OL : list
         List of dictionaries, each relative to a possible movement
-        (unlabeled and without movement witch have derailers set to normal
+        (unlabeled and without movement which have derailers set to normal
          in the overlap).
     derailer_alt_OL_allowed_types : list
         List containing strings, each corresponding to a movement type for
@@ -513,7 +513,7 @@ def antiDistantSwitchOL(inc_OL_movs, signals, layout, m_OL, d_OL, s_OL):
     -------
     list
         List of dictionaries, each relative to a possible movement. Overlaps
-        processed (excep logic OL).
+        processed (except logic OL).
     """
     OL_corresp = {'Main': m_OL,
                   'DOS': d_OL,
@@ -1021,15 +1021,15 @@ def logicOL(no_logic_OL_movs, layout, viable_logic_OL,
     ----------
     no_logic_OL_movs : list
         List of dictionaries, each relative to a possible movement. Overlaps
-        processed (excep logic OL).
+        processed (except logic OL).
     layout : dict
         Description of the station's layout.
     viable_logic_OL : list
         List containing the movement types for which logic OL is possible.
     consider_swi_pnt_pk_logic_OL : bool
-        True if the existance of a effective switch in a OL section of a
+        True if the existence of a effective switch in a OL section of a
         suitable movement does not invalidate logic OL, as long as the switch's
-        point PK is at a threshhold distance from the destination signal.
+        point PK is at a threshold distance from the destination signal.
     m_OL : float
         Overlap distance for Main itineraries.
     d_OL : float
@@ -1041,8 +1041,8 @@ def logicOL(no_logic_OL_movs, layout, viable_logic_OL,
     -------
     list
         List of dictionaries, each relative to a possible movement
-        (unlabeled and without movements witch have derailers set to normal
-         in the overlap).
+        (unlabeled and without movements which have derailers set to normal in
+         the overlap).
     """
     OL_corresp = {'Main': m_OL,
                   'DOS': d_OL,

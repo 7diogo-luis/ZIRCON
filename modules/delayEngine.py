@@ -30,7 +30,7 @@ def delayEngine(movements, layout, signals, OL_delay_dist_weight,
     ARC_delay_dist_weight : float
         Weight of the total distance for calculation of the ARC delay.
     ERC_delay_circ_multiplier : float
-        Distance multiplier for curculation movements (ERC delay calculation).
+        Distance multiplier for circulation movements (ERC delay calculation).
     ERC_delay_shunt_multiplier : float
         Distance multiplier for shunt movements (ERC delay calculation).
     m_OL : float
@@ -151,7 +151,7 @@ def overlapDelays(movements, layout, weight, bias, round_multiple,
     Returns
     -------
     list
-        List containig OL delay timings and their respective sections.
+        List containing OL delay timings and their respective sections.
     """
     blocks = [block['label'] for block in layout['blocks']]
     NDZs = [NDZ['label'] for NDZ in layout['NDZs']]
@@ -222,7 +222,7 @@ def ARCdelays(layout, signals, weight, minimum, maximum, round_multiple,
     Returns
     -------
     list
-        List containig ARC delay timings and their respective signals.
+        List containing ARC delay timings and their respective signals.
     """
     ARC_delays = []
 
@@ -292,7 +292,7 @@ def ERCdelays(movements, layout, circ_multiplier, shunt_multiplier, m_OL, d_OL,
     layout : dict
         Station's layout with explicit node signs.
     circ_multiplier : float
-        Distance multiplier for curculation movements.
+        Distance multiplier for circulation movements.
     shunt_multiplier : float
         Distance multiplier for shunt movements.
     m_OL : float
@@ -311,14 +311,14 @@ def ERCdelays(movements, layout, circ_multiplier, shunt_multiplier, m_OL, d_OL,
     round_down_allowed : bool
         True if delay timings can be rounded down, False otherwise.
     overlap_delays : list
-        List containig OL delay timings and their respective sections.
+        List containing OL delay timings and their respective sections.
     ARC_delays : list
-        List containig ARC delay timings and their respective signals.
+        List containing ARC delay timings and their respective signals.
 
     Returns
     -------
     list
-        List containig ERC delay timings and their respective destinations.
+        List containing ERC delay timings and their respective destinations.
     """
     raw_ERC_delays = {'destinations': [],
                       'delays': []}
