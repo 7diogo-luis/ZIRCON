@@ -182,7 +182,7 @@ def purgeFPsections(movement, layout, paths):
             for vuln_nde in sec_to_protect['vulnerable_ndes']:
 
                 for dang_sec in vuln_nde['dangerous_secs']:
-
+                    brk_loop = False
                     req_swi = FPrequiredSwitch(dang_sec['sec_lbl'],
                                                dang_sec['dangerous_transits'],
                                                vuln_nde['collision_pnt'],
@@ -204,8 +204,16 @@ def purgeFPsections(movement, layout, paths):
 
                                 if req_swi not in proto_FP_data['req_swis']:
                                     proto_FP_data['req_swis'].append(req_swi)
+                                    brk_loop = True
 
                                 break
+
+                            elif key == 'route':
+                                proto_FP_data['req_swis'].remove(pres_req_swi)
+                                break
+
+                    if brk_loop:
+                        break
 
                     if dang_sec['flag'] == 'vital':
                         proto_FP_data['vital_req_secs'].append(dang_sec)
