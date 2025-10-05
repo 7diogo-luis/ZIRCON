@@ -47,8 +47,8 @@ flowchart LR
 ## CLI Commands
 
 * **load**: Load a station's layout into memory and perform low level pre-processing. Layout parameterization files will be read. The **load** command takes argument [STATION_LABEL], which is the filename of each of the station's layout parameterization files (same for all files of the same station). The **process** command takes argument [ZOP_FILE_NAME], which shall correspond to the filename of the desired **.zop** file
-* **process**: Process the loaded layout according to a specified set o operational parameters
-* **export**: Perform basig post-processing and export the output to a file. The **process** command takes argument [FORMAT], which must be "**xlsx**" (for visual interpretation) or "**pickle**" (for downstream processing)
+* **process**: Process the loaded layout according to a specified set of operational parameters
+* **export**: Perform basic post-processing and export the output to a file. The **process** command takes argument [FORMAT], which must be "**xlsx**" (for visual interpretation) or "**pickle**" (for downstream processing)
 * **exit**: Stop execution
 * **version**: Print the ZIRCON software version
 * **help**: Print a list of possible commands and their descriptions
@@ -56,7 +56,7 @@ flowchart LR
 ## ZIRCON Layout Topography File (.zlt)
 
 ### General rules
-1. The filename must have no white spaces. It should be the stations abbreviation, for ease of use. The filename must be equal to the filename of the corresponding **.zlg** and **.zag** files
+1. The filename must have no white spaces. It should be the station's abbreviation, for ease of use. The filename must be equal to the filename of the corresponding **.zlg** and **.zag** files
 2. All caps
 3. Every line starts with a keyword (**BLK**, **NDZ**, **SEC**, **NDE**, **PNT**, **SIG**, **SWP**)
 4. No trailing or leading spaces
@@ -84,9 +84,9 @@ flowchart LR
 1. Write keyword **NDE**
 2. Write the node's index after the keyword
 3. If there is an element connected to the node, write the label of that element after the node's index
-4. If the section containing the encoded node contains a single-junction-switch, and the node can not be crossed by transits that also cross section branches with associated switches, write **-** after the label of the connected element
-* Note 1: A node is always associated with a section. The association is made with the section encoded immediatly before the node
-* Note 2: The index of a node is an uppercase letter found by negativelly rotating an imaginary semi-axis over the section containing the relevant node (starting position of the imaginary semi-axis given by the **j** unit vector). The first node to be intersectid by the imaginary semi-axis has index "A", and the next intercepted nodes are assigned the following alphabet's letters
+4. If the section containing the encoded node contains a single-junction-switch, and the node cannot be crossed by transits that also cross section branches with associated switches, write **-** after the label of the connected element
+* Note 1: A node is always associated with a section. The association is made with the section encoded immediately before the node
+* Note 2: The index of a node is an uppercase letter found by negatively rotating an imaginary semi-axis over the section containing the relevant node (starting position of the imaginary semi-axis given by the **j** unit vector). The first node to be intersected by the imaginary semi-axis has index "A", and the next intercepted nodes are assigned the following alphabet's letters
   
 ### Encoding a signal
 1. Write keyword **SIG** if the signal has no associated pedal, otherwise write keyword **SWP**
@@ -99,7 +99,7 @@ flowchart LR
 ### Encoding a switch or derailer
 1. Write keyword **SWI**
 2. Write the switch's label after the keyword. If the switch is a derailer, the label must contain "C"
-* Note 1: A switch is always associated with a node. The association is made with the node encoded immediatly before the switch
+* Note 1: A switch is always associated with a node. The association is made with the node encoded immediately before the switch
 * Note 2: If a transit through a section's node requires a switch on that section to be set in the reverse position, then that switch is associated with that node. More than one switch might be associated with a single node
 
 ## ZIRCON Layout Geometry File (.zlg)
@@ -129,7 +129,7 @@ flowchart LR
 2. Write the PK of the signal's pole after the signal's label
 3. If the signal is included in an aspect sequence and movements originating from the signal have a zone-of-approximation, write the PK of the zone-of-approximation's origin signal pole after the encoded signal's pole PK
 4. If the signal is included in an aspect sequence and movements originating from the signal have a zone-of-approximation, write the zone-of-approximation's safety factor (distance) after the encoded signal's PK of the zone-of-approximation's origin signal
-* Note: Signals are encoded in separated lines, without stating the keyword on every line. Every line relative to a signal is in a block preceded by a **SIGS** keyword
+* Note: Signals are encoded in separate lines, without stating the keyword on every line. Every line relative to a signal is in a block preceded by a **SIGS** keyword
 
 ## ZIRCON Auxiliary Data File (.zad)
 
