@@ -589,7 +589,7 @@ def requiredSwitches(layout, sec_lbl, transit):
                                                         sec_lbl,
                                                         transit)
 
-    return required_switches
+    return deepcopy(required_switches)
 
 
 def requiredSwitchesTJD_TJS_ordinary(layout, sec_lbl, transit):
