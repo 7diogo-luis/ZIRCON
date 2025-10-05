@@ -1,7 +1,7 @@
 # ZIRCON
 
 ## Description
-An interlocking engine for use in the design and testing phases of railway signaling projects. It automatically derives possible train movements, interlocking requirements, and delay timings from signaling diagram data. By enabling rapid iterations, ZIRCON accelerates project delivery, enhances optimization, and improves safety.
+An interlocking engine for use in the design and validation phases of railway signaling projects. It automatically derives possible train movements, interlocking requirements, and delay timings from signaling diagram data. By enabling rapid iterations, ZIRCON accelerates project delivery, enhances optimization, and improves safety.
 
 ```mermaid
 ---
