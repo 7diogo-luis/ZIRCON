@@ -194,7 +194,7 @@ This is a non-exhaustive exploration of possible improvements to the overall sys
 ### Upstream
 1. **Layout Encoding Assistant** (complexity: 2) - The user is guided through the encoding process, which will be done through CLI interactions instead of manual file creation. Redundancy is eliminated, greatly improving efficiency. Ongoing verification ensures there are no inconsistencies in the encoding process
 3. **Unified Layout Encoding** (complexity: 1) - All input files to ZIRCON will be wrapped on a single unified descriptor of the layout and operational parameters to use. This encoding will be embedded on every ZIRCON standard output file, so that any file can be used as input to generate the other files
-4. **Signaling Diagram Generator** (complexity: 3) - The layout encoding will be used to synthesize a signaling diagram. The diagram will be in a standard form, distilled of irrelevant or ambiguous information. Every aspect relevant for the signaling project will be present on the diagram
+4. **Signaling Diagram Generator** (complexity: 3) - The layout encoding will be used to synthesize a signaling diagram. The diagram will be in a standard form, distilled of irrelevant or ambiguous information. Every aspect relevant for the signaling project will be present in the diagram
 
 ### Midstream
 1. **Incompatible Movement Engine** (complexity: 2) - The interlocking engine will compute incompatible movements
