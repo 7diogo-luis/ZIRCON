@@ -56,7 +56,7 @@ flowchart LR
 ## ZIRCON Layout Topography File (.zlt)
 
 ### General rules
-1. The filename must have no white spaces. It should be the station's abbreviation, for ease of use. The filename must be equal to the filename of the corresponding **.zlg** and **.zag** files
+1. The filename must have no white spaces and be equal to the filename of the corresponding **.zlg** and **.zag** files. It should be the station's abbreviation, for ease of use
 2. All caps
 3. Every line starts with a keyword (**BLK**, **NDZ**, **SEC**, **NDE**, **PNT**, **SIG**, **SWP**)
 4. No trailing or leading spaces
@@ -134,7 +134,7 @@ flowchart LR
 ## ZIRCON Auxiliary Data File (.zad)
 
 ### General rules
-1. The filename must have no white spaces. It should be the station's abbreviation, for ease of use. The filename must be equal to the filename of the corresponding **.zlt** and **.zlg** files
+1. The filename must have no white spaces and be equal to the filename of the corresponding **.zlt** and **.zlg** files. It should be the station's abbreviation, for ease of use
 2. No trailing or leading spaces
 3. No empty lines, except for last line
 4. Keyword arguments are separated by whitespaces
