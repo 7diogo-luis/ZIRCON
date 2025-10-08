@@ -43,6 +43,7 @@ flowchart LR
 5. Launch the program (ZIRCON/ZIRCON.py)
 6. Interact with the program via the command line interface (CLI). Type "**help**" to get a list of possible commands and their descriptions
 7. Outputs will be generated in directory "ZIRCON/stations/output"
+* NOTE: It is recomended to use the Anaconda distribution of Python
 
 ## CLI Commands
 
