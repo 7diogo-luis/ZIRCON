@@ -1341,6 +1341,9 @@ def altOrigOrDest(signals, unconsolidated_movs, layout):
 
             alt_rt_swis_to_remove = []
 
+            if not mov['alt_route']:
+                continue
+
             for alt_rt_swi in mov['alt_route']:
 
                 if (alt_rt_swi['SWI_lbl'] != rt_secs_w_swi[0] and

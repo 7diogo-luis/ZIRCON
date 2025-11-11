@@ -1,7 +1,7 @@
 # ZIRCON
 
 ## Description
-An interlocking engine for use in the design and validation phases of railway signaling projects. It automatically derives possible train movements, interlocking requirements, and delay timings from signaling diagram data. By enabling rapid design iterations, ZIRCON accelerates project delivery, enhances optimization, and improves safety.
+An interlocking engine for use in the design and validation phases of railway signaling projects. It automatically derives possible train movements, interlocking requirements, and delay timings from signaling diagram data. By enabling rapid iterations, ZIRCON accelerates project delivery, enhances optimization, and improves safety.
 
 ```mermaid
 ---
@@ -43,7 +43,6 @@ flowchart LR
 5. Launch the program (ZIRCON/ZIRCON.py)
 6. Interact with the program via the command line interface (CLI). Type "**help**" to get a list of possible commands and their descriptions
 7. Outputs will be generated in directory "ZIRCON/stations/output"
-* NOTE: It is recomended to use the Anaconda distribution of Python
 
 ## CLI Commands
 
@@ -57,7 +56,7 @@ flowchart LR
 ## ZIRCON Layout Topography File (.zlt)
 
 ### General rules
-1. The filename must have no white spaces and be equal to the filename of the corresponding **.zlg** and **.zag** files. It should be the station's abbreviation, for ease of use
+1. The filename must have no white spaces. It should be the station's abbreviation, for ease of use. The filename must be equal to the filename of the corresponding **.zlg** and **.zag** files
 2. All caps
 3. Every line starts with a keyword (**BLK**, **NDZ**, **SEC**, **NDE**, **PNT**, **SIG**, **SWP**)
 4. No trailing or leading spaces
@@ -135,7 +134,7 @@ flowchart LR
 ## ZIRCON Auxiliary Data File (.zad)
 
 ### General rules
-1. The filename must have no white spaces and be equal to the filename of the corresponding **.zlt** and **.zlg** files. It should be the station's abbreviation, for ease of use
+1. The filename must have no white spaces. It should be the station's abbreviation, for ease of use. The filename must be equal to the filename of the corresponding **.zlt** and **.zlg** files
 2. No trailing or leading spaces
 3. No empty lines, except for last line
 4. Keyword arguments are separated by whitespaces
@@ -195,7 +194,7 @@ This is a non-exhaustive exploration of possible improvements to the overall sys
 ### Upstream
 1. **Layout Encoding Assistant** (complexity: 2) - The user is guided through the encoding process, which will be done through CLI interactions instead of manual file creation. Redundancy is eliminated, greatly improving efficiency. Ongoing verification ensures there are no inconsistencies in the encoding process
 3. **Unified Layout Encoding** (complexity: 1) - All input files to ZIRCON will be wrapped on a single unified descriptor of the layout and operational parameters to use. This encoding will be embedded on every ZIRCON standard output file, so that any file can be used as input to generate the other files
-4. **Signaling Diagram Generator** (complexity: 3) - The layout encoding will be used to synthesize a signaling diagram. The diagram will be in a standard form, distilled of irrelevant or ambiguous information. Every aspect relevant for the signaling project will be present in the diagram
+4. **Signaling Diagram Generator** (complexity: 3) - The layout encoding will be used to synthesize a signaling diagram. The diagram will be in a standard form, distilled of irrelevant or ambiguous information. Every aspect relevant for the signaling project will be present on the diagram
 
 ### Midstream
 1. **Incompatible Movement Engine** (complexity: 2) - The interlocking engine will compute incompatible movements
@@ -211,11 +210,11 @@ This is a non-exhaustive exploration of possible improvements to the overall sys
 3. **Project File Format Converter** (complexity: 1) - A tool that converts ZIRCON generated project files to formats that conform to the norms of costumer organizations
 
 ### New workflow enabled
-The railway signaling project design and validation phases are often unorganized and inefficient. They are centered around several interdependent major document types (e.g. signaling diagram, interlocking program, software control tables, etc.). When a modification is required due to errors, under optimization or changing requirements, all documents must be manually changed and validated and even before that, the interlocking logic might need to be modified, creating tremendous lag and unnecessary resource consumption.
+The signaling project/validation phases are often unorganized and inefficient. They are centered around several interdependent major document types (e.g. signaling diagram, interlocking program, software control tables, etc.). When a modification is required due to errors, under optimization or changing requirements, all documents must be manually changed and validated and even before that, the interlocking logic might need to be modified, creating tremendous lag and unnecessary resource consumption.
 
-In a vicious cycle, the very inefficiency of the current system breeds ground for more errors and under optimizations, which then lead to more iterations and manual modifications, then more errors, and so on. Railways are the most efficient form of transportation, allowing fast movement of heavy loads and large numbers of passengers, at minimal cost. However, inefficiencies are common, change is very slow, and the industry is very capital-intensive. This is in part a result of the problems with the design/validation workflows. Delayed timelines and cost slippage are unfortunately commonly found in the Railway industry. ZIRCON helps bring the 21st century to railway signaling projects. Better optimization and safety, while dramatically reducing costs.
+In a vicious cycle, the very inefficiency of the current system breeds ground for more errors and under optimizations, which then lead to more iterations and manual modifications, then more errors, and so on. Railways are the most efficient form of transportation, allowing fast movement of heavy loads and large numbers of passengers, at minimal cost. However, inefficiencies are common, change is very slow, and the industry is very capital-intensive. This is in part a result of the problems with the project/validation workflows. Delayed timelines and cost slippage are unfortunately commonly found in the Railway industry. ZIRCON helps bring the 21st century to railway signaling projects. Better optimization and safety, while dramatically reducing costs.
 
-In a ZIRCON enabled efficient workflow model, the project/validation phase will only be centered around ZIRCON standard format files. Major project documents, like signaling diagrams, interlocking programs or software control tables, will be of the ZIRCON standard, meaning they can be instantly generated from each other. When a modification is necessary, it is quickly done via the **Layout Encoding Assistant**, and a new version of all files is generated. Instead of spending hundreds of hours manually reviewing logic and updating documents, iterations become practically instantaneous. ZIRCON itself incorporates verification, reducing the number of errors throughout the project phase. Hands on rapid prototyping becomes possible, greatly improving end solution optimization.
+In a ZIRCON enabled efficient workflow model, the project/validation phase will only be centered around ZIRCON standard format files. Major project documents, like Signaling Diagrams, Interlocking Programs or Software Control Tables, will be of the ZIRCON standard, meaning they can be instantly generated from each other. When a modification is necessary, it is quickly done via the **Layout Encoding Assistant**, and a new version of all files is generated. Instead of spending hundreds of hours manually reviewing logic and updating documents, iterations become practically instantaneous. ZIRCON itself incorporates verification, reducing the number of errors throughout the project phase. Hands on rapid prototyping becomes possible, greatly improving end solution optimization.
 
 ```mermaid
 ---

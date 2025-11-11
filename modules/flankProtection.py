@@ -7,6 +7,7 @@ file LICENSE or http://www.opensource.org/licenses/mit-license.php.
 from modules.spatialEngine import impossibleTransits, requiredSwitches
 from modules.router import effectiveSwitches
 from copy import deepcopy
+from sys import exit
 
 
 def flankProtection(raw_movements, layout, signals, paths,
@@ -1265,11 +1266,13 @@ def getDangerousSection(sec_lbl, vulnerable_node, layout):
     con_ele = section['nodes'][nde_idx]['con_ele']
 
     if con_ele not in block_labels and con_ele not in NDZ_labels:
-
         mediator_node = mediatorNode(con_ele, section['label'], layout)
         dangerous_transits = possibleTransitsToNode(con_ele,
                                                     mediator_node['index']
                                                     [0], layout)
+    else:
+        print('BLK/NDZ', con_ele, 'without signal. Confirm layout design.')
+        exit()
 
     return {'sec_lbl': con_ele,
             'dangerous_transits': dangerous_transits}
