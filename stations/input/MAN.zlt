@@ -122,7 +122,7 @@ SEC 21
     NDE C 19
 SEC 23
     NDE A R1
-        SIG M0
+        SIG M28
     NDE B R2
         SIG M28
         SWI 23

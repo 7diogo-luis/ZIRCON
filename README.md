@@ -17,20 +17,14 @@ flowchart LR
   end
  subgraph s2["Interlocking Program"]
         n12["Visual (.xlsx)"]
-        n13@{ label: "<span style=\"color:\">Byte stream</span>" }
+        n13["Byte stream"]
   end
-    n9 --> n1["ZIRCON"]
+    n9 --> n1{{"ZIRCON"}}
     n10 --> n1
     n11 --> n1
     n8["Operational Parameters (.zop)"] --> n1
-    n1 --> n12 & n13
-    n9@{ shape: rect}
-    n10@{ shape: rect}
-    n11@{ shape: rect}
-    n12@{ shape: rect}
-    n13@{ shape: rect}
-    n1@{ shape: hex}
-    n8@{ shape: rect}
+    n1 --> n12
+    n1 --> n13
 ```
 
 
@@ -58,7 +52,7 @@ flowchart LR
 ### General rules
 1. The filename must have no white spaces. It should be the station's abbreviation, for ease of use. The filename must be equal to the filename of the corresponding **.zlg** and **.zag** files
 2. All caps
-3. Every line starts with a keyword (**BLK**, **NDZ**, **SEC**, **NDE**, **PNT**, **SIG**, **SWP**)
+3. Every line starts with a keyword (**BLK**, **NDZ**, **SEC**, **NDE**, **SIG**, **SWP**, **SWI**)
 4. No trailing or leading spaces
 5. No empty lines, except for last line
 6. Tabs should be used before keywords to denote dependency between encoded elements
@@ -223,25 +217,27 @@ config:
   layout: fixed
 ---
 flowchart LR
- subgraph s1["ZIRCON Standard Format"]
-        n12@{ label: "<span style=\"background-color:\">Software Control Tables</span>" }
-        n14@{ label: "<span style=\"background-color:\">Interlocking Program</span>" }
-        n16@{ label: "<span style=\"background-color:\">Signaling Diagram</span>" }
+  subgraph s1["ZIRCON Standard Format"]
+        n12["Software Control Tables"]
+        n14["Interlocking Program"]
+        n16["Signaling Diagram"]
   end
- subgraph s2["Costumer Req. Format"]
-        n17@{ label: "<span style=\"background-color:\">Software Control Tables</span>" }
-        n18@{ label: "<span style=\"background-color:\">Interlocking Program</span>" }
-        n19@{ label: "<span style=\"background-color:\">Signaling Diagram</span>" }
+
+  subgraph s2["Customer Req. Format"]
+        n17["Software Control Tables"]
+        n18["Interlocking Program"]
+        n19["Signaling Diagram"]
   end
-    n1["ZIRCON"] --> n19 & n18 & n17 & n12 & n14 & n16
-    n12 --> n1
-    n14 --> n1
-    n16 --> n1
-    n12@{ shape: rect}
-    n14@{ shape: rect}
-    n16@{ shape: rect}
-    n17@{ shape: rect}
-    n18@{ shape: rect}
-    n19@{ shape: rect}
-    n1@{ shape: hex}
+
+  n1{{"ZIRCON"}} --> n19
+  n1 --> n18
+  n1 --> n17
+  n1 --> n12
+  n1 --> n14
+  n1 --> n16
+
+  n12 --> n1
+  n14 --> n1
+  n16 --> n1
+
 ```
