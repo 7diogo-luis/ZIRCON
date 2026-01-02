@@ -1,7 +1,7 @@
 # ZIRCON
 
 ## Description
-An interlocking engine for use in the design and validation phases of railway signaling projects. It automatically derives possible train movements, interlocking requirements, and delay timings from signaling diagram data. By enabling rapid iterations, ZIRCON accelerates project delivery, enhances optimization, and improves safety.
+An interlocking engine for use in the design and validation phases of railway signaling projects. It automatically derives possible train movements, interlocking requirements, and delay timings from signaling diagram data (encoded using the ZIRCON DSL). By enabling rapid iterations, ZIRCON accelerates project delivery, enhances optimization, and improves safety.
 
 ```mermaid
 ---
@@ -35,8 +35,10 @@ flowchart LR
 3. If necessary, create a new ZIRCON operational parameters file (**.zop**)
 4. Ensure the **.zop** file to use is in directory ""ZIRCON/parameters"
 5. Launch the program (ZIRCON/ZIRCON.py)
-6. Interact with the program via the command line interface (CLI). Type "**help**" to get a list of possible commands and their descriptions
+6. Interact with the program via the command line interface. Type "**help**" to get a list of possible commands and their descriptions
 7. Outputs will be generated in directory "ZIRCON/stations/output"
+
+**NOTICE: The encodings of seven stations, of varying complexity, are provided for testing purposes. Although inspired in real stations, these encodings <ins>do not correspond to the real layout</ins> of these stations, and shall never be used beyond the purpose of testing ZIRCON.**
 
 ## CLI Commands
 
