@@ -1,7 +1,7 @@
 # ZIRCON
 
-## Description
-An interlocking engine for use in the design and validation phases of railway signaling projects. It automatically derives possible train movements, interlocking requirements, and delay timings from signaling diagram data (encoded using the ZIRCON DSL). By enabling rapid iterations, ZIRCON accelerates project delivery, enhances optimization, and improves safety.
+## Overview
+An interlocking engine for use in the design and validation phases of railway signaling projects. It automatically derives possible train movements, interlocking requirements, and delay timings from signaling diagram data (encoded using the ZIRCON DSL). By enabling rapid design iterations, ZIRCON accelerates project delivery, while improving safety and optimization.
 
 ```mermaid
 ---
@@ -26,6 +26,11 @@ flowchart LR
     n1 --> n12
     n1 --> n13
 ```
+
+### New workflow enabled
+The railway signaling project/validation phases are often unorganized and inefficient. They are centered around several interdependent major document types (e.g. signaling diagram, interlocking program, software control tables, etc.). When a modification is required due to errors, under optimization, or changing requirements, all documents must be manually changed and validated, and even before that, the interlocking logic might need to be modified, creating tremendous lag and unnecessary resource consumption.
+
+In a vicious cycle, the very inefficiency of the current system breeds ground for more errors and under optimizations, which then lead to more iterations and manual modifications, then more errors, and so on. Railways are the most efficient form of transportation, allowing fast movement of heavy loads and large numbers of passengers at minimal cost. However, inefficiencies are common, change is very slow, and the industry is very capital-intensive. This is in part a result of the problems with the project/validation workflows. Unfortunately, very little attention has been given to this bottleneck, so delayed timelines and cost slippage are still commonly found in the railway industry. ZIRCON is an innovative step towards the improvement of railway signaling project phases, serving as a solid platform for further development.
 
 
 ## Use Guidelines
@@ -205,13 +210,6 @@ This is a non-exhaustive exploration of possible improvements to the overall sys
 2. **Installer** (complexity: 1) - ZIRCON will have an installer so the program files are kept in a safe directory. In production, the user launches ZIRCON through a shortcut and selects the location for exporting generated files
 3. **Project File Format Converter** (complexity: 1) - A tool that converts ZIRCON generated project files to formats that conform to the norms of costumer organizations
 
-### New workflow enabled
-The signaling project/validation phases are often unorganized and inefficient. They are centered around several interdependent major document types (e.g. signaling diagram, interlocking program, software control tables, etc.). When a modification is required due to errors, under optimization or changing requirements, all documents must be manually changed and validated and even before that, the interlocking logic might need to be modified, creating tremendous lag and unnecessary resource consumption.
-
-In a vicious cycle, the very inefficiency of the current system breeds ground for more errors and under optimizations, which then lead to more iterations and manual modifications, then more errors, and so on. Railways are the most efficient form of transportation, allowing fast movement of heavy loads and large numbers of passengers, at minimal cost. However, inefficiencies are common, change is very slow, and the industry is very capital-intensive. This is in part a result of the problems with the project/validation workflows. Delayed timelines and cost slippage are unfortunately commonly found in the Railway industry. ZIRCON helps bring the 21st century to railway signaling projects. Better optimization and safety, while dramatically reducing costs.
-
-In a ZIRCON enabled efficient workflow model, the project/validation phase will only be centered around ZIRCON standard format files. Major project documents, like Signaling Diagrams, Interlocking Programs or Software Control Tables, will be of the ZIRCON standard, meaning they can be instantly generated from each other. When a modification is necessary, it is quickly done via the **Layout Encoding Assistant**, and a new version of all files is generated. Instead of spending hundreds of hours manually reviewing logic and updating documents, iterations become practically instantaneous. ZIRCON itself incorporates verification, reducing the number of errors throughout the project phase. Hands on rapid prototyping becomes possible, greatly improving end solution optimization.
-
 ```mermaid
 ---
 config:
@@ -243,3 +241,6 @@ flowchart LR
   n16 --> n1
 
 ```
+
+## Future Vision
+In a ZIRCON enabled workflow, major project documents, like signaling diagrams, interlocking programs or software control tables, will be in a ZIRCON compatible format, meaning they can be instantly generated from each other. When a modification is necessary, it is quickly done via the **Layout Encoding Assistant**, and a new version of all files is generated. Instead of spending hundreds of hours manually reviewing logic and updating documents, iterations become practically instantaneous. ZIRCON itself will incorporate input validation, reducing the number of errors throughout the project phase. Hands on rapid prototyping becomes possible, greatly improving end solution optimization.
