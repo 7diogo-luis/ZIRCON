@@ -15,7 +15,7 @@ SEC 1I
     NDE B 1II
         SWI 1I
     NDE C SIAF
-        SWP S23/M23
+        SWP S230/M230
 SEC A2
     NDE A A3
     NDE B 1II
@@ -150,7 +150,7 @@ NDZ VII
 NDZ R1
 NDZ R2
 SEC 2
-    NDE A D2
+    NDE A B2
         SIG M2
     NDE B 4
         SWI 2
@@ -181,12 +181,12 @@ SEC 10
     NDE C III
         SWI 10
         SWP S15/M15
-SEC D2
-    NDE A D1
+SEC B2
+    NDE A B1
     NDE B 2
-SEC D1
+SEC B1
     NDE A CON
         SWP S2
-    NDE B D2
+    NDE B B2
         SIG M25
 BLK CON

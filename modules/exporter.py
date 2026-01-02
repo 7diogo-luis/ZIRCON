@@ -7,6 +7,7 @@ file LICENSE or http://www.opensource.org/licenses/mit-license.php.
 from openpyxl import load_workbook
 import os
 import pickle
+import platform
 
 
 def exporter(IP, mode):
@@ -35,7 +36,11 @@ def exportPickle(IP):
     IP : dict
         Station's interlocking program.
     """
-    save_path = os.getcwd() + '\\stations\\output\\'
+    if platform.system() == 'Windows':
+        save_path = os.getcwd() + '\\stations\\output\\'
+    else:
+        save_path = os.getcwd() + '/stations/output/'
+
     file_lbl = IP['COVER']['station_lbl'] + '_Interlocking_Program'
 
     with open((save_path + file_lbl), 'ab') as file:
@@ -50,13 +55,17 @@ def exportXlsx(IP):
     IP : dict
         Station's interlocking program.
     """
-    path = os.getcwd() + '\\templates\\interlocking_program.xlsx'
+    if platform.system() == 'Windows':
+        path = os.getcwd() + '\\templates\\interlocking_program.xlsx'
+    else:
+        path = os.getcwd() + '/templates/interlocking_program.xlsx'
+
     workbook = load_workbook(path)
 
     sta_lbl_str = (IP['COVER']['station_name'] + ' (' +
                    IP['COVER']['station_lbl'] + ')')
-    workbook['Cover']['B8'] = sta_lbl_str
-    workbook['Cover']['B9'] = IP['COVER']['interlocking_name']
+    workbook['Cover']['A8'] = sta_lbl_str
+    workbook['Cover']['A9'] = IP['COVER']['interlocking_name']
     workbook['Cover']['F3'] = IP['COVER']['sw_version']
     workbook['Cover']['A19'] = IP['COVER']['encoding_author']
     workbook['Cover']['A20'] = IP['COVER']['date']
@@ -502,6 +511,10 @@ def exportXlsx(IP):
         row_num += 1
         workbook['Inputs'].cell(row_num, 4, zad_line)
 
-    save_path = os.getcwd() + '\\stations\\output\\'
+    if platform.system() == 'Windows':
+        save_path = os.getcwd() + '\\stations\\output\\'
+    else:
+        save_path = os.getcwd() + '/stations/output/'
+
     file_lbl = IP['COVER']['station_lbl'] + '_Interlocking_Program.xlsx'
     workbook.save(save_path + file_lbl)

@@ -8,7 +8,7 @@ SEC 1II
         SWI 1II
     NDE C SPE1
         SWP S1
-SEC D1
+SEC B1
     NDE A 1I
     NDE B SPE2
         SWP SC1
@@ -16,7 +16,7 @@ SEC 1I
     NDE A 1II
         SWI 1I
     NDE B 3II/5
-    NDE C D1
+    NDE C B1
         SIG M1
 SEC A1
     NDE A 3I
@@ -28,7 +28,7 @@ SEC 3I
     NDE C A1
         SIG M3
 SEC 3II/5
-    NDE A 11/13 -
+    NDE A 11/15 -
     NDE B 9
         SWI 5
     NDE C 1I
@@ -39,16 +39,16 @@ SEC 7
     NDE A R1
         SIG M10
         SWI 7
-    NDE B 11/13
+    NDE B 11/15
     NDE C 3I
-SEC 11/13 TJD
+SEC 11/15 TJD
     NDE A I
-        SWP S2/M2
+        SWP S20/M20
         SWI 11
     NDE B II
         SWP S4/M4
     NDE C 3II/5
-        SWI 13
+        SWI 15
     NDE D 7
 SEC 9
     NDE A III
@@ -62,10 +62,10 @@ SEC R1
     NDE B 7
 SEC I
     NDE A
-    NDE B 11/13
+    NDE B 11/15
 SEC II
     NDE A
-    NDE B 11/13
+    NDE B 11/15
 SEC III
     NDE A
     NDE B 9

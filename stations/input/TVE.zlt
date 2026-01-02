@@ -47,7 +47,7 @@ SEC V NDZ
     NDE A 6/8
     NDE B 5/7
 SEC 2/4
-    NDE A D1
+    NDE A B1
         SIG M2
     NDE B 6/8
         SWI 2
@@ -70,9 +70,9 @@ SEC 6/8
         SWI C2
     NDE D III
         SWP S7/M7
-SEC D1
+SEC B1
     NDE A RAM
-        SWP S2
+        SWP S20
     NDE B 2/4
 BLK RAM
     SIG M

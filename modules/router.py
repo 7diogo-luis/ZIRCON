@@ -555,7 +555,9 @@ def antiDistantSwitchOL(inc_OL_movs, signals, layout, m_OL, d_OL, s_OL):
                     movs_to_remove.append(mov)
 
     for mov_to_remove in movs_to_remove:
-        no_logic_OL_movs.remove(mov_to_remove)
+
+        if mov_to_remove in no_logic_OL_movs:
+            no_logic_OL_movs.remove(mov_to_remove)
 
     partialLock(no_logic_OL_movs, layout, m_OL, d_OL, s_OL)
 

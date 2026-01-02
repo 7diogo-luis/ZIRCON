@@ -18,37 +18,37 @@ SEC 3
         SWP S10/M10
         SWI 3
         SWI C1
-    NDE B I
-        SWP S4/M4
+    NDE B LI
+        SWP S40/M40
     NDE C 1
 NDZ IV
 SEC 5
-    NDE A II
-        SWP S6/M6
-    NDE B III
-        SWP S8/M8
+    NDE A LII
+        SWP S60/M60
+    NDE B LIII
+        SWP S80/M80
         SWI 5
     NDE C 1
-SEC I
+SEC LI
     NDE A IA
     NDE B 3
-SEC II
+SEC LII
     NDE A 6
     NDE B 5
-SEC III
+SEC LIII
     NDE A 6
     NDE B 5
 SEC 6
     NDE A D3
         SIG M2
-    NDE B III
+    NDE B LIII
         SWP S7/M7
         SWI 6
-    NDE C II
+    NDE C LII
         SWP S5/M5
 SEC IA
     NDE A 4I
-    NDE B I
+    NDE B LI
 SEC D3
     NDE A 4II
     NDE B 6
