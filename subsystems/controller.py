@@ -28,9 +28,17 @@ def controller(persist):
     persist['usr_request'] = usr_request
 
     if persist['usr_request']['action'] == 'load':
-        layout, parameters, aux_data, inputs = inputLayer(persist
-                                                          ['usr_request']
-                                                          ['modifier'], None)
+
+        try:
+            layout, parameters, aux_data, inputs = inputLayer(persist
+                                                            ['usr_request']
+                                                            ['modifier'],
+                                                            None)
+
+        except FileNotFoundError:
+            print("\nError: Specified file not found.\n")
+            return persist
+
         aux_data['sw_version'] = persist['sw_version']
 
         persist['layout'] = layout
@@ -41,9 +49,16 @@ def controller(persist):
         return persist
 
     elif persist['usr_request']['action'] == 'process':
-        layout, parameters, aux_data, inputs = inputLayer(None, persist
-                                                          ['usr_request']
-                                                          ['modifier'])
+
+        try:
+            layout, parameters, aux_data, inputs = inputLayer(None, persist
+                                                            ['usr_request']
+                                                            ['modifier'])
+
+        except FileNotFoundError:
+            print("\nError: Specified file not found.\n")
+            return persist
+
         persist['inputs']['zop'] = inputs['zop']
 
         persist['parameters'] = parameters

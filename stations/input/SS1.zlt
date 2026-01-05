@@ -1,0 +1,74 @@
+BLK DBK1
+BLK DBK2
+    SIG M
+SEC 1II
+    NDE A A1
+        SIG M12
+    NDE B 1I
+        SWI 1II
+    NDE C DBK1
+        SWP S1
+SEC B1
+    NDE A 1I
+    NDE B DBK2
+        SWP SC1
+SEC 1I
+    NDE A 1II
+        SWI 1I
+    NDE B 3II/5
+    NDE C B1
+        SIG M1
+SEC A1
+    NDE A 3I
+    NDE B 1II
+SEC 3I
+    NDE A 7
+    NDE B 3II/5
+        SWI 3I
+    NDE C A1
+        SIG M3
+SEC 3II/5
+    NDE A 11/15 -
+    NDE B 9
+        SWI 5
+    NDE C 1I
+        SIG M5
+    NDE D 3I
+        SWI 3II
+SEC 7
+    NDE A R1
+        SIG M10
+        SWI 7
+    NDE B 11/15
+    NDE C 3I
+SEC 11/15 TJD
+    NDE A I
+        SWP S20/M20
+        SWI 11
+    NDE B II
+        SWP S4/M4
+    NDE C 3II/5
+        SWI 15
+    NDE D 7
+SEC 9
+    NDE A III
+        SWP S6/M6
+    NDE B IV
+        SWP S8/M8
+        SWI 9
+    NDE C 3II/5
+SEC R1
+    NDE A
+    NDE B 7
+SEC I
+    NDE A
+    NDE B 11/15
+SEC II
+    NDE A
+    NDE B 11/15
+SEC III
+    NDE A
+    NDE B 9
+SEC IV
+    NDE A
+    NDE B 9

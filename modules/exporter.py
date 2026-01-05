@@ -26,6 +26,9 @@ def exporter(IP, mode):
 
     elif mode == 'xlsx':
         exportXlsx(IP)
+    
+    else:
+        print("Invalid export format")
 
 
 def exportPickle(IP):

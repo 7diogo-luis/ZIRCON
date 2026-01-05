@@ -1,0 +1,192 @@
+BLK DBK
+SEC A1
+    NDE A 1II
+    NDE B DBK
+        SWP S1
+SEC 1II
+    NDE A A2
+        SWP S20/M20
+    NDE B A1
+    NDE C 1I
+        SWI 1II
+NDZ SIAF
+SEC 1I
+    NDE A
+    NDE B 1II
+        SWI 1I
+    NDE C SIAF
+        SWP S230/M230
+SEC A2
+    NDE A A3
+    NDE B 1II
+SEC A3
+    NDE A A4
+        SWP S18/M18
+    NDE B A2
+SEC A4
+    NDE A A5
+    NDE B A3
+        SWP S3/M3
+SEC A5
+    NDE A 3
+    NDE B A4
+SEC 3
+    NDE A IA
+        SWP S16/M16
+    NDE B 5I
+        SWI 3
+    NDE C A5
+        SIG M1
+SEC 5I
+    NDE A IIA
+        SWP S12/M12
+    NDE B 5II
+        SWI 5I
+    NDE C 3
+SEC 5II
+    NDE A IIIA
+        SWP S14/M14
+    NDE B
+    NDE C 5I
+        SWI 5II
+SEC IA
+    NDE A 11I
+    NDE B 3
+SEC IIA
+    NDE A 9I
+    NDE B 5I
+SEC IIIA
+    NDE A 7
+    NDE B 5II
+SEC 11I
+    NDE A 17
+    NDE B 11II
+        SWI 11I
+    NDE C IA
+        SWP S5/M5
+SEC 17
+    NDE A XV
+        SIG M26
+        SWI 17
+        SWI C1
+    NDE B I
+        SWP S4/M4
+    NDE C 11I
+SEC 9I
+    NDE A 11II
+    NDE B 9II
+        SWI 9I
+    NDE C IIA
+        SWP S7/M7
+SEC 11II
+    NDE A II
+        SWP S6/M6
+    NDE B 9I
+    NDE C 11I
+        SWI 11II
+SEC 7
+    NDE A 9II
+    NDE B 13
+        SWI 7
+    NDE C IIIA
+        SWP S9/M9
+SEC 9II
+    NDE A III
+        SWP S8/M8
+    NDE B 7
+    NDE C 9I
+        SWI 9II
+SEC 13
+     NDE A 15
+     NDE B 23
+         SWI 13
+    NDE C 7
+SEC 15
+    NDE A IV
+        SWP S10/M10
+        SWI 15
+    NDE B 19
+    NDE C 13
+SEC 19
+    NDE A V
+        SIG M24
+        SWI 19
+    NDE B 21
+    NDE C 15
+SEC 21
+    NDE A VI
+        SIG M22
+        SWI 21
+    NDE B VII
+        SIG M22
+    NDE C 19
+SEC 23
+    NDE A R1
+        SIG M28
+    NDE B R2
+        SIG M28
+        SWI 23
+    NDE C 13
+NDZ XV
+SEC I
+    NDE A 2
+    NDE B 17
+SEC II
+    NDE A 4
+    NDE B 11II
+SEC III
+    NDE A 10
+    NDE B 9II
+SEC IV
+    NDE A 10
+    NDE B 15
+SEC V NDZ
+    NDE A 6/8
+    NDE B 19
+SEC VI NDZ
+    NDE A 6/8
+    NDE B 21
+NDZ VII
+NDZ R1
+NDZ R2
+SEC 2
+    NDE A B2
+        SIG M2
+    NDE B 4
+        SWI 2
+    NDE C I
+        SWP S11/M11
+SEC 4
+    NDE A 2
+    NDE B 6/8
+        SWI 4
+    NDE C II
+        SWP S13/M13
+SEC 6/8
+    NDE A 4
+    NDE B VI
+        SWI 6
+        SWI 8
+        SWI C4
+        SWP S21/M21
+    NDE C V
+        SWI 6
+        SWI C2
+        SWP S19/M19
+    NDE D 10
+SEC 10
+    NDE A 6/8
+    NDE B IV
+        SWP S17/M17
+    NDE C III
+        SWI 10
+        SWP S15/M15
+SEC B2
+    NDE A B1
+    NDE B 2
+SEC B1
+    NDE A ABK
+        SWP S2
+    NDE B B2
+        SIG M25
+BLK ABK
