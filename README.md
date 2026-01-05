@@ -32,7 +32,6 @@ The railway signaling project/validation phases are often unorganized and ineffi
 
 In a vicious cycle, the very inefficiency of the current system breeds ground for more errors and under optimizations, which then lead to more iterations and manual modifications, then more errors, and so on. Railways are the most efficient form of transportation, allowing fast movement of heavy loads and large numbers of passengers at minimal cost. However, inefficiencies are common, change is very slow, and the industry is very capital-intensive. This is in part a result of the problems with the project/validation workflows. Unfortunately, very little attention has been given to this bottleneck, so delayed timelines and cost slippage are still commonly found in the railway industry. ZIRCON is an innovative step towards the improvement of railway signaling project phases, serving as a solid platform for further development.
 
-
 ## Use Guidelines
 
 1. Encode a station (through ZIRCON parameterization files (**.zlt**, **.zlg** and **.zad**))
@@ -43,7 +42,9 @@ In a vicious cycle, the very inefficiency of the current system breeds ground fo
 6. Interact with the program via the command line interface. Type "**help**" to get a list of possible commands and their descriptions
 7. Outputs will be generated in directory "ZIRCON/stations/output"
 
-**NOTICE: The encodings of seven stations, of varying complexity, are provided for testing purposes. Although inspired in real stations, these encodings <ins>do not correspond to the real layout</ins> of these stations, and shall never be used beyond the purpose of testing ZIRCON.**
+## Testing
+
+The encodings of seven fictitious stations (of varying complexity and features) are provided for testing purposes. The processing results of these stations are also provided.
 
 ## CLI Commands
 
