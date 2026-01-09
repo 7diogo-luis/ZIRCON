@@ -1,8 +1,11 @@
 # ZIRCON
 
 ## Overview
-An interlocking engine for use in the design and validation phases of railway signaling projects. It automatically derives possible train movements, interlocking requirements, and delay timings from signaling diagram data (encoded using the ZIRCON DSL). By enabling rapid design iterations, ZIRCON accelerates project delivery, while improving safety and optimization.
-Metaphorically speaking, ZIRCON can be seen as a decompiler, converting a low-level description of a station (where things are, what is their shape/function, how do they connect, what is their size, etc.) to a high-level view of how trains can safely move in that station, and what is required for those movements.
+ZIRCON automatically derives railway interlocking logic from station layouts, replacing manual design and validation steps. By enabling rapid design iterations, ZIRCON accelerates project delivery, while improving safety and optimization.
+It's target users are infrastructure owners (public/private) and contractors (design/validation).
+
+## How it works
+The user manually encodes the desired station's layout with ZIRCON's DSL. The encoding files are ZIRCON's input. A set of operational parameters (rules on how trains can move in the station) are also specified by the user. ZIRCON will then generate the stations interlocking program, containing all possible routes, and the requirements for those routes.
 
 ```mermaid
 ---
@@ -28,6 +31,8 @@ flowchart LR
     n1 --> n13
 ```
 
+Metaphorically speaking, ZIRCON can be seen as a decompiler, converting a low-level description of a station (where things are, what is their shape/function, how do they connect, what is their size, etc.) to a high-level view of how trains can safely move in that station, and what is required for those movements.
+
 ### New workflow enabled
 The railway signaling project/validation phases are often unorganized and inefficient. They are centered around several interdependent major document types (e.g. signaling diagram, interlocking program, software control tables, etc.). When a modification is required due to errors, under optimization, or changing requirements, all documents must be manually changed and validated, and even before that, the interlocking logic might need to be modified, creating tremendous lag and unnecessary resource consumption.
 
@@ -35,7 +40,7 @@ In a vicious cycle, the very inefficiency of the current system breeds ground fo
 
 ## Use Guidelines
 
-1. Encode a station (through ZIRCON parameterization files (**.zlt**, **.zlg** and **.zad**))
+1. Encode a station (**.zlt**, **.zlg** and **.zad** files - the three are necessary to encode a single station)
 2. Place the station's parameterization files in the directory "ZIRCON/stations/input"
 3. If necessary, create a new ZIRCON operational parameters file (**.zop**)
 4. Ensure the **.zop** file to use is in directory ""ZIRCON/parameters"
@@ -45,7 +50,7 @@ In a vicious cycle, the very inefficiency of the current system breeds ground fo
 
 ## Testing
 
-The encodings of seven fictitious stations (of varying complexity and features) are provided for testing purposes. The processing results of these stations are also provided.
+The encodings of seven fictitious stations (of varying complexity and features) are provided for testing purposes. The processing results of these stations are also provided. These also serve as examples for the encoding process.
 
 ## CLI Commands
 
