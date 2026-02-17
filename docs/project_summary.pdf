@@ -1,0 +1,386 @@
+%PDF-1.4
+1 0 obj
+<< /Type /Font /Subtype /Type1 /BaseFont /Helvetica >>
+endobj
+2 0 obj
+<< /Length 3389 >>
+stream
+BT
+/F1 12 Tf
+54 732 Td
+(ZIRCON PROJECT SUMMARY) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Page 1 ? Vision, Problem, and Value) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(A modern interlocking engine for a high-stakes industry) Tj
+0 -15 Td
+(ZIRCON is a railway signaling automation platform that converts a structured station) Tj
+0 -15 Td
+(description into an interlocking program. In practical terms, it turns the design intent of) Tj
+0 -15 Td
+(a station into movement logic and safety requirements that can be consumed by engineering) Tj
+0 -15 Td
+(and validation workflows.) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(The project targets one of the most persistent bottlenecks in rail delivery: the manual,) Tj
+0 -15 Td
+(repetitive, and error-prone creation of signaling logic artifacts. Traditional workflows) Tj
+0 -15 Td
+(often require engineers to update multiple dependent documents by hand whenever layouts or) Tj
+0 -15 Td
+(requirements change. This creates long feedback cycles, hidden inconsistencies, and) Tj
+0 -15 Td
+(unnecessary cost.) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Why ZIRCON matters) Tj
+0 -15 Td
+(ZIRCON addresses this by making interlocking logic computable from source inputs:) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(? **Layout topography** \(`.zlt`\) captures network topology and logical elements.) Tj
+0 -15 Td
+(? **Layout geometry** \(`.zlg`\) captures distance and spatial positioning.) Tj
+0 -15 Td
+(? **Auxiliary data** \(`.zad`\) captures context metadata.) Tj
+0 -15 Td
+(? **Operational parameters** \(`.zop`\) define movement and safety policy.) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(From these inputs, ZIRCON synthesizes:) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(? route possibilities,) Tj
+0 -15 Td
+(? signal behavior,) Tj
+0 -15 Td
+(? overlap and protection requirements,) Tj
+0 -15 Td
+(? cancellation/clearance delays,) Tj
+0 -15 Td
+(? and exportable interlocking outputs \(including `.xlsx` artifacts\).) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(This architecture enables faster iterations and safer change management because engineers) Tj
+0 -15 Td
+(can regenerate outputs whenever assumptions change.) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Core product promise) Tj
+0 -15 Td
+(ZIRCON?s core promise is simple and powerful: **describe once, derive many times**.) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(By treating station logic as a computable pipeline rather than static documentation, ZIRCON) Tj
+0 -15 Td
+(provides:) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(1. **Speed** ? faster design and validation iterations.) Tj
+0 -15 Td
+(2. **Consistency** ? less divergence between design intent and generated artifacts.) Tj
+0 -15 Td
+(3. **Traceability** ? clear lineage from input encoding to generated output.) Tj
+0 -15 Td
+(4. **Scalability** ? reusable processing flow across multiple station configurations.) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Where it is already strong) Tj
+0 -15 Td
+(The repository demonstrates a complete end-to-end path:) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(? command-line control loop,) Tj
+0 -15 Td
+(? file parsers for domain-specific encodings,) Tj
+0 -15 Td
+(? modular processing engines,) Tj
+0 -15 Td
+(? post-processing and export layers,) Tj
+0 -15 Td
+(? and example stations with sample outputs.) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(This gives ZIRCON immediate value as an engineering accelerator and a strong foundation for) Tj
+0 -15 Td
+(advanced capabilities \(GUI, incompatibility analysis, control table generation, and) Tj
+0 -15 Td
+(conversion tooling\).) Tj
+ET
+endstream
+endobj
+3 0 obj
+<< /Length 3019 >>
+stream
+BT
+/F1 12 Tf
+54 732 Td
+(Page 2 ? How the System Works) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Workflow at a glance) Tj
+0 -15 Td
+(ZIRCON runs as an interactive CLI application with three main lifecycle actions:) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(1. **Load** station data \(`load [STATION_LABEL]`\)) Tj
+0 -15 Td
+(2. **Process** loaded layout with operational rules \(`process [ZOP_FILE]`\)) Tj
+0 -15 Td
+(3. **Export** generated interlocking program \(`export [xlsx|pickle]`\)) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(This staged flow is enforced in the controller, preventing invalid sequencing \(for example,) Tj
+0 -15 Td
+(exporting before processing\).) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Runtime architecture) Tj
+0 -15 Td
+(The application is organized into layered subsystems:) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(? **CLI layer**: captures and validates user commands.) Tj
+0 -15 Td
+(? **Input layer**: reads and parses station + parameter files.) Tj
+0 -15 Td
+(? **Core layer**: computes signals, paths, movements, flank protection, and delays.) Tj
+0 -15 Td
+(? **Output layer**: assembles and exports interlocking artifacts.) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(The central processing chain inside `core\(\)` composes specialized engines:) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(1. `signalProcessor` ? infers signal behavior and movement admissibility.) Tj
+0 -15 Td
+(2. `spatialEngine` ? builds spatially coherent path candidates.) Tj
+0 -15 Td
+(3. `router` ? derives movement routes and overlap logic.) Tj
+0 -15 Td
+(4. `flankProtection` ? computes protective locking requirements.) Tj
+0 -15 Td
+(5. `delayEngine` ? computes OL/ARC/ERC delay timings.) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(This clear module decomposition is a major project strength: it supports maintainability,) Tj
+0 -15 Td
+(targeted improvements, and easier validation.) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Domain expressiveness and configurability) Tj
+0 -15 Td
+(The `.zop` parameter model exposes nuanced behavior controls, including:) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(? overlap distances by movement regime,) Tj
+0 -15 Td
+(? alternate overlap logic,) Tj
+0 -15 Td
+(? switch-locking policies,) Tj
+0 -15 Td
+(? terminal/NDZ movement handling,) Tj
+0 -15 Td
+(? route cancellation delay formulas,) Tj
+0 -15 Td
+(? and flank protection sensitivity thresholds.) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(That means ZIRCON is not just a parser-to-export converter; it is a policy-driven inference) Tj
+0 -15 Td
+(engine for interlocking behavior.) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Output strategy) Tj
+0 -15 Td
+(The system produces structured interlocking program data and supports export for both:) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(? **human interpretation** \(`.xlsx` visual format\), and) Tj
+0 -15 Td
+(? **downstream machine use** \(`pickle` serialization\).) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(The `outputAssembler` organizes movements into operational categories \(e.g., circulation) Tj
+0 -15 Td
+(entry/exit, shunt directionality\), assigns route IDs, and packages delays and provenance) Tj
+0 -15 Td
+(inputs?ideal for auditability and future integration.) Tj
+ET
+endstream
+endobj
+4 0 obj
+<< /Length 2844 >>
+stream
+BT
+/F1 12 Tf
+54 732 Td
+(Page 3 ? Strategic Assessment and Next Opportunities) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Why this project is compelling) Tj
+0 -15 Td
+(ZIRCON sits at the intersection of safety engineering, formalization, and productivity. It) Tj
+0 -15 Td
+(tackles a deeply practical challenge with a realistic implementation path:) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(? It is grounded in real workflow pain.) Tj
+0 -15 Td
+(? It has an executable architecture today.) Tj
+0 -15 Td
+(? It includes extension points for high-impact roadmap features.) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(In industries where correctness and traceability are critical, a deterministic generator) Tj
+0 -15 Td
+(like ZIRCON can become a central engineering asset.) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Near-term opportunities \(high ROI\)) Tj
+0 -15 Td
+(1. **Input authoring UX**) Tj
+0 -15 Td
+(? Introduce guided encoding assistants or schema validation commands to reduce modeling) Tj
+0 -15 Td
+(friction.) Tj
+0 -15 Td
+(2. **Validation tooling**) Tj
+0 -15 Td
+(? Add automated consistency checks and richer diagnostics for malformed or ambiguous) Tj
+0 -15 Td
+(layouts.) Tj
+0 -15 Td
+(3. **Regression framework**) Tj
+0 -15 Td
+(? Convert provided sample stations into repeatable golden-output tests.) Tj
+0 -15 Td
+(4. **Artifact diffing**) Tj
+0 -15 Td
+(? Provide route-level and requirement-level comparison between generated versions.) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Mid-term opportunities) Tj
+0 -15 Td
+(1. **Incompatible movement computation**) Tj
+0 -15 Td
+(? Strengthen conflict analysis and integrate with route generation outputs.) Tj
+0 -15 Td
+(2. **Control table generation**) Tj
+0 -15 Td
+(? Produce software control tables directly from computed movement and locking logic.) Tj
+0 -15 Td
+(3. **Visualization assistant**) Tj
+0 -15 Td
+(? Enable interactive movement, overlap, and flank-protection inspection.) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Product positioning statement) Tj
+0 -15 Td
+(ZIRCON can be positioned as a **railway signaling logic compiler**:) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(? Inputs: machine-readable station + policy descriptors.) Tj
+0 -15 Td
+(? Compiler passes: geometric, logical, and safety derivation engines.) Tj
+0 -15 Td
+(? Outputs: auditable interlocking artifacts for engineering delivery.) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(This framing communicates both technical depth and business value.) Tj
+0 -15 Td
+() Tj
+0 -15 Td
+(Executive takeaway) Tj
+0 -15 Td
+(ZIRCON already demonstrates the most difficult part of digital transformation in rail) Tj
+0 -15 Td
+(signaling: converting implicit engineering practice into explicit, repeatable computation.) Tj
+0 -15 Td
+(With incremental investment in usability, verification, and integration features, it can) Tj
+0 -15 Td
+(evolve from a strong specialist tool into a core platform for modern signaling project) Tj
+0 -15 Td
+(delivery.) Tj
+ET
+endstream
+endobj
+5 0 obj
+<< /Type /Page /Parent 5 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 2 0 R >>
+endobj
+6 0 obj
+<< /Type /Page /Parent 5 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 3 0 R >>
+endobj
+7 0 obj
+<< /Type /Page /Parent 5 0 R /MediaBox [0 0 612 792] /Resources << /Font << /F1 1 0 R >> >> /Contents 4 0 R >>
+endobj
+8 0 obj
+<< /Type /Pages /Kids [ 5 0 R 6 0 R 7 0 R ] /Count 3 >>
+endobj
+9 0 obj
+<< /Type /Catalog /Pages 5 0 R >>
+endobj
+xref
+0 10
+0000000000 65535 f 
+0000000009 00000 n 
+0000000079 00000 n 
+0000003520 00000 n 
+0000006591 00000 n 
+0000009487 00000 n 
+0000009613 00000 n 
+0000009739 00000 n 
+0000009865 00000 n 
+0000009936 00000 n 
+trailer
+<< /Size 10 /Root 9 0 R >>
+startxref
+9985
+%%EOF
