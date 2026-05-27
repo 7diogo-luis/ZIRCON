@@ -9,6 +9,7 @@ from PySide6.QtWidgets import (QDialog, QFormLayout, QLineEdit, QCheckBox,
 
 from encoding_assistant.dialogs.node_dialog import NodeDialog
 from encoding_assistant.model import Section
+from encoding_assistant.validation import section_odd_no_switch
 
 
 class SectionDialog(QDialog):
@@ -50,6 +51,12 @@ class SectionDialog(QDialog):
         self.edit_btn.clicked.connect(self._on_edit_node)
         self.del_btn.clicked.connect(self._on_delete_node)
 
+        self.warning_label = QLabel()
+        self.warning_label.setWordWrap(True)
+        self.warning_label.setStyleSheet('color: #b00020; font-weight: bold;')
+        self.warning_label.setVisible(False)
+        layout.addWidget(self.warning_label)
+
         self.button_box = QDialogButtonBox(QDialogButtonBox.Ok |
                                            QDialogButtonBox.Cancel)
         self.button_box.accepted.connect(self.accept)
@@ -68,6 +75,17 @@ class SectionDialog(QDialog):
             tjs = ' [TJS weak]' if node.tjs_weak else ''
             QListWidgetItem(f'NDE {node.index} → {con}  '
                             f'@PK {node.pk}{tjs}', self.node_list)
+        self._update_warning_label()
+
+    def _update_warning_label(self):
+        if section_odd_no_switch(self._working):
+            self.warning_label.setText(
+                '⚠ Section has an odd number of nodes (≥ 3) and no switch. '
+                'Real-track sections with an odd node count require at least '
+                'one switch (derailers do not count). Likely encoding mistake.')
+            self.warning_label.setVisible(True)
+        else:
+            self.warning_label.setVisible(False)
 
     def _on_add_node(self):
         dlg = NodeDialog(self, section=self._working, existing=None)

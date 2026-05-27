@@ -70,33 +70,52 @@ def emit_zlg(encoding: Encoding) -> str:
             lines.append(f'\t{element.label} {pks}')
 
     lines.append('SWIS')
+    seen_switch_labels = set()
     for element in encoding.elements:
         if not isinstance(element, Section):
             continue
         sorted_nodes = sorted(element.nodes, key=lambda n: n.index)
         for node in sorted_nodes:
             for switch in node.switches:
+                if switch.label in seen_switch_labels:
+                    continue
+                seen_switch_labels.add(switch.label)
                 line = f'\t{switch.label} {switch.point_pk}'
                 if switch.lr_pk.strip():
                     line += f' {switch.lr_pk}'
                 lines.append(line)
 
     lines.append('SIGS')
+    seen_signal_labels = set()
     for element in encoding.elements:
         if isinstance(element, (Block, Ndz)) and element.signal is not None:
-            lines.append('\t' + _signal_zlg_line(element.signal, element.label))
+            expanded = _expanded_signal_label(element.signal, element.label)
+            if expanded not in seen_signal_labels:
+                seen_signal_labels.add(expanded)
+                lines.append('\t' + _signal_zlg_line(element.signal,
+                                                     element.label))
         elif isinstance(element, Section):
             sorted_nodes = sorted(element.nodes, key=lambda n: n.index)
             for node in sorted_nodes:
-                if node.signal is not None:
-                    lines.append('\t' + _signal_zlg_line(node.signal,
-                                                         element.label))
+                if node.signal is None:
+                    continue
+                expanded = _expanded_signal_label(node.signal, element.label)
+                if expanded in seen_signal_labels:
+                    continue
+                seen_signal_labels.add(expanded)
+                lines.append('\t' + _signal_zlg_line(node.signal,
+                                                     element.label))
 
     return '\n'.join(lines) + '\n'
 
 
+def _expanded_signal_label(signal: Signal, parent_label: str) -> str:
+    return (f'M_{parent_label}' if signal.label.strip() == 'M'
+            else signal.label)
+
+
 def _signal_zlg_line(signal: Signal, parent_label: str) -> str:
-    label = f'M_{parent_label}' if signal.label.strip() == 'M' else signal.label
+    label = _expanded_signal_label(signal, parent_label)
     line = f'{label} {signal.pole_pk}'
     if signal.zap_origin_pk.strip() and signal.zap_sft_fac.strip():
         line += f' {signal.zap_origin_pk} {signal.zap_sft_fac}'

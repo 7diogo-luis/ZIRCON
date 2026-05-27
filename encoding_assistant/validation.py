@@ -29,6 +29,22 @@ def zap_pair_valid(zap_origin: str, zap_sft_fac: str) -> bool:
     return both_empty or both_numeric
 
 
+def section_odd_no_switch(section: Section) -> bool:
+    """True if the section has an odd node count >= 3 and no real switch.
+
+    Derailers (Switch with empty lr_pk) do not count. 1-node terminals are
+    excluded because the cross/turnout rule does not apply to stubs.
+    """
+    n = len(section.nodes)
+    if n < 3 or n % 2 == 0:
+        return False
+    return not any(
+        sw.lr_pk.strip()
+        for node in section.nodes
+        for sw in node.switches
+    )
+
+
 def duplicate_labels(encoding: Encoding) -> list:
     counts = {}
 
