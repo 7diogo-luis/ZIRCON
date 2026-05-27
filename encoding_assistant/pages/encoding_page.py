@@ -17,7 +17,7 @@ from encoding_assistant import io_utils
 class EncodingPage(QWidget):
 
     back_clicked = QtSignal()
-    generated = QtSignal()
+    exit_clicked = QtSignal()
 
     def __init__(self, encoding: Encoding, parent=None):
         super().__init__(parent)
@@ -53,8 +53,10 @@ class EncodingPage(QWidget):
 
         bottom = QHBoxLayout()
         self.back_btn = QPushButton('Back')
+        self.exit_btn = QPushButton('Exit')
         self.generate_btn = QPushButton('Generate')
         bottom.addWidget(self.back_btn)
+        bottom.addWidget(self.exit_btn)
         bottom.addStretch()
         bottom.addWidget(self.generate_btn)
         layout.addLayout(bottom)
@@ -67,6 +69,7 @@ class EncodingPage(QWidget):
         self.up_btn.clicked.connect(lambda: self._move(-1))
         self.down_btn.clicked.connect(lambda: self._move(+1))
         self.back_btn.clicked.connect(self.back_clicked.emit)
+        self.exit_btn.clicked.connect(self._on_exit)
         self.generate_btn.clicked.connect(self._on_generate)
 
         self.rebuild_tree()
@@ -236,4 +239,12 @@ class EncodingPage(QWidget):
         QMessageBox.information(
             self, 'Generated',
             'Wrote:\n  ' + '\n  '.join(written))
-        self.generated.emit()
+
+    def _on_exit(self):
+        if self._encoding.elements:
+            confirm = QMessageBox.question(
+                self, 'Discard encoding?',
+                'Exiting now will discard the current encoding. Continue?')
+            if confirm != QMessageBox.Yes:
+                return
+        self.exit_clicked.emit()

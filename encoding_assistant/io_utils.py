@@ -50,7 +50,7 @@ def write_triplet(encoding: Encoding, suffix: str = '') -> list:
     os.makedirs(INPUT_DIR, exist_ok=True)
 
     for path, content in zip(paths, contents):
-        with open(path, 'w') as f:
+        with open(path, 'w', encoding='utf-8') as f:
             f.write(content)
 
     return paths

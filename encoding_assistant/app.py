@@ -39,7 +39,7 @@ class MainWindow(QMainWindow):
         self.metadata_page.back_clicked.connect(self._on_metadata_back)
         self.metadata_page.next_clicked.connect(self._on_metadata_next)
         self.encoding_page.back_clicked.connect(self._on_encoding_back)
-        self.encoding_page.generated.connect(self._on_generated)
+        self.encoding_page.exit_clicked.connect(self._on_encoding_exit)
 
     def _on_encode_new(self):
         self._encoding.metadata = {
@@ -70,7 +70,8 @@ class MainWindow(QMainWindow):
     def _on_encoding_back(self):
         self.stack.setCurrentIndex(self.PAGE_METADATA)
 
-    def _on_generated(self):
+    def _on_encoding_exit(self):
+        self._encoding.elements.clear()
         self.stack.setCurrentIndex(self.PAGE_START)
 
     def _update_title(self):
